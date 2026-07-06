@@ -1,21 +1,22 @@
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+from config import WORLD_BOUNDS
 from entities.robot import Robot
 from renderer import Renderer
 from simulation import Simulation
 from world import World
 
-world = World()
-renderer = Renderer()
+world = World(bounds=WORLD_BOUNDS)
+renderer = Renderer(bounds=WORLD_BOUNDS)
 
 robots = [
-    Robot(4, 2, 0),
+    Robot(2.5, 2, 0),
     Robot(6, 2, 0),
     Robot(8, 2, 0),
     Robot(10, 2, 0),
 ]
-velocities = [1, 1, 1, 1]
+velocities = [4, 4, 1, 1]
 angular_velocities = [0.5, 0.5, 0.5, 0.5]
 
 for robot, v, omega in zip(robots, velocities, angular_velocities):
@@ -27,7 +28,7 @@ for robot, v, omega in zip(robots, velocities, angular_velocities):
 # during the start delay, before physics begins stepping.
 renderer.draw(world.snapshot())
 
-sim = Simulation(world, renderer, physics_dt=0.01, start_delay=3.0)
+sim = Simulation(world, renderer, physics_dt=0.01, start_delay=2.0)
 
 ani = FuncAnimation(renderer.fig, sim.on_frame, interval=15, blit=True)
 plt.show()

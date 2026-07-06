@@ -5,10 +5,11 @@ from matplotlib.transforms import Affine2D
 
 class Renderer:
     # Creates the warehouse scene and draws robots as rectangles
-    def __init__(self, xlim=(0, 20), ylim=(0, 10)):
+    def __init__(self, bounds):
         self.fig, self.ax = plt.subplots()
-        self.ax.set_xlim(*xlim)
-        self.ax.set_ylim(*ylim)
+        self.xmin, self.xmax, self.ymin, self.ymax = bounds
+        self.ax.set_xlim(self.xmin, self.xmax)
+        self.ax.set_ylim(self.ymin, self.ymax)
         self.ax.set_aspect("equal")
         self.ax.grid(True)
 
