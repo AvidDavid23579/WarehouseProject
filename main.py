@@ -1,10 +1,10 @@
-from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
-from robot import Robot
-from world import World
 from renderer import Renderer
+from robot import Robot
 from simulation import Simulation
+from world import World
 
 world = World()
 renderer = Renderer()

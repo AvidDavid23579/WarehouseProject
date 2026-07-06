@@ -2,11 +2,10 @@ import time
 
 
 class Simulation:
-    def __init__(self, world, renderer, physics_dt=0.01, start_delay=3.0,
-                 max_steps_per_frame=50):
+    def __init__(self, world, renderer, physics_dt=0.01, start_delay=3.0, max_steps_per_frame=50):
         self.world = world
         self.renderer = renderer
-        self.physics_dt = physics_dt
+        self.physics_dt = physics_dt  # Physics run at a constant 100 Hz
         self.start_delay = start_delay
         # Caps catch-up steps after a stall (e.g. window drag) so the sim
         # doesn't try to replay minutes of physics in one frame.
@@ -27,11 +26,14 @@ class Simulation:
             self._last_time = now
             return self.renderer.get_artists()
 
+        # Pauses the simulator at the start to observe initial state
         elapsed = now - self._last_time
         self._last_time = now
         self._accumulator += elapsed
 
         steps = 0
+
+        # Start the simulation with frame freeze condition
         while self._accumulator >= self.physics_dt and steps < self.max_steps_per_frame:
             self.world.step(self.physics_dt)
             self._accumulator -= self.physics_dt
