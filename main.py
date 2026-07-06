@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+from entities.robot import Robot
 from renderer import Renderer
-from robot import Robot
 from simulation import Simulation
 from world import World
 
