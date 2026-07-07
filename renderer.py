@@ -7,9 +7,9 @@ class Renderer:
     # Creates the warehouse scene and draws robots as rectangles
     def __init__(self, bounds):
         self.fig, self.ax = plt.subplots()
-        self.xmin, self.xmax, self.ymin, self.ymax = bounds
-        self.ax.set_xlim(self.xmin, self.xmax)
-        self.ax.set_ylim(self.ymin, self.ymax)
+        self.x_min, self.x_max, self.y_min, self.y_max = bounds
+        self.ax.set_xlim(self.x_min, self.x_max)
+        self.ax.set_ylim(self.y_min, self.y_max)
         self.ax.set_aspect("equal")
         self.ax.grid(True)
 

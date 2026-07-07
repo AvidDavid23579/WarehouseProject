@@ -4,7 +4,7 @@ from collision import sat_collision
 class World:
     def __init__(self, bounds):
         self.robots = []
-        self.xmin, self.xmax, self.ymin, self.ymax = bounds
+        self.x_min, self.x_max, self.y_min, self.y_max = bounds
 
     def add_robot(self, robot):
         self.robots.append(robot)
@@ -35,7 +35,7 @@ class World:
 
         for robot in self.robots:
             for x, y in robot.vertices():
-                if x < self.xmin or x > self.xmax or y < self.ymin or y > self.ymax:
+                if x < self.x_min or x > self.x_max or y < self.y_min or y > self.y_max:
                     collisions.append(robot)
         
         return collisions

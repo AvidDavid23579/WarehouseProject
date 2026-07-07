@@ -10,7 +10,7 @@ def edges_axes(poly):
         edge = (x2 - x1, y2 - y1)
         normal = (-edge[1], edge[0])
         length = math.hypot(*normal)
-        yield (normal[0] / length, normal[1] / length)
+        yield normal[0] / length, normal[1] / length
 
 def project(poly, axis):
     dots = [px * axis[0] + py * axis[1] for px, py in poly]

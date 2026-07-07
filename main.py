@@ -30,5 +30,12 @@ renderer.draw(world.snapshot())
 
 sim = Simulation(world, renderer, physics_dt=0.01, start_delay=2.0)
 
-ani = FuncAnimation(renderer.fig, sim.on_frame, interval=15, blit=True)
+ani = FuncAnimation(
+    renderer.fig,
+    sim.on_frame,
+    frames=range(1000000),
+    interval=15,
+    blit=True,
+    cache_frame_data=False,
+)
 plt.show()
