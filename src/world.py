@@ -1,3 +1,5 @@
+import copy
+
 from common.navigation import naive_drive_to_pose
 from entities.collision import sat_collision
 
@@ -42,13 +44,14 @@ class World:
         return collisions
 
     def step(self, dt):
+        # Compute controls
         for robot in self.robots:
             if robot.reached_goal():
                 robot.goals_index = (robot.goals_index + 1) % len(robot.goals)
 
             robot.v, robot.omega = naive_drive_to_pose(
                 robot.pose,
-                robot.goals[robot.goals_index],
+                robot.goal,
                 k_p_dist=5.0,
                 k_p_heading=5.0,
                 k_p_final=10.0,
@@ -56,10 +59,33 @@ class World:
                 max_omega=5.0,
             )
 
-        self.handle_collisions()
+            robot.prio_yield(self.robots)
 
+        # Move each robot, reverting if it causes a collision
         for robot in self.robots:
+            old_pose = copy.copy(robot.pose)  # Pose is a dataclass
+
             robot.update(dt)
+
+            if self.robot_collides(robot):
+                robot.pose = old_pose
+                robot.stop()
+
+    def robot_collides(self, robot):
+        # Wall collision
+        for x, y in robot.vertices():
+            if x < self.x_min or x > self.x_max or y < self.y_min or y > self.y_max:
+                return True
+
+        # Robot collision
+        for other in self.robots:
+            if other is robot:
+                continue
+
+            if sat_collision(robot.vertices(), other.vertices()):
+                return True
+
+        return False
 
     def snapshot(self):
         return [
