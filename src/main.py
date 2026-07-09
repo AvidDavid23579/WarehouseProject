@@ -10,12 +10,7 @@ from world import World
 world = World(bounds=WORLD_BOUNDS)
 renderer = Renderer(bounds=WORLD_BOUNDS)
 
-robots = [
-    Robot(2.5, 2, 0),
-    Robot(6, 2, 0),
-    Robot(8, 2, 0),
-    Robot(10, 2, 0),
-]
+robots = [Robot(2.5, 2, 0)]
 velocities = [4, 4, 1, 1]
 angular_velocities = [0.5, 0.5, 0.5, 0.5]
 
@@ -38,4 +33,7 @@ ani = FuncAnimation(
     blit=True,
     cache_frame_data=False,
 )
+manager = plt.get_current_fig_manager()
+manager.window.showMaximized()
+
 plt.show()

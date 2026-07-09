@@ -1,4 +1,4 @@
-from collision import sat_collision
+from entities.collision import sat_collision
 
 
 class World:
@@ -16,7 +16,7 @@ class World:
 
         for robot in self.robot_wall_collisions():
             robot.stop()
-    
+
     def robot_robot_collisions(self):
         collisions = []
 
@@ -27,9 +27,9 @@ class World:
 
                 if sat_collision(robot_a.vertices(), robot_b.vertices()):
                     collisions.append((robot_a, robot_b))
-            
+
         return collisions
-    
+
     def robot_wall_collisions(self):
         collisions = []
 
@@ -37,7 +37,7 @@ class World:
             for x, y in robot.vertices():
                 if x < self.x_min or x > self.x_max or y < self.y_min or y > self.y_max:
                     collisions.append(robot)
-        
+
         return collisions
 
     def step(self, dt):
