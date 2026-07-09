@@ -1,3 +1,4 @@
+from common.navigation import naive_drive_to_pose
 from entities.collision import sat_collision
 
 
@@ -46,13 +47,23 @@ class World:
         for robot in self.robots:
             robot.update(dt)
 
+            robot.v, robot.omega = naive_drive_to_pose(
+                robot.pose,
+                robot.goal,
+                k_p_dist=1,
+                k_p_heading=1,
+                k_p_final=0.5,
+                max_v=5,
+                max_omega=1,
+            )
+
     def snapshot(self):
         return [
             {
                 "id": id(robot),
-                "x": robot.x,
-                "y": robot.y,
-                "theta": robot.theta,
+                "x": robot.pose.x,
+                "y": robot.pose.y,
+                "theta": robot.pose.theta,
                 "width": robot.width,
                 "length": robot.length,
             }

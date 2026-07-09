@@ -1,22 +1,31 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.animation import FuncAnimation
 
+from common.navigation import naive_drive_to_pose
 from config import WORLD_BOUNDS
-from entities.robot import Robot
+from entities.robot import Pose, Robot
 from renderer import Renderer
 from simulation import Simulation
+from src.config import ROBOT_LENGTH, ROBOT_WIDTH
 from world import World
 
 world = World(bounds=WORLD_BOUNDS)
 renderer = Renderer(bounds=WORLD_BOUNDS)
 
-robots = [Robot(2.5, 2, 0)]
-velocities = [4, 4, 1, 1]
-angular_velocities = [0.5, 0.5, 0.5, 0.5]
+num_robots = 9
+start_poses = []
+goal_poses = []
 
-for robot, v, omega in zip(robots, velocities, angular_velocities):
-    robot.v = v
-    robot.omega = omega
+for i in range(num_robots):
+    start_poses.append(Pose(i + ROBOT_WIDTH / 2 + 0.1, ROBOT_LENGTH / 2 + 0.1, np.pi / 2))
+    goal_poses.append(Pose(2 * i + 2.5, i + 0.5, 0.0))
+
+
+robots = [Robot(start, goal) for start, goal in zip(start_poses, goal_poses)]
+
+
+for robot, goal in zip(robots, goal_poses):
     world.add_robot(robot)
 
 # Seed patches once up front so blit has artists to return from frame 0,
