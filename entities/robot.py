@@ -1,7 +1,10 @@
+import math
 from dataclasses import dataclass
 
 import numpy as np
 
+from common.utils import wrap_angle
+from config import ANGLE_TOLERANCE, DIST_TOLERANCE
 from src.config import ROBOT_LENGTH, ROBOT_WIDTH
 
 
@@ -14,9 +17,10 @@ class Pose:
 
 class Robot:
     # Differential drive robot parameters
-    def __init__(self, pose: Pose, goal: Pose):
+    def __init__(self, pose: Pose, goals: Pose):
         self.pose = pose
-        self.goal = goal
+        self.goals = goals
+        self.goals_index = 0
         self.width = ROBOT_WIDTH  # Graphic only
         self.length = ROBOT_LENGTH  # Graphic only
 
@@ -52,3 +56,19 @@ class Robot:
     def stop(self):
         self.v = 0
         self.omega = 0
+
+    @property
+    def goal(self):
+        return self.goals[self.goals_index]
+
+    def reached_goal(self):
+        goal = self.goal
+
+        position_error = math.hypot(
+            goal.x - self.pose.x,
+            goal.y - self.pose.y,
+        )
+
+        heading_error = abs(wrap_angle(goal.theta - self.pose.theta))
+
+        return position_error < DIST_TOLERANCE and heading_error < ANGLE_TOLERANCE

@@ -1,3 +1,5 @@
+import math
+
 X_MIN = 0
 X_MAX = 20
 Y_MIN = 0
@@ -7,3 +9,6 @@ WORLD_BOUNDS = (X_MIN, X_MAX, Y_MIN, Y_MAX)
 
 ROBOT_WIDTH = 0.4
 ROBOT_LENGTH = 0.6
+
+DIST_TOLERANCE = 0.05
+ANGLE_TOLERANCE = math.radians(1.0)  # DEGREES

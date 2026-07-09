@@ -1,6 +1,7 @@
 import math
 
 from common.utils import clamp, wrap_angle
+from config import ANGLE_TOLERANCE, DIST_TOLERANCE
 
 
 def naive_drive_to_pose(current, target, k_p_dist, k_p_heading, k_p_final, max_v, max_omega):
@@ -13,18 +14,13 @@ def naive_drive_to_pose(current, target, k_p_dist, k_p_heading, k_p_final, max_v
     heading_error = wrap_angle(target_heading - current.theta)
     final_heading_error = wrap_angle(target.theta - current.theta)
 
-    v = k_p_dist * distance + math.cos(heading_error)
-
-    dist_tol = 0.05  # 5 cm
-    angle_tol = math.radians(0.05)
-
-    if distance < dist_tol:
+    if distance < DIST_TOLERANCE:
         v = 0.0
 
-        if abs(final_heading_error) < angle_tol:
+        if abs(final_heading_error) < ANGLE_TOLERANCE:
             omega = 0.0
         else:
-            omega = math.copysign(max_omega, final_heading_error)
+            omega = k_p_final * final_heading_error
     else:
         v = k_p_dist * distance * max(0.0, math.cos(heading_error))
         omega = k_p_heading * heading_error

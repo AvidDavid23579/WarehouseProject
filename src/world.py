@@ -42,20 +42,22 @@ class World:
         return collisions
 
     def step(self, dt):
-        self.handle_collisions()
 
         for robot in self.robots:
-            robot.update(dt)
+            if robot.reached_goal():
+                robot.goals_index = (robot.goals_index + 1) % len(robot.goals)
 
             robot.v, robot.omega = naive_drive_to_pose(
                 robot.pose,
-                robot.goal,
+                robot.goals[robot.goals_index],
                 k_p_dist=1,
                 k_p_heading=1,
-                k_p_final=0.5,
+                k_p_final=10.0,
                 max_v=5,
-                max_omega=1,
+                max_omega=5.0,
             )
+
+            robot.update(dt)
 
     def snapshot(self):
         return [
