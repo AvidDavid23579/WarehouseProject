@@ -12,7 +12,7 @@ from world import World
 world = World(bounds=WORLD_BOUNDS)
 renderer = Renderer(bounds=WORLD_BOUNDS)
 
-num_robots = 9
+num_robots = 8
 start_poses = []
 robot_goals = []
 
@@ -21,8 +21,8 @@ for i in range(num_robots):
 
     robot_goals.append(
         [
-            Pose(i + 2.5, i + 0.5, 0.0),
-            Pose(1.0, i + 1, np.pi),
+            Pose(2 * i + 2.5, i + 0.5, 0.0),
+            Pose(i + 0.5, i + 2.5, np.pi),
         ]
     )
 
