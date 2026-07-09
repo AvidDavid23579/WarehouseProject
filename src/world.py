@@ -42,7 +42,6 @@ class World:
         return collisions
 
     def step(self, dt):
-
         for robot in self.robots:
             if robot.reached_goal():
                 robot.goals_index = (robot.goals_index + 1) % len(robot.goals)
@@ -57,6 +56,9 @@ class World:
                 max_omega=5.0,
             )
 
+        self.handle_collisions()
+
+        for robot in self.robots:
             robot.update(dt)
 
     def snapshot(self):

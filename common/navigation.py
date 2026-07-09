@@ -4,7 +4,9 @@ from common.utils import clamp, wrap_angle
 from config import ANGLE_TOLERANCE, DIST_TOLERANCE
 
 
-def naive_drive_to_pose(current, target, k_p_dist, k_p_heading, k_p_final, max_v, max_omega):
+def naive_drive_to_pose(
+    current, target, k_p_dist, k_p_heading, k_p_final, max_v, max_omega
+):
     dx = target.x - current.x
     dy = target.y - current.y
 
