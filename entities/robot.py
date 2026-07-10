@@ -3,8 +3,17 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from common.navigation import naive_drive_to_pose
 from common.utils import wrap_angle
-from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA
+from config import (
+    ANGLE_TOLERANCE,
+    DIST_TOLERANCE,
+    MAX_OMEGA,
+    X_MAX,
+    X_MIN,
+    Y_MAX,
+    Y_MIN,
+)
 from entities.collision import sat_collision
 from src.config import ROBOT_LENGTH, ROBOT_WIDTH
 
@@ -24,8 +33,8 @@ class Robot:
         self.width = ROBOT_WIDTH  # Graphic only
         self.length = ROBOT_LENGTH  # Graphic only
 
-        self.hitbox_width = ROBOT_WIDTH * 1.5
-        self.hitbox_length = ROBOT_LENGTH * 1.5
+        self.hitbox_width = ROBOT_WIDTH * 2.0
+        self.hitbox_length = ROBOT_LENGTH * 2.0
 
         self.goals = goals
         self.goals_index = 0
@@ -45,6 +54,10 @@ class Robot:
     @property
     def target(self):
         return self.temp_goal if self.temp_goal is not None else self.goal
+
+    def drive(self, robots):
+        self.v, self.omega = naive_drive_to_pose(self.pose, self.target, k_p_dist=5.0, k_p_heading=5.0, k_p_final=10.0)
+        self.apply_repulsion(robots)
 
     # Returns the physical robot's 4 vertices
     def vertices(self):
@@ -100,7 +113,9 @@ class Robot:
         return abs(error) < ANGLE_TOLERANCE
 
     # Update the robot's pose at each timestep
-    def update(self, dt):
+    def update(self, dt, robots):
+        self.drive(robots)
+
         self.pose.x += self.v * np.cos(self.pose.theta) * dt
         self.pose.y += self.v * np.sin(self.pose.theta) * dt
         self.pose.theta += self.omega * dt
@@ -165,7 +180,7 @@ class Robot:
                 other.rotate(right)
                 return
 
-    def temp_goal_non_prio_yield(self, robots, offset):
+    def temp_goal_prio_yield(self, robots, offset):
         avoiding = False
 
         for other in robots:
@@ -215,3 +230,72 @@ class Robot:
         # No longer avoiding anything
         if not avoiding:
             self.temp_goal = None
+
+    def wall_repulsion(self, margin=0.5, strength=2.0):
+        walls = [
+            (self.pose.x - X_MIN, np.array([1.0, 0.0])),
+            (X_MAX - self.pose.x, np.array([-1.0, 0.0])),
+            (self.pose.y - Y_MIN, np.array([0.0, 1.0])),
+            (Y_MAX - self.pose.y, np.array([0.0, -1.0])),
+        ]
+
+        force = np.zeros(2)
+
+        for d, normal in walls:
+            d = max(d, 1e-3)  # avoid divide-by-zero
+            if d < margin:
+                mag = strength * (1 / d - 1 / margin) / d**2
+                force += mag * normal
+
+        return force
+
+    def robot_robot_repulsion(self, robots, margin=ROBOT_LENGTH + 1.0, strength=2.0, max_force=10.0):
+        force = np.zeros(2)
+        half_extent = max(self.length, self.width) / 2.0
+
+        for other in robots:
+            if other is self:
+                continue
+
+            dx = self.pose.x - other.pose.x
+            dy = self.pose.y - other.pose.y
+            dist = math.hypot(dx, dy)
+
+            other_half_extent = max(other.length, other.width) / 2.0
+            d = dist - half_extent - other_half_extent
+            d = max(d, 1e-3)
+
+            if d < margin:
+                if dist < 1e-6:
+                    # Degenerate: robots exactly coincident, push in an arbitrary direction
+                    direction = np.array([1.0, 0.0])
+                else:
+                    direction = np.array([dx, dy]) / dist
+
+                mag = strength * (1 / d - 1 / margin) / d**2
+                mag = min(mag, max_force)
+                force += mag * direction
+
+        return force
+
+    def apply_repulsion(
+        self,
+        robots,
+        wall_margin=0.5,
+        wall_strength=2.0,
+        robot_margin=0.5,
+        robot_strength=2.0,
+    ):
+        force = self.wall_repulsion(wall_margin, wall_strength)
+        force += self.robot_robot_repulsion(robots, robot_margin, robot_strength)
+
+        if not np.any(force):
+            return
+
+        heading = np.array([np.cos(self.pose.theta), np.sin(self.pose.theta)])
+
+        # Push along heading affects forward speed
+        self.v += float(np.dot(force, heading))
+        # Push perpendicular to heading becomes a turning correction
+        self.omega += float(np.cross(heading, force))
+        self.omega = max(-MAX_OMEGA, min(self.omega, MAX_OMEGA))

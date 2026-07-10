@@ -12,30 +12,25 @@ from world import World
 world = World(bounds=WORLD_BOUNDS)
 renderer = Renderer(bounds=WORLD_BOUNDS)
 
-num_robots = 8
+num_robots = 12
 start_poses = []
 robot_goals = []
 prio = []
 
 for i in range(num_robots):
-    start_poses.append(
-        Pose(i + ROBOT_WIDTH / 2 + 0.1, ROBOT_LENGTH / 2 + 0.1, np.pi / 2)
-    )
+    start_poses.append(Pose(i + ROBOT_WIDTH / 2 + 0.1, ROBOT_LENGTH / 2 + 0.1, np.pi / 2))
 
     robot_goals.append(
         [
-            Pose(2 * i + 2.5, i + 0.5, 0.0),
-            Pose(i + 0.5, i + 2.5, np.pi),
+            Pose(3 * i + 2.5, 18 + 0.5, 0.0),
+            Pose(2 * i + 0.5, 1 * i + 2.5, np.pi),
         ]
     )
 
     prio.append(i)
 
 
-robots = [
-    Robot(start, goals, prio)
-    for start, goals, prio in zip(start_poses, robot_goals, prio)
-]
+robots = [Robot(start, goals, prio) for start, goals, prio in zip(start_poses, robot_goals, prio)]
 
 
 for robot in robots:

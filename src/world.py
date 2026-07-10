@@ -74,20 +74,14 @@ class World:
         ]
 
     def step(self, dt):
-        # Move each robot, reverting if it causes a collision
-        for robot in self.robots:
-            old_pose = copy.copy(robot.pose)
-            robot.update(dt)
-
-            if self.robot_collides(robot):
-                robot.pose = old_pose
-                robot.stop()
-
-        # Compute controls
         for robot in self.robots:
             if robot.reached_goal():
                 robot.goals_index = (robot.goals_index + 1) % len(robot.goals)
 
-            robot.v, robot.omega = naive_drive_to_pose(robot.pose, robot.target, k_p_dist=5.0, k_p_heading=5.0, k_p_final=10.0)
+        for robot in self.robots:
+            old_pose = copy.copy(robot.pose)
+            robot.update(dt, self.robots)
 
-            robot.temp_goal_non_prio_yield(self.robots, offset=-0.5)
+            if self.robot_collides(robot):
+                robot.pose = old_pose
+                robot.stop()
