@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from common.utils import wrap_angle
-from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, MAX_VELOCITY
+from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA
 from entities.collision import sat_collision
 from src.config import ROBOT_LENGTH, ROBOT_WIDTH
 
@@ -24,11 +24,12 @@ class Robot:
         self.width = ROBOT_WIDTH  # Graphic only
         self.length = ROBOT_LENGTH  # Graphic only
 
-        self.hitbox_width = ROBOT_WIDTH * 2.5
-        self.hitbox_length = ROBOT_LENGTH * 2.5
+        self.hitbox_width = ROBOT_WIDTH * 1.5
+        self.hitbox_length = ROBOT_LENGTH * 1.5
 
         self.goals = goals
         self.goals_index = 0
+        self.temp_goal = None
 
         self.prio = prio
 
@@ -40,6 +41,10 @@ class Robot:
     @property
     def goal(self):
         return self.goals[self.goals_index]
+
+    @property
+    def target(self):
+        return self.temp_goal if self.temp_goal is not None else self.goal
 
     # Returns the physical robot's 4 vertices
     def vertices(self):
@@ -157,5 +162,56 @@ class Robot:
                 right = wrap_angle(bearing - math.pi / 2)
 
                 self.rotate(left)
-                other.rotate(left)
+                other.rotate(right)
                 return
+
+    def temp_goal_non_prio_yield(self, robots, offset):
+        avoiding = False
+
+        for other in robots:
+            if other is self:
+                continue
+
+            if self.prio >= other.prio:
+                continue
+
+            if not sat_collision(
+                self.hitbox_vertices(),
+                other.hitbox_vertices(),
+            ):
+                continue
+
+            avoiding = True
+
+            # Already avoiding this collision
+            if self.temp_goal is not None:
+                break
+
+            dx = other.pose.x - self.pose.x
+            dy = other.pose.y - self.pose.y
+
+            dist = math.hypot(dx, dy)
+            if dist < 1e-6:
+                break
+
+            dx /= dist
+            dy /= dist
+
+            # Perpendicular (left side)
+            perp_x = -dy
+            perp_y = dx
+
+            avoid_x = other.pose.x + perp_x * offset
+            avoid_y = other.pose.y + perp_y * offset
+
+            self.temp_goal = Pose(
+                avoid_x,
+                avoid_y,
+                self.goal.theta,
+            )
+
+            break
+
+        # No longer avoiding anything
+        if not avoiding:
+            self.temp_goal = None
