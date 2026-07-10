@@ -2,6 +2,7 @@ import copy
 
 from common.navigation import naive_drive_to_pose
 from entities.collision import sat_collision
+from entities.robot import Robot
 
 
 class World:
@@ -49,17 +50,9 @@ class World:
             if robot.reached_goal():
                 robot.goals_index = (robot.goals_index + 1) % len(robot.goals)
 
-            robot.v, robot.omega = naive_drive_to_pose(
-                robot.pose,
-                robot.goal,
-                k_p_dist=5.0,
-                k_p_heading=5.0,
-                k_p_final=10.0,
-                max_v=5,
-                max_omega=5.0,
-            )
+            robot.v, robot.omega = naive_drive_to_pose(robot.pose, robot.goal, k_p_dist=5.0, k_p_heading=5.0, k_p_final=10.0)
 
-            robot.prio_yield(self.robots)
+            robot.turn_prio_yield(self.robots)
 
         # Move each robot, reverting if it causes a collision
         for robot in self.robots:

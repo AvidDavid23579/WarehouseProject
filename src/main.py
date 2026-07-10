@@ -18,7 +18,9 @@ robot_goals = []
 prio = []
 
 for i in range(num_robots):
-    start_poses.append(Pose(i + ROBOT_WIDTH / 2 + 0.1, ROBOT_LENGTH / 2 + 0.1, np.pi / 2))
+    start_poses.append(
+        Pose(i + ROBOT_WIDTH / 2 + 0.1, ROBOT_LENGTH / 2 + 0.1, np.pi / 2)
+    )
 
     robot_goals.append(
         [
@@ -30,7 +32,10 @@ for i in range(num_robots):
     prio.append(i)
 
 
-robots = [Robot(start, goals, prio) for start, goals, prio in zip(start_poses, robot_goals, prio)]
+robots = [
+    Robot(start, goals, prio)
+    for start, goals, prio in zip(start_poses, robot_goals, prio)
+]
 
 
 for robot in robots:

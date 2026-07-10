@@ -1,12 +1,10 @@
 import math
 
 from common.utils import clamp, wrap_angle
-from config import ANGLE_TOLERANCE, DIST_TOLERANCE
+from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, MAX_VELOCITY
 
 
-def naive_drive_to_pose(
-    current, target, k_p_dist, k_p_heading, k_p_final, max_v, max_omega
-):
+def naive_drive_to_pose(current, target, k_p_dist, k_p_heading, k_p_final):
     dx = target.x - current.x
     dy = target.y - current.y
 
@@ -27,7 +25,7 @@ def naive_drive_to_pose(
         v = k_p_dist * distance * max(0.0, math.cos(heading_error))
         omega = k_p_heading * heading_error
 
-    v = clamp(v, -max_v, max_v)
-    omega = clamp(omega, -max_omega, max_omega)
+    v = clamp(v, -MAX_VELOCITY, MAX_VELOCITY)
+    omega = clamp(omega, -MAX_OMEGA, MAX_OMEGA)
 
     return v, omega
