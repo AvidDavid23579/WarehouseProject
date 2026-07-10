@@ -2,10 +2,10 @@ import math
 
 import numpy as np
 
-from config import X_MAX, X_MIN, Y_MAX, Y_MIN
+from config import ROBOT_LENGTH, X_MAX, X_MIN, Y_MAX, Y_MIN
 
 
-def wall_repulsion(robot, margin=0.3, strength=1.0, max_force=3.0):
+def wall_repulsion(robot, margin=0.3, strength=1.0, max_force=10.0):
     half_extent = max(robot.length, robot.width) / 2.0
     force = np.zeros(2)
 
@@ -26,7 +26,7 @@ def wall_repulsion(robot, margin=0.3, strength=1.0, max_force=3.0):
     return force
 
 
-def robot_robot_repulsion(robot, robots, margin=0.5, strength=1.0, max_force=3.0, goal_falloff=0.6):
+def robot_robot_repulsion(robot, robots, margin=0.5, strength=1.0, max_force=10.0, goal_falloff=0.6):
     force = np.zeros(2)
     half_extent = max(robot.length, robot.width) / 2.0
 
@@ -58,10 +58,10 @@ def apply_repulsion(
     robot,
     robots,
     max_omega,
-    wall_margin=0.3,
-    wall_strength=1.0,
-    robot_margin=0.5,
-    robot_strength=1.0,
+    wall_margin=0.2,
+    wall_strength=2.0,
+    robot_margin=ROBOT_LENGTH + 0.3,
+    robot_strength=2.0,
     goal_falloff=0.6,
 ):
     force = wall_repulsion(robot, wall_margin, wall_strength)
