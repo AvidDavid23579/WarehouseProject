@@ -1,7 +1,7 @@
 import math
 
 from common.utils import clamp, wrap_angle
-from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, MAX_VELOCITY
+from src.config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, MAX_VELOCITY
 
 
 def naive_drive_to_pose(current, target, k_p_dist, k_p_heading, k_p_final):

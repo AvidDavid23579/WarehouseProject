@@ -5,17 +5,18 @@ import numpy as np
 
 from common.navigation import naive_drive_to_pose
 from common.utils import wrap_angle
-from config import (
+from entities.collision import sat_collision
+from src.config import (
     ANGLE_TOLERANCE,
     DIST_TOLERANCE,
     MAX_OMEGA,
+    ROBOT_LENGTH,
+    ROBOT_WIDTH,
     X_MAX,
     X_MIN,
     Y_MAX,
     Y_MIN,
 )
-from entities.collision import sat_collision
-from src.config import ROBOT_LENGTH, ROBOT_WIDTH
 
 
 @dataclass
@@ -283,7 +284,7 @@ class Robot:
         robots,
         wall_margin=0.5,
         wall_strength=2.0,
-        robot_margin=0.5,
+        robot_margin=ROBOT_LENGTH + 0.5,
         robot_strength=2.0,
     ):
         force = self.wall_repulsion(wall_margin, wall_strength)

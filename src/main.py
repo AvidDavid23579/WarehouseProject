@@ -2,11 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 
-from config import WORLD_BOUNDS
 from entities.robot import Pose, Robot
 from renderer import Renderer
 from simulation import Simulation
-from src.config import ROBOT_LENGTH, ROBOT_WIDTH
+from src.config import ROBOT_LENGTH, ROBOT_WIDTH, WORLD_BOUNDS
 from world import World
 
 world = World(bounds=WORLD_BOUNDS)
@@ -22,8 +21,9 @@ for i in range(num_robots):
 
     robot_goals.append(
         [
-            Pose(3 * i + 2.5, 18 + 0.5, 0.0),
             Pose(2 * i + 0.5, 1 * i + 2.5, np.pi),
+            Pose(3 * i + 2.5, 18 + 0.5, 0.0),
+            Pose(38.5 - 2 * i, i + 2.5, np.pi),
         ]
     )
 

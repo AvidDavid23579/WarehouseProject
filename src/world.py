@@ -1,8 +1,6 @@
 import copy
 
-from common.navigation import naive_drive_to_pose
 from entities.collision import sat_collision
-from entities.robot import Robot
 
 
 class World:
