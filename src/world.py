@@ -1,3 +1,5 @@
+# Handles events happening inside the simulation environment
+
 import copy
 
 from common.avoidance import temp_goal_prio_yield

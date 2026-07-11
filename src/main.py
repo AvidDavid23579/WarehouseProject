@@ -1,3 +1,5 @@
+# Main file. Only runs abstracted code from other files.
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
@@ -11,7 +13,7 @@ from world import World
 world = World(bounds=WORLD_BOUNDS)
 renderer = Renderer(bounds=WORLD_BOUNDS)
 
-num_robots = 12
+num_robots = 1
 start_poses = []
 robot_goals = []
 prio = []

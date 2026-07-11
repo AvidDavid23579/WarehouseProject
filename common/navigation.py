@@ -1,3 +1,5 @@
+# Navigation algorithms
+
 import math
 
 from common.utils import clamp, wrap_angle

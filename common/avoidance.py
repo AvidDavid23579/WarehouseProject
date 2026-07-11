@@ -1,3 +1,5 @@
+# Old, unused avoidance logic. Kept as artifacts of development
+
 import math
 
 from common.collision import sat_collision
@@ -6,7 +8,6 @@ from entities.robot import Pose
 
 
 def stop_prio_yield(robot, robots):
-    """Lower-priority robot stops if colliding (hitbox) with a higher-priority one."""
     for other in robots:
         if other is robot:
             continue
@@ -38,7 +39,6 @@ def turn_prio_yield(robot, robots):
 
 
 def temp_goal_prio_yield(robot, robots, offset):
-    """Lower-priority robot detours to a temporary goal beside the blocker."""
     avoiding = False
 
     for other in robots:

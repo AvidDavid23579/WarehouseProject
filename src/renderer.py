@@ -1,3 +1,5 @@
+# Only calls matplotlib to render to the viewport
+
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.transforms import Affine2D
@@ -29,7 +31,10 @@ class Renderer:
 
     # Enable graphical robot movement
     def _apply_transform(self, patch, state):
-        patch.set_transform(Affine2D().rotate(state["theta"]).translate(state["x"], state["y"]) + self.ax.transData)
+        patch.set_transform(
+            Affine2D().rotate(state["theta"]).translate(state["x"], state["y"])
+            + self.ax.transData
+        )
 
     # Draws the motion
     def draw(self, snapshot):
@@ -37,7 +42,9 @@ class Renderer:
             rid = state["id"]
             if rid not in self._patches:  # Creates a robot if it doesn't exist
                 self._patches[rid] = self._make_patch(state)
-            self._apply_transform(self._patches[rid], state)  # Draws the robot and the motion
+            self._apply_transform(
+                self._patches[rid], state
+            )  # Draws the robot and the motion
         return self.get_artists()
 
     # Return objects that get updated

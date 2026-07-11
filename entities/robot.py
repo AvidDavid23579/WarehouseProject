@@ -1,10 +1,12 @@
+# Only contains anything concerning robot kinematics, dynamics and hitboxes
+
 import math
 from dataclasses import dataclass
 
 import numpy as np
 
 from common.navigation import naive_drive_to_pose
-from common.potential_physics import apply_repulsion
+from common.potential import apply_repulsion
 from common.utils import wrap_angle
 from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, ROBOT_LENGTH, ROBOT_WIDTH
 
@@ -23,8 +25,8 @@ class Robot:
         self.width = ROBOT_WIDTH  # Graphic only
         self.length = ROBOT_LENGTH  # Graphic only
 
-        self.hitbox_width = ROBOT_WIDTH * 2.0
-        self.hitbox_length = ROBOT_LENGTH * 2.0
+        self.hitbox_width = ROBOT_WIDTH * 1.5
+        self.hitbox_length = ROBOT_LENGTH * 1.5
 
         self.goals = goals
         self.goals_index = 0

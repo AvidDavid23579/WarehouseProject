@@ -1,3 +1,5 @@
+# Models the map as a potential field for robots to move and navigate around
+
 import math
 
 import numpy as np

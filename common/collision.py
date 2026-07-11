@@ -1,3 +1,5 @@
+# Handles collisions
+
 import math
 
 
@@ -12,9 +14,11 @@ def edges_axes(poly):
         length = math.hypot(*normal)
         yield normal[0] / length, normal[1] / length
 
+
 def project(poly, axis):
     dots = [px * axis[0] + py * axis[1] for px, py in poly]
     return min(dots), max(dots)
+
 
 def sat_collision(poly_a, poly_b):
     for axis in list(edges_axes(poly_a)) + list(edges_axes(poly_b)):
@@ -23,4 +27,3 @@ def sat_collision(poly_a, poly_b):
         if max_a < min_b or max_b < min_a:
             return False  # separating axis found
     return True  # no separating axis on any edge normal -> colliding
-

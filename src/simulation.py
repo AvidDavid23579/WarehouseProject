@@ -1,13 +1,13 @@
+# Handles the physics of the simulation
+
 import time
 
 
 class Simulation:
-    def __init__(
-        self, world, renderer, physics_dt=0.01, start_delay=3.0, max_steps_per_frame=50
-    ):
+    def __init__(self, world, renderer, physics_dt=0.01, start_delay=3.0, max_steps_per_frame=50):
         self.world = world
         self.renderer = renderer
-        self.physics_dt = physics_dt  # Physics run at a constant 200 Hz
+        self.physics_dt = physics_dt  # Physics run at a constant 100 Hz
         self.start_delay = start_delay
         # Caps catch-up steps after a stall (e.g. window drag) so the sim
         # doesn't try to replay minutes of physics in one frame.
