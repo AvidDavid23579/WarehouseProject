@@ -12,8 +12,8 @@ from simulation import Simulation
 from world import World
 
 # --- Demo scenario layout ----------------------------------------------------
-NUM_SHELVES = 9
-NUM_ROBOTS = 11
+NUM_SHELVES = 0
+NUM_ROBOTS = 20
 PHYSICS_DT = 0.01
 START_DELAY = 2.0
 ANIMATION_INTERVAL_MS = 15
@@ -28,8 +28,12 @@ def create_robots(count: int) -> list[Robot]:
     """Spawn robots along the bottom edge, each with three waypoint goals."""
     robots = []
     for i in range(count):
-        start = Pose(4 * (i + 1) - 2, ROBOT_LENGTH / 2 + 0.2, np.pi / 2)
-        goals = [Pose(4 * (i + 1) - 2, ROBOT_LENGTH / 2 + 17, np.pi / 2), Pose(4 * (i + 1) - 2, ROBOT_LENGTH / 2 + 0.2, np.pi / 2)]
+        if i % 2 == 0:
+            start = Pose(2 * (i + 1), ROBOT_LENGTH / 2 + 0.2, np.pi / 2)
+            goals = [Pose(2 * (i + 1), ROBOT_LENGTH / 2 + 17, np.pi / 2), Pose(2 * (i + 1), ROBOT_LENGTH / 2 + 0.2, np.pi / 2)]
+        else:
+            start = Pose(2 * (i + 1) - 2, ROBOT_LENGTH / 2 + 17, -np.pi / 2)
+            goals = [Pose(2 * (i + 1) - 2, ROBOT_LENGTH / 2 + 0.2, -np.pi / 2), Pose(2 * (i + 1) - 2, ROBOT_LENGTH / 2 + 17, -np.pi / 2)]
         robots.append(Robot(start, goals, robot_id=i))
     return robots
 
