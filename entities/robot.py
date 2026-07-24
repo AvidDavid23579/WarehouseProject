@@ -1,25 +1,17 @@
 # Only contains anything concerning robot kinematics, dynamics and hitboxes
 
 import math
-from dataclasses import dataclass
 
 import numpy as np
 
 from common.navigation import naive_drive_to_pose
 from common.potential import apply_repulsion
-from common.utils import wrap_angle
+from common.utils import Pose, wrap_angle
 from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, ROBOT_LENGTH, ROBOT_WIDTH
 
 
-@dataclass
-class Pose:
-    x: float
-    y: float
-    theta: float
-
-
 class Robot:
-    def __init__(self, pose: Pose, goals, prio):
+    def __init__(self, pose: Pose, goals, id):
         self.pose = pose
 
         self.width = ROBOT_WIDTH  # Graphic only
@@ -32,10 +24,20 @@ class Robot:
         self.goals_index = 0
         self.temp_goal = None
 
-        self.prio = prio
+        self.id = id
 
         self.v = 0.0
         self.omega = 0.0
+
+    def snapshot(self):
+        return {
+            "id": self.id,
+            "x": self.pose.x,
+            "y": self.pose.y,
+            "theta": self.pose.theta,
+            "length": self.length,
+            "width": self.width,
+        }
 
     @property
     def goal(self):
@@ -45,7 +47,7 @@ class Robot:
     def target(self):
         return self.temp_goal if self.temp_goal is not None else self.goal
 
-    def vertices(self):
+    def robot_vertices(self):
         hl = self.length / 2.0
         hw = self.width / 2.0
 

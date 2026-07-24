@@ -9,10 +9,14 @@ from common.collision import sat_collision
 class World:
     def __init__(self, bounds):
         self.robots = []
+        self.shelves = []
         self.x_min, self.x_max, self.y_min, self.y_max = bounds
 
     def add_robot(self, robot):
         self.robots.append(robot)
+
+    def add_shelf(self, shelf):
+        self.shelves.append(shelf)
 
     # --- Queries -----------------------------------------------------
 
@@ -21,43 +25,36 @@ class World:
         for i in range(len(self.robots)):
             for j in range(i + 1, len(self.robots)):
                 a, b = self.robots[i], self.robots[j]
-                if sat_collision(a.vertices(), b.vertices()):
+                if sat_collision(a.robot_vertices(), b.robot_vertices()):
                     collisions.append((a, b))
         return collisions
 
     def robot_wall_collisions(self):
         collisions = []
         for robot in self.robots:
-            for x, y in robot.vertices():
+            for x, y in robot.robot_vertices():
                 if x < self.x_min or x > self.x_max or y < self.y_min or y > self.y_max:
                     collisions.append(robot)
         return collisions
 
     def robot_collides(self, robot):
-        for x, y in robot.vertices():
+        for x, y in robot.robot_vertices():
             if x < self.x_min or x > self.x_max or y < self.y_min or y > self.y_max:
                 return True
 
         for other in self.robots:
             if other is robot:
                 continue
-            if sat_collision(robot.vertices(), other.vertices()):
+            if sat_collision(robot.robot_vertices(), other.robot_vertices()):
                 return True
 
         return False
 
     def snapshot(self):
-        return [
-            {
-                "id": id(robot),
-                "x": robot.pose.x,
-                "y": robot.pose.y,
-                "theta": robot.pose.theta,
-                "width": robot.width,
-                "length": robot.length,
-            }
-            for robot in self.robots
-        ]
+        return {
+            "robots": [robot.snapshot() for robot in self.robots],
+            "shelves": [shelf.snapshot() for shelf in self.shelves],
+        }
 
     # --- Simulation loop -----------------------------------------------
 

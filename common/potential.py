@@ -28,11 +28,15 @@ def wall_repulsion(robot, margin=0.3, strength=1.0, max_force=10.0):
     return force
 
 
-def robot_robot_repulsion(robot, robots, margin=0.5, strength=1.0, max_force=10.0, goal_falloff=0.6):
+def robot_robot_repulsion(
+    robot, robots, margin=0.5, strength=1.0, max_force=10.0, goal_falloff=0.6
+):
     force = np.zeros(2)
     half_extent = max(robot.length, robot.width) / 2.0
 
-    dist_to_goal = math.hypot(robot.target.x - robot.pose.x, robot.target.y - robot.pose.y)
+    dist_to_goal = math.hypot(
+        robot.target.x - robot.pose.x, robot.target.y - robot.pose.y
+    )
     scale = min(1.0, dist_to_goal / goal_falloff)
 
     for other in robots:
@@ -48,7 +52,9 @@ def robot_robot_repulsion(robot, robots, margin=0.5, strength=1.0, max_force=10.
         d = max(d, 1e-3)
 
         if d < margin:
-            direction = np.array([dx, dy]) / dist if dist > 1e-6 else np.array([1.0, 0.0])
+            direction = (
+                np.array([dx, dy]) / dist if dist > 1e-6 else np.array([1.0, 0.0])
+            )
             mag = strength * (1 / d - 1 / margin) / d**2
             mag = min(mag, max_force) * scale
             force += mag * direction
@@ -67,7 +73,9 @@ def apply_repulsion(
     goal_falloff=0.6,
 ):
     force = wall_repulsion(robot, wall_margin, wall_strength)
-    force += robot_robot_repulsion(robot, robots, robot_margin, robot_strength, goal_falloff=goal_falloff)
+    force += robot_robot_repulsion(
+        robot, robots, robot_margin, robot_strength, goal_falloff=goal_falloff
+    )
 
     if not np.any(force):
         return

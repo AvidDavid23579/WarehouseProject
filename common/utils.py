@@ -1,6 +1,15 @@
-# Helper algorithms
+# Helper algorithms and stores dataclasses
+
+from dataclasses import dataclass
 
 import numpy as np
+
+
+@dataclass
+class Pose:
+    x: float
+    y: float
+    theta: float
 
 
 def wrap_angle(a):

@@ -13,7 +13,7 @@ def stop_prio_yield(robot, robots):
             continue
         if not sat_collision(robot.hitbox_vertices(), other.hitbox_vertices()):
             continue
-        if robot.prio < other.prio:
+        if robot.id < other.id:
             robot.stop()
             return
 
@@ -25,7 +25,7 @@ def turn_prio_yield(robot, robots):
             continue
         if not sat_collision(robot.hitbox_vertices(), other.hitbox_vertices()):
             continue
-        if robot.prio < other.prio:
+        if robot.id < other.id:
             dx = other.pose.x - robot.pose.x
             dy = other.pose.y - robot.pose.y
             bearing = math.atan2(dy, dx)
@@ -44,7 +44,7 @@ def temp_goal_prio_yield(robot, robots, offset):
     for other in robots:
         if other is robot:
             continue
-        if robot.prio >= other.prio:
+        if robot.id >= other.id:
             continue
         if not sat_collision(robot.hitbox_vertices(), other.hitbox_vertices()):
             continue
