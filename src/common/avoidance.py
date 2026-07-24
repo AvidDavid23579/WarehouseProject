@@ -1,6 +1,6 @@
 """Discrete multi-robot avoidance strategies.
 
-Only ``temp_goal_prio_yield`` is used in the live simulation loop. The other
+Only ``temp_goal_prio_yield`` is used in the live simulator loop. The other
 functions are kept as reference implementations from earlier iterations.
 """
 

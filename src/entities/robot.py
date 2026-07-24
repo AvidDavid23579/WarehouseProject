@@ -71,7 +71,7 @@ class Robot:
         self.omega = max(-MAX_OMEGA, min(5 * error, MAX_OMEGA))
         return abs(error) < ANGLE_TOLERANCE
 
-    def drive(self, robots, shelves) -> None:
+    def drive(self, robots, shelves, walls) -> None:
         """Compute velocity commands toward the active target with repulsion."""
         self.v, self.omega = naive_drive_to_pose(
             self.pose,
@@ -85,12 +85,13 @@ class Robot:
             self,
             robots,
             shelves,
+            walls,
             MAX_OMEGA,
         )
 
-    def update(self, dt: float, robots, shelves) -> None:
+    def update(self, dt: float, robots, shelves, walls) -> None:
         """Integrate one physics step."""
-        self.drive(robots, shelves)
+        self.drive(robots, shelves, walls)
 
         self.pose.x += self.v * np.cos(self.pose.theta) * dt
         self.pose.y += self.v * np.sin(self.pose.theta) * dt
