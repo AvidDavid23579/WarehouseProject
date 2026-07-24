@@ -8,6 +8,7 @@ import numpy as np
 from config import ROBOT_LENGTH, WORLD_BOUNDS
 from entities.robot import Pose, Robot
 from entities.shelves import Shelf
+from entities.wall import Wall
 from rendering.replay_view import ReplayView
 from simulator.exporter import export_video
 from simulator.recorder import Recorder, Recording
@@ -16,18 +17,29 @@ from simulator.snapshot import StaticWorld
 from simulator.world import World
 
 # --- Demo scenario layout ----------------------------------------------------
-NUM_SHELVES = 0
-NUM_ROBOTS = 20
-PHYSICS_DT = 0.005
+NUM_SHELVES = 9
+NUM_ROBOTS = 78
+PHYSICS_DT = 0.01
 RECORDING_FPS = 30
 SIM_DURATION = 10.0
 DEFAULT_RECORDING_PATH = Path("recordings/latest.pkl")
 DEFAULT_VIDEO_PATH = Path("recordings/latest.mp4")
 
 
+def create_walls() -> list[Wall]:
+    """Create a simple warehouse-style obstacle layout."""
+    return []
+
+
 def create_shelves(count: int) -> list[Shelf]:
     """Place shelves in a row along y = 10, spaced 4 m apart."""
-    return [Shelf(shelf_id=i, pose=Pose(4 * (i + 1), 10, np.pi / 2)) for i in range(count)]
+    shelves = []
+    for i in range(count):
+        if i % 2 == 0:
+            shelves.append(Shelf(shelf_id=i, pose=Pose(4 * (i + 1), 14, np.pi / 2)))
+        else:
+            shelves.append(Shelf(shelf_id=i, pose=Pose(4 * (i + 1), 6, np.pi / 2)))
+    return shelves
 
 
 def create_robots(count: int) -> list[Robot]:
@@ -35,16 +47,16 @@ def create_robots(count: int) -> list[Robot]:
     robots = []
     for i in range(count):
         if i % 2 == 0:
-            start = Pose(2 * (i + 1), ROBOT_LENGTH / 2 + 0.2, np.pi / 2)
+            start = Pose(0.5 * (i + 1) + 1.8, ROBOT_LENGTH / 2 + 0.2, np.pi / 2)
             goals = [
-                Pose(2 * (i + 1), ROBOT_LENGTH / 2 + 17, np.pi / 2),
-                Pose(2 * (i + 1), ROBOT_LENGTH / 2 + 0.2, np.pi / 2),
+                Pose(0.5 * (i + 1) + 1.8, ROBOT_LENGTH / 2 + 18, np.pi / 2),
+                Pose(0.5 * (i + 1) + 1.8, ROBOT_LENGTH / 2 + 0.2, np.pi / 2),
             ]
         else:
-            start = Pose(2 * (i + 1) - 2, ROBOT_LENGTH / 2 + 17, -np.pi / 2)
+            start = Pose(0.5 * (i + 1) - 1, ROBOT_LENGTH / 2 + 18, -np.pi / 2)
             goals = [
-                Pose(2 * (i + 1) - 2, ROBOT_LENGTH / 2 + 0.2, -np.pi / 2),
-                Pose(2 * (i + 1) - 2, ROBOT_LENGTH / 2 + 17, -np.pi / 2),
+                Pose(0.5 * (i + 1) - 1, ROBOT_LENGTH / 2 + 0.2, -np.pi / 2),
+                Pose(0.5 * (i + 1) - 1, ROBOT_LENGTH / 2 + 18, -np.pi / 2),
             ]
         robots.append(Robot(start, goals, robot_id=i))
     return robots
@@ -57,6 +69,8 @@ def build_world() -> World:
         world.add_robot(robot)
     for shelf in create_shelves(NUM_SHELVES):
         world.add_shelf(shelf)
+    for wall in create_walls():
+        world.add_wall(wall)
     return world
 
 

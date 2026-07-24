@@ -16,7 +16,7 @@ ROBOT_LENGTH = 0.6
 
 # --- Shelf footprint ---------------------------------------------------------
 SHELF_WIDTH = 0.6
-SHELF_LENGTH = 8.0
+SHELF_LENGTH = 6.0
 
 # --- Goal / alignment tolerances ---------------------------------------------
 DIST_TOLERANCE = 0.05
@@ -24,4 +24,4 @@ ANGLE_TOLERANCE = math.radians(1.0)
 
 # --- Velocity limits ---------------------------------------------------------
 MAX_VELOCITY = 8
-MAX_OMEGA = 8
+MAX_OMEGA = 16

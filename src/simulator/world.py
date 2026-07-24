@@ -120,7 +120,6 @@ class World:
         for robot in self.robots:
             if robot.reached_goal():
                 robot.goals_index = (robot.goals_index + 1) % len(robot.goals)
-            temp_goal_prio_yield(robot, self.robots, offset=-0.6)
 
         for robot in self.robots:
             old_pose = copy.copy(robot.pose)

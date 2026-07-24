@@ -34,6 +34,9 @@ class Robot:
         self.v = 0.0
         self.omega = 0.0
 
+        self.last_goal_dist = 0.0
+        self.stuck_time = 0.0
+
     # --- State queries -------------------------------------------------------
 
     @property

@@ -15,14 +15,22 @@ def export_video(
     output_path: str | Path,
     *,
     fps: float | None = None,
-    dpi: int = 300,
+    width: int = 1920,
+    height: int = 1080,
+    dpi: int = 100,
 ) -> None:
     """Render a recording to MP4 via Playback → Renderer → file."""
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     playback = Playback(recording)
-    renderer = Renderer(recording.static_world)
+    fig = plt.figure(
+        figsize=(width / dpi, height / dpi),
+        dpi=dpi,
+    )
+
+    ax = fig.add_subplot(111)
+    renderer = Renderer(recording.static_world, fig=fig, ax=ax)
     export_fps = fps or recording.recording_fps
 
     writer = FFMpegWriter(fps=export_fps)
