@@ -43,7 +43,9 @@ class Simulation:
 
         steps = 0
         while self._accumulator >= self.physics_dt and steps < self.max_steps_per_frame:
+            t0 = time.perf_counter()
             self.world.step(self.physics_dt)
+            print((time.perf_counter() - t0) * 1000)
             self._accumulator -= self.physics_dt
             steps += 1
 

@@ -4,6 +4,7 @@ import copy
 
 from common.avoidance import temp_goal_prio_yield
 from common.collision import sat_collision
+from entities.shelves import Shelf
 
 
 class World:
@@ -43,15 +44,33 @@ class World:
                     break
         return out_of_bounds
 
+    def robot_shelf_collisions(self) -> list:
+        collisions = []
+        for robot in self.robots:
+            for shelf in self.shelves:
+                if sat_collision(robot.robot_vertices(), shelf.shelf_vertices()):
+                    collisions.append(robot)
+        return collisions
+
     def robot_collides(self, robot) -> bool:
-        """True if *robot* overlaps a wall or any other robot."""
+        # Walls
         for x, y in robot.robot_vertices():
             if x < self.x_min or x > self.x_max or y < self.y_min or y > self.y_max:
                 return True
 
+        # Other robots
         for other in self.robots:
             if other is not robot and sat_collision(
-                robot.robot_vertices(), other.robot_vertices()
+                robot.robot_vertices(),
+                other.robot_vertices(),
+            ):
+                return True
+
+        # Shelves
+        for shelf in self.shelves:
+            if sat_collision(
+                robot.robot_vertices(),
+                shelf.shelf_vertices(),
             ):
                 return True
 
@@ -65,15 +84,6 @@ class World:
         }
 
     # --- Simulation ----------------------------------------------------------
-
-    def handle_collisions(self) -> None:
-        """Hard-stop any robots involved in a collision this frame."""
-        for robot_a, robot_b in self.robot_robot_collisions():
-            robot_a.stop()
-            robot_b.stop()
-        for robot in self.robot_wall_collisions():
-            robot.stop()
-
     def step(self, dt: float) -> None:
         """Advance simulation by *dt* seconds."""
         # Plan goals and avoidance before integrating motion.
