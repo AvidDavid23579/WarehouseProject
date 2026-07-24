@@ -18,10 +18,10 @@ from simulator.world import World
 
 # --- Demo scenario layout ----------------------------------------------------
 NUM_SHELVES = 9
-NUM_ROBOTS = 78
+NUM_ROBOTS = 38
 PHYSICS_DT = 0.01
 RECORDING_FPS = 30
-SIM_DURATION = 10.0
+SIM_DURATION = 100.0
 DEFAULT_RECORDING_PATH = Path("recordings/latest.pkl")
 DEFAULT_VIDEO_PATH = Path("recordings/latest.mp4")
 
@@ -47,16 +47,16 @@ def create_robots(count: int) -> list[Robot]:
     robots = []
     for i in range(count):
         if i % 2 == 0:
-            start = Pose(0.5 * (i + 1) + 1.8, ROBOT_LENGTH / 2 + 0.2, np.pi / 2)
+            start = Pose(1 * (i + 1) + 1, ROBOT_LENGTH / 2 + 0.2, np.pi / 2)
             goals = [
-                Pose(0.5 * (i + 1) + 1.8, ROBOT_LENGTH / 2 + 18, np.pi / 2),
-                Pose(0.5 * (i + 1) + 1.8, ROBOT_LENGTH / 2 + 0.2, np.pi / 2),
+                Pose(1 * (i + 1) + 1, ROBOT_LENGTH / 2 + 18, np.pi / 2),
+                Pose(1 * (i + 1) + 1, ROBOT_LENGTH / 2 + 0.2, np.pi / 2),
             ]
         else:
-            start = Pose(0.5 * (i + 1) - 1, ROBOT_LENGTH / 2 + 18, -np.pi / 2)
+            start = Pose(1 * (i + 1) - 1, ROBOT_LENGTH / 2 + 18, -np.pi / 2)
             goals = [
-                Pose(0.5 * (i + 1) - 1, ROBOT_LENGTH / 2 + 0.2, -np.pi / 2),
-                Pose(0.5 * (i + 1) - 1, ROBOT_LENGTH / 2 + 18, -np.pi / 2),
+                Pose(1 * (i + 1) - 1, ROBOT_LENGTH / 2 + 0.2, -np.pi / 2),
+                Pose(1 * (i + 1) - 1, ROBOT_LENGTH / 2 + 18, -np.pi / 2),
             ]
         robots.append(Robot(start, goals, robot_id=i))
     return robots
