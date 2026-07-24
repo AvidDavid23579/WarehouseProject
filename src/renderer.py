@@ -10,7 +10,7 @@ class Renderer:
 
     ENTITY_COLORS = {
         "robots": "royalblue",
-        "shelves": "peru",
+        "shelves": "gray",
     }
 
     def __init__(self, bounds: tuple[float, float, float, float]):
@@ -38,12 +38,7 @@ class Renderer:
 
     def _apply_transform(self, patch: Rectangle, state: dict) -> None:
         """Rotate around origin then translate to world position."""
-        transform = (
-            Affine2D()
-            .rotate(state["theta"])
-            .translate(state["x"], state["y"])
-            + self.ax.transData
-        )
+        transform = Affine2D().rotate(state["theta"]).translate(state["x"], state["y"]) + self.ax.transData
         patch.set_transform(transform)
 
     def _draw_entities(self, entity_type: str, entities: list[dict]) -> None:

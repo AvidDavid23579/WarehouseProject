@@ -28,8 +28,8 @@ def create_robots(count: int) -> list[Robot]:
     """Spawn robots along the bottom edge, each with three waypoint goals."""
     robots = []
     for i in range(count):
-        start = Pose(4 * (i + 1) - 2, ROBOT_LENGTH / 2 + 0.1, np.pi / 2)
-        goals = [Pose(4 * (i + 1) - 2, ROBOT_LENGTH / 2 + 17, np.pi / 2), Pose(4 * (i + 1) - 2, ROBOT_LENGTH / 2 + 0.1, np.pi / 2)]
+        start = Pose(4 * (i + 1) - 2, ROBOT_LENGTH / 2 + 0.2, np.pi / 2)
+        goals = [Pose(4 * (i + 1) - 2, ROBOT_LENGTH / 2 + 17, np.pi / 2), Pose(4 * (i + 1) - 2, ROBOT_LENGTH / 2 + 0.2, np.pi / 2)]
         robots.append(Robot(start, goals, robot_id=i))
     return robots
 

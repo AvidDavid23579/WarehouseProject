@@ -111,11 +111,11 @@ def apply_repulsion(
     shelves,
     max_omega: float,
     wall_margin: float = 0.2,
-    wall_strength: float = 12.0,
+    wall_strength: float = 2.0,
     robot_margin: float = ROBOT_LENGTH + 0.3,
     robot_strength: float = 2.0,
     shelf_margin: float = 0.2,
-    shelf_strength: float = 12.0,
+    shelf_strength: float = 2.0,
     goal_falloff: float = 0.6,
 ) -> None:
     """Blend wall, robot, and shelf repulsion into the velocity command."""
