@@ -3,8 +3,7 @@
 import copy
 
 from common.avoidance import temp_goal_prio_yield
-from common.collision import sat_collision
-from entities.shelves import Shelf
+from common.collision import SpatialHash, sat_collision
 
 
 class World:
@@ -14,6 +13,7 @@ class World:
         self.robots: list = []
         self.shelves: list = []
         self.x_min, self.x_max, self.y_min, self.y_max = bounds
+        self.robot_grid = SpatialHash(cell_size=2.0)
 
     # --- Entity management ---------------------------------------------------
 
@@ -53,24 +53,26 @@ class World:
         return collisions
 
     def robot_collides(self, robot) -> bool:
+        robot_vertices = robot.robot_vertices()
+
         # Walls
-        for x, y in robot.robot_vertices():
+        for x, y in robot_vertices:
             if x < self.x_min or x > self.x_max or y < self.y_min or y > self.y_max:
                 return True
 
         # Other robots
-        for other in self.robots:
-            if other is not robot and sat_collision(
-                robot.robot_vertices(),
-                other.robot_vertices(),
-            ):
+        for other in self.robot_grid.nearby(robot):
+            if other is robot:
+                continue
+
+            if sat_collision(robot_vertices, other.robot_vertices()):
                 return True
 
         # Shelves
         for shelf in self.shelves:
             if sat_collision(
-                robot.robot_vertices(),
-                shelf.shelf_vertices(),
+                robot_vertices,
+                shelf.vertices,
             ):
                 return True
 
@@ -86,6 +88,11 @@ class World:
     # --- Simulation ----------------------------------------------------------
     def step(self, dt: float) -> None:
         """Advance simulation by *dt* seconds."""
+        self.robot_grid.clear()
+
+        for robot in self.robots:
+            self.robot_grid.insert(robot)
+
         # Plan goals and avoidance before integrating motion.
         for robot in self.robots:
             if robot.reached_goal():
@@ -95,7 +102,7 @@ class World:
         # Integrate each robot and revert on hard collision (safety net).
         for robot in self.robots:
             old_pose = copy.copy(robot.pose)
-            robot.update(dt, self.robots)
+            robot.update(dt, self.robots, self.shelves)
 
             if self.robot_collides(robot):
                 robot.pose = old_pose

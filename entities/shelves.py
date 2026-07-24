@@ -19,6 +19,8 @@ class Shelf:
         self.hitbox_width = SHELF_WIDTH + self.HITBOX_PADDING
         self.hitbox_length = SHELF_LENGTH + self.HITBOX_PADDING
 
+        self.vertices = self.shelf_vertices()
+
     def snapshot(self) -> dict:
         return {
             "id": self.id,

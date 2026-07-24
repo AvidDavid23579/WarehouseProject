@@ -1,4 +1,4 @@
-"""Artificial potential-field repulsion for walls and other robots."""
+"""Artificial potential-field repulsion for walls and obstacles."""
 
 import math
 
@@ -8,18 +8,26 @@ from config import ROBOT_LENGTH, X_MAX, X_MIN, Y_MAX, Y_MIN
 
 
 def _inverse_square_repulsion(
-    distance: float, margin: float, strength: float, max_force: float
+    distance: float,
+    margin: float,
+    strength: float,
+    max_force: float,
 ) -> float:
     """Magnitude of a 1/d² repulsive force that vanishes beyond *margin*."""
     distance = max(distance, 1e-3)
+
     if distance >= margin:
         return 0.0
+
     magnitude = strength * (1 / distance - 1 / margin) / distance**2
     return min(magnitude, max_force)
 
 
 def wall_repulsion(
-    robot, margin: float = 0.3, strength: float = 1.0, max_force: float = 10.0
+    robot,
+    margin: float = 0.3,
+    strength: float = 1.0,
+    max_force: float = 10.0,
 ) -> np.ndarray:
     """Sum repulsive forces pushing the robot away from each world boundary."""
     half_extent = max(robot.length, robot.width) / 2.0
@@ -33,80 +41,129 @@ def wall_repulsion(
     ]
 
     for clearance, normal in walls:
-        magnitude = _inverse_square_repulsion(clearance, margin, strength, max_force)
+        magnitude = _inverse_square_repulsion(
+            clearance,
+            margin,
+            strength,
+            max_force,
+        )
         force += magnitude * normal
 
     return force
 
 
-def robot_robot_repulsion(
+def obstacle_repulsion(
     robot,
-    robots,
-    margin: float = 0.5,
-    strength: float = 1.0,
-    max_force: float = 10.0,
-    goal_falloff: float = 0.6,
+    obstacles,
+    margin: float,
+    strength: float,
+    max_force: float,
+    scale=lambda _: 1.0,
 ) -> np.ndarray:
-    """Sum repulsive forces from nearby robots, scaled down near the goal."""
+    """Repulsive force from arbitrary obstacles."""
+
     force = np.zeros(2)
-    half_extent = max(robot.length, robot.width) / 2.0
+    robot_half = max(robot.length, robot.width) / 2.0
 
-    dist_to_goal = math.hypot(
-        robot.target.x - robot.pose.x, robot.target.y - robot.pose.y
-    )
-    # Weaken inter-robot repulsion when the robot is almost at its target.
-    scale = min(1.0, dist_to_goal / goal_falloff)
+    for obstacle in obstacles:
+        obstacle_scale = scale(obstacle)
 
-    for other in robots:
-        if other is robot:
+        if obstacle_scale <= 0.0:
             continue
 
-        dx = robot.pose.x - other.pose.x
-        dy = robot.pose.y - other.pose.y
+        dx = robot.pose.x - obstacle.pose.x
+        dy = robot.pose.y - obstacle.pose.y
         dist = math.hypot(dx, dy)
 
-        other_half = max(other.length, other.width) / 2.0
-        clearance = dist - half_extent - other_half
-        magnitude = _inverse_square_repulsion(clearance, margin, strength, max_force)
+        obstacle_half = max(obstacle.length, obstacle.width) / 2.0
+        clearance = dist - robot_half - obstacle_half
 
-        if magnitude > 0.0:
-            direction = np.array([dx, dy]) / dist if dist > 1e-6 else np.array([1.0, 0.0])
-            force += magnitude * scale * direction
+        magnitude = _inverse_square_repulsion(
+            clearance,
+            margin,
+            strength,
+            max_force,
+        )
+
+        if magnitude == 0.0:
+            continue
+
+        if dist > 1e-6:
+            direction = np.array([dx, dy]) / dist
+        else:
+            direction = np.array([1.0, 0.0])
+
+        force += obstacle_scale * magnitude * direction
 
     return force
 
 
 def _dist_to_target(robot) -> float:
-    return math.hypot(robot.target.x - robot.pose.x, robot.target.y - robot.pose.y)
+    return math.hypot(
+        robot.target.x - robot.pose.x,
+        robot.target.y - robot.pose.y,
+    )
 
 
 def apply_repulsion(
     robot,
     robots,
+    shelves,
     max_omega: float,
     wall_margin: float = 0.2,
-    wall_strength: float = 2.0,
+    wall_strength: float = 12.0,
     robot_margin: float = ROBOT_LENGTH + 0.3,
     robot_strength: float = 2.0,
+    shelf_margin: float = 0.2,
+    shelf_strength: float = 12.0,
     goal_falloff: float = 0.6,
 ) -> None:
-    """Blend wall and robot repulsion into the robot's current velocity command."""
-    force = wall_repulsion(robot, wall_margin, wall_strength)
-    force += robot_robot_repulsion(
-        robot, robots, robot_margin, robot_strength, goal_falloff=goal_falloff
+    """Blend wall, robot, and shelf repulsion into the velocity command."""
+
+    force = wall_repulsion(
+        robot,
+        wall_margin,
+        wall_strength,
+    )
+
+    robot_scale = min(
+        1.0,
+        _dist_to_target(robot) / goal_falloff,
+    )
+
+    force += obstacle_repulsion(
+        robot,
+        robots,
+        margin=robot_margin,
+        strength=robot_strength,
+        max_force=10.0,
+        scale=lambda other: 0.0 if other is robot else robot_scale,
+    )
+
+    force += obstacle_repulsion(
+        robot,
+        shelves,
+        margin=shelf_margin,
+        strength=shelf_strength,
+        max_force=10.0,
     )
 
     if not np.any(force):
         return
 
-    heading = np.array([np.cos(robot.pose.theta), np.sin(robot.pose.theta)])
+    heading = np.array(
+        [
+            np.cos(robot.pose.theta),
+            np.sin(robot.pose.theta),
+        ]
+    )
 
-    # Project repulsion onto forward / lateral axes of the robot body.
+    # Project repulsion into the robot's body frame.
     robot.v += float(np.dot(force, heading))
     robot.omega += float(np.cross(heading, force))
 
-    # Escape local minima: nudge rotation when stuck away from the goal.
+    # Escape local minima.
     if abs(robot.v) < 0.05 and _dist_to_target(robot) > 1e-3:
         robot.omega += 0.3
 
-    robot.omega = max(-max_omega, min(robot.omega, max_omega))
+    robot.omega = np.clip(robot.omega, -max_omega, max_omega)
