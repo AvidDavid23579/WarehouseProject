@@ -1,4 +1,4 @@
-# Main file. Only runs abstracted code from other files.
+"""Entry point for the warehouse multi-robot simulation."""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,57 +11,69 @@ from renderer import Renderer
 from simulation import Simulation
 from world import World
 
-world = World(bounds=WORLD_BOUNDS)
-renderer = Renderer(bounds=WORLD_BOUNDS)
+# --- Demo scenario layout ----------------------------------------------------
+NUM_SHELVES = 6
+NUM_ROBOTS = 12
+PHYSICS_DT = 0.01
+START_DELAY = 2.0
+ANIMATION_INTERVAL_MS = 15
 
-num_shelves = 3
-shelves = []
-for i in range(num_shelves):
-    shelves.append(Shelf(i, Pose(4 * i, 10, 0)))
 
-num_robots = 12
-start_poses = []
-robot_goals = []
-id = []
+def create_shelves(count: int) -> list[Shelf]:
+    """Place shelves in a row along y = 10, spaced 4 m apart."""
+    return [Shelf(shelf_id=i, pose=Pose(4 * (i + 1), 10, np.pi / 2)) for i in range(count)]
 
-for i in range(num_robots):
-    start_poses.append(Pose(i + ROBOT_WIDTH / 2 + 0.1, ROBOT_LENGTH / 2 + 0.1, np.pi / 2))
 
-    robot_goals.append(
-        [
+def create_robots(count: int) -> list[Robot]:
+    """Spawn robots along the bottom edge, each with three waypoint goals."""
+    robots = []
+    for i in range(count):
+        start = Pose(i + ROBOT_WIDTH / 2 + 0.1, ROBOT_LENGTH / 2 + 0.1, np.pi / 2)
+        goals = [
             Pose(2 * i + 0.5, 1 * i + 2.5, np.pi),
             Pose(3 * i + 2.5, 18 + 1.5, 0.0),
             Pose(39.5 - 2 * i, i + 3.5, np.pi),
         ]
+        robots.append(Robot(start, goals, robot_id=i))
+    return robots
+
+
+def build_world() -> World:
+    """Assemble the demo world with shelves and robots."""
+    world = World(bounds=WORLD_BOUNDS)
+    for robot in create_robots(NUM_ROBOTS):
+        world.add_robot(robot)
+    for shelf in create_shelves(NUM_SHELVES):
+        world.add_shelf(shelf)
+    return world
+
+
+def main() -> None:
+    world = build_world()
+    renderer = Renderer(bounds=WORLD_BOUNDS)
+
+    # Seed patches before physics starts so blit has artists from frame 0.
+    renderer.draw(world.snapshot())
+
+    sim = Simulation(
+        world,
+        renderer,
+        physics_dt=PHYSICS_DT,
+        start_delay=START_DELAY,
     )
 
-    id.append(i)
+    anim = FuncAnimation(
+        renderer.fig,
+        sim.on_frame,
+        frames=range(1_000_000),
+        interval=ANIMATION_INTERVAL_MS,
+        blit=True,
+        cache_frame_data=False,
+    )
+
+    plt.get_current_fig_manager().window.showMaximized()
+    plt.show()
 
 
-robots = [Robot(start, goals, prio) for start, goals, prio in zip(start_poses, robot_goals, id)]
-
-
-for robot in robots:
-    world.add_robot(robot)
-
-for shelf in shelves:
-    world.add_shelf(shelf)
-
-# Seed patches once up front so blit has artists to return from frame 0,
-# during the start delay, before physics begins stepping.
-renderer.draw(world.snapshot())
-
-sim = Simulation(world, renderer, physics_dt=0.01, start_delay=2.0)
-
-ani = FuncAnimation(
-    renderer.fig,
-    sim.on_frame,
-    frames=range(1000000),
-    interval=15,
-    blit=True,
-    cache_frame_data=False,
-)
-manager = plt.get_current_fig_manager()
-manager.window.showMaximized()
-
-plt.show()
+if __name__ == "__main__":
+    main()

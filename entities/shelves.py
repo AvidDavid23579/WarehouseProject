@@ -1,21 +1,25 @@
-import numpy as np
+"""Static shelf obstacles placed in the warehouse floor plan."""
 
-from common.utils import Pose
+from common.utils import Pose, rotated_rectangle_vertices
 from config import SHELF_LENGTH, SHELF_WIDTH
 
 
 class Shelf:
-    def __init__(self, id, pose: Pose):
+    """Fixed rectangular obstacle; rendered but not simulated dynamically."""
+
+    HITBOX_PADDING = 0.5
+
+    def __init__(self, shelf_id: int, pose: Pose):
+        self.id = shelf_id
         self.pose = pose
-        self.id = id
 
         self.width = SHELF_WIDTH
         self.length = SHELF_LENGTH
 
-        self.hitbox_width = SHELF_WIDTH + 0.5
-        self.hitbox_length = SHELF_LENGTH + 0.5
+        self.hitbox_width = SHELF_WIDTH + self.HITBOX_PADDING
+        self.hitbox_length = SHELF_LENGTH + self.HITBOX_PADDING
 
-    def snapshot(self):
+    def snapshot(self) -> dict:
         return {
             "id": self.id,
             "x": self.pose.x,
@@ -25,11 +29,5 @@ class Shelf:
             "width": self.width,
         }
 
-    def shelf_vertices(self):
-        hl = self.length / 2.0
-        hw = self.width / 2.0
-
-        local_corners = [(hl, hw), (hl, -hw), (-hl, -hw), (-hl, hw)]
-
-        c, s = np.cos(self.pose.theta), np.sin(self.pose.theta)
-        return [(self.pose.x + lx * c - ly * s, self.pose.y + lx * s + ly * c) for lx, ly in local_corners]
+    def shelf_vertices(self) -> list[tuple[float, float]]:
+        return rotated_rectangle_vertices(self.pose, self.length, self.width)
