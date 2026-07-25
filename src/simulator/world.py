@@ -2,7 +2,6 @@
 
 import copy
 
-from common.avoidance import temp_goal_prio_yield
 from common.collision import SpatialHash, sat_collision
 from simulator.snapshot import RobotSnapshot, SimulationSnapshot
 

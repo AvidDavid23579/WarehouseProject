@@ -30,15 +30,20 @@ def boundary_repulsion(
     strength: float = 1.0,
     max_force: float = 10.0,
 ) -> np.ndarray:
-    """Sum repulsive forces pushing the robot away from the world boundary."""
-    half_extent = max(robot.length, robot.width) / 2.0
+    """Repulsive force from the world boundaries."""
     force = np.zeros(2)
 
+    c = abs(np.cos(robot.pose.theta))
+    s = abs(np.sin(robot.pose.theta))
+
+    half_x = 0.5 * (robot.length * c + robot.width * s)
+    half_y = 0.5 * (robot.length * s + robot.width * c)
+
     boundaries = [
-        (robot.pose.x - X_MIN - half_extent, np.array([1.0, 0.0])),
-        (X_MAX - robot.pose.x - half_extent, np.array([-1.0, 0.0])),
-        (robot.pose.y - Y_MIN - half_extent, np.array([0.0, 1.0])),
-        (Y_MAX - robot.pose.y - half_extent, np.array([0.0, -1.0])),
+        (robot.pose.x - X_MIN - half_x, np.array([1.0, 0.0])),  # Left
+        (X_MAX - robot.pose.x - half_x, np.array([-1.0, 0.0])),  # Right
+        (robot.pose.y - Y_MIN - half_y, np.array([0.0, 1.0])),  # Bottom
+        (Y_MAX - robot.pose.y - half_y, np.array([0.0, -1.0])),  # Top
     ]
 
     for clearance, normal in boundaries:
@@ -108,12 +113,12 @@ def apply_repulsion(
     shelves,
     walls,
     max_omega: float,
-    boundary_margin: float = 0.2,
-    boundary_strength: float = 2.0,
-    robot_margin: float = ROBOT_WIDTH + 0.05,
-    robot_strength: float = 1.0,
+    boundary_margin: float = 0.15,
+    boundary_strength: float = 1.0,
+    robot_margin: float = 0.3,
+    robot_strength: float = 2.0,
     shelf_margin: float = 0.5,
-    shelf_strength: float = 2.0,
+    shelf_strength: float = 3.0,
     wall_margin: float = 0.2,
     wall_strength: float = 2.0,
     goal_falloff: float = 0.2,
