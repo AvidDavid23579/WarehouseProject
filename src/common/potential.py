@@ -4,8 +4,8 @@ import math
 
 import numpy as np
 
-from common.utils import point_to_oriented_rectangle
-from config import ROBOT_WIDTH, X_MAX, X_MIN, Y_MAX, Y_MIN
+from common.utils import _tangent, point_to_oriented_rectangle
+from config import X_MAX, X_MIN, Y_MAX, Y_MIN
 
 
 def _inverse_square_repulsion(
@@ -28,7 +28,7 @@ def boundary_repulsion(
     robot,
     margin: float = 0.3,
     strength: float = 1.0,
-    max_force: float = 10.0,
+    max_force: float = 20.0,
 ) -> np.ndarray:
     """Repulsive force from the world boundaries."""
     force = np.zeros(2)
@@ -59,12 +59,7 @@ def boundary_repulsion(
 
 
 def obstacle_repulsion(
-    robot,
-    obstacles,
-    margin: float,
-    strength: float,
-    max_force: float,
-    scale=lambda _: 1.0,
+    robot, obstacles, margin: float, strength: float, max_force: float, scale=lambda _: 1.0, tangent_gain: float = 0.5
 ) -> np.ndarray:
     """Repulsive force from oriented rectangular obstacles."""
     force = np.zeros(2)
@@ -95,7 +90,18 @@ def obstacle_repulsion(
         if magnitude == 0.0:
             continue
 
-        force += obstacle_scale * magnitude * np.array([dir_x, dir_y])
+        normal = np.array([dir_x, dir_y])
+
+        heading = np.array(
+            [
+                np.cos(robot.pose.theta),
+                np.sin(robot.pose.theta),
+            ],
+            dtype=float,
+        )
+        tangent = _tangent(normal, heading)
+
+        force += obstacle_scale * magnitude * (normal + tangent_gain * tangent)
 
     return force
 
@@ -114,11 +120,11 @@ def apply_repulsion(
     walls,
     max_omega: float,
     boundary_margin: float = 0.15,
-    boundary_strength: float = 1.0,
+    boundary_strength: float = 0.8,
     robot_margin: float = 0.3,
-    robot_strength: float = 2.0,
-    shelf_margin: float = 0.5,
-    shelf_strength: float = 3.0,
+    robot_strength: float = 1.2,
+    shelf_margin: float = 0.45,
+    shelf_strength: float = 2.0,
     wall_margin: float = 0.2,
     wall_strength: float = 2.0,
     goal_falloff: float = 0.2,
@@ -137,7 +143,7 @@ def apply_repulsion(
         walls,
         margin=wall_margin,
         strength=wall_strength,
-        max_force=10.0,
+        max_force=20.0,
     )
 
     force += obstacle_repulsion(
@@ -145,7 +151,7 @@ def apply_repulsion(
         shelves,
         margin=shelf_margin,
         strength=shelf_strength,
-        max_force=10.0,
+        max_force=20.0,
     )
 
     force += obstacle_repulsion(
@@ -153,8 +159,9 @@ def apply_repulsion(
         robots,
         margin=robot_margin,
         strength=robot_strength,
-        max_force=10.0,
+        max_force=20.0,
         scale=lambda other: 0.0 if other is robot else robot_scale,
+        tangent_gain=0.2,
     )
 
     if not np.any(force):

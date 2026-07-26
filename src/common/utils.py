@@ -37,9 +37,7 @@ def clamp(value: float, min_val: float, max_val: float) -> float:
     return max(min_val, min(value, max_val))
 
 
-def rotated_rectangle_vertices(
-    pose: Pose, length: float, width: float
-) -> list[tuple[float, float]]:
+def rotated_rectangle_vertices(pose: Pose, length: float, width: float) -> list[tuple[float, float]]:
     """Return world-frame corners of a rectangle centered at *pose*.
 
     The rectangle is defined in the body frame: length along the heading
@@ -66,9 +64,7 @@ def rotated_rectangle_vertices(
     ]
 
 
-def pose_from_segment(
-    x1: float, y1: float, x2: float, y2: float
-) -> tuple[Pose, float]:
+def pose_from_segment(x1: float, y1: float, x2: float, y2: float) -> tuple[Pose, float]:
     """Build center pose and segment length from two endpoints."""
     dx = x2 - x1
     dy = y2 - y1
@@ -103,10 +99,7 @@ def point_to_oriented_rectangle(
     half_length = length / 2.0
     half_width = width / 2.0
 
-    if (
-        -half_length <= local_x <= half_length
-        and -half_width <= local_y <= half_width
-    ):
+    if -half_length <= local_x <= half_length and -half_width <= local_y <= half_width:
         # Inside the rectangle — push toward the nearest face.
         face_distances = (
             (half_length - local_x, (1.0, 0.0)),
@@ -137,3 +130,13 @@ def point_to_oriented_rectangle(
     dir_x = local_nx * cos_theta - local_ny * sin_theta
     dir_y = local_nx * sin_theta + local_ny * cos_theta
     return distance, dir_x, dir_y
+
+
+def _tangent(normal: np.ndarray, heading: np.ndarray) -> np.ndarray:
+    """Choose the tangent that is closest to the robot's current heading."""
+    t1 = np.array([-normal[1], normal[0]])
+    t2 = -t1
+
+    if np.dot(t1, heading) > np.dot(t2, heading):
+        return t1
+    return t2

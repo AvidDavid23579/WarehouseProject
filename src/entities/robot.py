@@ -80,7 +80,7 @@ class Robot:
             self.pose,
             self.target,
             k_p_dist=5.0,
-            k_p_heading=5.0,
+            k_p_heading=7.5,
             k_p_final=10.0,
         )
 
