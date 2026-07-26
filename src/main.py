@@ -18,7 +18,7 @@ from simulator.world import World
 
 # --- Demo scenario layout ----------------------------------------------------
 NUM_SHELVES = 9
-NUM_ROBOTS = 18
+NUM_ROBOTS = 78
 PHYSICS_DT = 0.01
 RECORDING_FPS = 30
 SIM_DURATION = 30.0
@@ -47,16 +47,16 @@ def create_robots(count: int) -> list[Robot]:
     robots = []
     for i in range(count):
         if i % 2 == 0:
-            start = Pose(2 * (i + 1) + 1, ROBOT_LENGTH / 2 + 0.2, np.pi / 2)
+            start = Pose(0.5 * (i + 1) + 1, ROBOT_LENGTH / 2 + 0.2, np.pi / 2)
             goals = [
-                Pose(2 * (i + 1) + 1, ROBOT_LENGTH / 2 + 18, np.pi / 2),
-                Pose(2 * (i + 1) + 1, ROBOT_LENGTH / 2 + 0.2, np.pi / 2),
+                Pose(0.5 * (i + 1) + 1, ROBOT_LENGTH / 2 + 18, np.pi / 2),
+                Pose(0.5 * (i + 1) + 1, ROBOT_LENGTH / 2 + 0.2, np.pi / 2),
             ]
         else:
-            start = Pose(2 * (i + 1) - 1, ROBOT_LENGTH / 2 + 18, -np.pi / 2)
+            start = Pose(0.5 * (i + 1) - 1, ROBOT_LENGTH / 2 + 18, -np.pi / 2)
             goals = [
-                Pose(2 * (i + 1) - 1, ROBOT_LENGTH / 2 + 0.2, -np.pi / 2),
-                Pose(2 * (i + 1) - 1, ROBOT_LENGTH / 2 + 18, -np.pi / 2),
+                Pose(0.5 * (i + 1) - 1, ROBOT_LENGTH / 2 + 0.2, -np.pi / 2),
+                Pose(0.5 * (i + 1) - 1, ROBOT_LENGTH / 2 + 18, -np.pi / 2),
             ]
         robots.append(Robot(start, goals, robot_id=i))
     return robots

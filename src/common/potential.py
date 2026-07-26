@@ -121,7 +121,7 @@ def apply_repulsion(
     max_omega: float,
     boundary_margin: float = 0.15,
     boundary_strength: float = 0.8,
-    robot_margin: float = 0.3,
+    robot_margin: float = 0.4,
     robot_strength: float = 1.2,
     shelf_margin: float = 0.45,
     shelf_strength: float = 2.0,

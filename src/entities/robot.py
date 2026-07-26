@@ -85,8 +85,11 @@ class Robot:
             self.target,
             k_p_dist=5.0,
             k_p_heading=7.5,
-            k_p_final=10.0,
+            k_p_final=7.5,
         )
+
+        self.v = self.vel_limit.update(self.v)
+        self.omega = self.omega_limit.update(self.omega)
 
         apply_repulsion(
             self,
