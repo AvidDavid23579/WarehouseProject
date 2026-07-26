@@ -4,10 +4,11 @@ import math
 
 import numpy as np
 
+from common.control import JerkSlewLimiter
 from common.navigation import naive_drive_to_pose
 from common.potential import apply_repulsion
-from common.utils import Pose, rotated_rectangle_vertices, wrap_angle
-from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, ROBOT_LENGTH, ROBOT_WIDTH
+from common.utils import Pose, clamp, rotated_rectangle_vertices, wrap_angle
+from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, MAX_VELOCITY, ROBOT_LENGTH, ROBOT_WIDTH
 
 
 class Robot:
@@ -36,6 +37,9 @@ class Robot:
 
         self.last_goal_dist = 0.0
         self.stuck_time = 0.0
+
+        self.vel_limit = JerkSlewLimiter(0.01, 24, 32, 500)
+        self.omega_limit = JerkSlewLimiter(0.01, 48, 64, 1000)
 
     # --- State queries -------------------------------------------------------
 
@@ -91,6 +95,9 @@ class Robot:
             walls,
             MAX_OMEGA,
         )
+
+        self.v = clamp(self.v, -MAX_VELOCITY, MAX_VELOCITY)
+        self.omega = clamp(self.omega, -MAX_OMEGA, MAX_OMEGA)
 
     def update(self, dt: float, robots, shelves, walls) -> None:
         """Integrate one physics step."""

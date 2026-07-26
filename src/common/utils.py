@@ -140,3 +140,7 @@ def _tangent(normal: np.ndarray, heading: np.ndarray) -> np.ndarray:
     if np.dot(t1, heading) > np.dot(t2, heading):
         return t1
     return t2
+
+
+def clamp(value, min_val, max_val):
+    return max(min_val, min(value, max_val))
