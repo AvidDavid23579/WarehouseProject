@@ -2,6 +2,8 @@
 
 import math
 
+PHYSICS_DT = 0.01  # Seconds
+
 # --- World bounds (meters) ---------------------------------------------------
 X_MIN = 0
 X_MAX = 40
