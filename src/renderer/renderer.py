@@ -101,14 +101,16 @@ class Renderer:
     def draw_ui(self, state, paused, current, total):
 
         text = self.font.render(f"Time: {state.time:.3f}s", True, (255, 255, 255))
-
         self.screen.blit(text, (40, 40))
 
         status = "Paused" if paused else "Playing"
-
         status_text = self.font.render(status, True, (255, 255, 0))
 
-        self.screen.blit(status_text, (40, 70))
+        self.screen.blit(status_text, (40, 65))
+
+        dimensions = f"{X_MAX}m x {Y_MAX}m"
+        dimensions_text = self.font.render(dimensions, True, (255, 255, 0))
+        self.screen.blit(dimensions_text, (40, 90))
 
         self.draw_slider(current, total)
 

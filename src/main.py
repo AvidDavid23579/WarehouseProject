@@ -20,7 +20,7 @@ def main():
 
     # End simulation timer
     elapsed = time.perf_counter() - start
-    print(f"Elapsed: {elapsed:.6f} s")
+    print(f"Simulation time: {elapsed:.6f} s")
 
     renderer = Renderer()
     renderer.playback(sim.timeline())
