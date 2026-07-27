@@ -78,6 +78,23 @@ class Renderer:
 
         pygame.quit()
 
+    @staticmethod
+    def handle_keyboard(event, paused, start, now, current, states):
+        if event.key == pygame.K_SPACE:
+            paused = not paused
+
+            # reset playback clock when resuming
+            if not paused:
+                start = now - states[current].time
+
+        elif paused and event.key == pygame.K_RIGHT:
+            current = min(current + 1, len(states) - 1)
+
+        elif paused and event.key == pygame.K_LEFT:
+            current = max(current - 1, 0)
+
+        return paused, start, current
+
     def get_slider(self):
 
         margin = 50
