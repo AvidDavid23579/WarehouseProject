@@ -27,8 +27,8 @@ SHELF_WIDTH = 0.6
 SHELF_LENGTH = 6.0
 
 # --- Dock footprint ----------------------------------------------------------
-DOCK_WIDTH = 0.5
-DOCK_LENGTH = 0.3
+DOCK_WIDTH = 0.3
+DOCK_LENGTH = 0.5
 
 # --- Wall footprint ----------------------------------------------------------
 WALL_WIDTH = 0.3

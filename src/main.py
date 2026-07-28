@@ -2,8 +2,11 @@ import cProfile
 import pstats
 import time
 
+import numpy as np
+
 from common.types import Pose
-from config import PHYSICS_DT, SIMULATION_DURATION
+from config import DOCK_WIDTH, PHYSICS_DT, SIMULATION_DURATION
+from entities.dock import Dock
 from entities.robot import Robot, RobotInfo
 from render.playback import Playback
 from simulator.simulation import Simulator
@@ -29,6 +32,7 @@ def main():
     )
 
     world.add_robot(robot)
+    world.add_dock(Dock(Pose(2, DOCK_WIDTH / 2, 0)))
     sim = Simulator(world)
 
     duration = SIMULATION_DURATION

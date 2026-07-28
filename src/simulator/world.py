@@ -65,6 +65,12 @@ class World:
     def add_dock(self, dock: Dock) -> None:
         self.docks.append(dock)
 
+    def add_shelf(self, shelf: Shelf) -> None:
+        self.shelves.append(shelf)
+
+    def add_wall(self, wall: Wall) -> None:
+        self.walls.append(wall)
+
     # Return robots whose footprint extends outside the world bounds
     def robot_boundary_collisions(self) -> list:
         out_of_bounds = []
