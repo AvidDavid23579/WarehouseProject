@@ -17,7 +17,7 @@ def main():
     world = World()
     sim = Simulator(world)
 
-    duration = 10000.0
+    duration = 10.0
     steps = int(duration / PHYSICS_DT)
 
     sim.bake(steps)

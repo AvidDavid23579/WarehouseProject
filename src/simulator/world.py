@@ -1,11 +1,6 @@
-from dataclasses import dataclass
+from types import WorldState
 
 from config import PHYSICS_DT
-
-
-@dataclass
-class WorldState:
-    time: float
 
 
 class World:
