@@ -1,10 +1,10 @@
-"""Simulation-wide constants for world geometry, entities, and control limits."""
-
 import math
+
+from common.types import Pose
 
 # --- Simulation parameters ---------------------------------------------------
 PHYSICS_DT = 0.01
-SIMULATION_DURATION = 100  # Seconds
+SIMULATION_DURATION = 10  # Seconds
 WINDOW_WIDTH = 1540
 WINDOW_HEIGHT = 800
 WAREHOUSE_WIDTH = 1300  # Pixels
@@ -29,6 +29,10 @@ SHELF_LENGTH = 6.0
 # --- Dock footprint ----------------------------------------------------------
 DOCK_WIDTH = 0.3
 DOCK_LENGTH = 0.5
+DOCK_APPROACH_DISTANCE = 0.3
+DOCK_SPACING = 1.0
+NUM_DOCKS = 18
+DOCK_ONE_POSE = Pose(1.0, DOCK_WIDTH / 2, 0.0)
 
 # --- Wall footprint ----------------------------------------------------------
 WALL_WIDTH = 0.3

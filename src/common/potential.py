@@ -1,7 +1,5 @@
 import math
 
-import numpy as np
-
 from common.utils import _tangent, point_to_oriented_rectangle
 from config import MAX_OMEGA, ROBOT_LENGTH, ROBOT_WIDTH, X_MAX, X_MIN, Y_MAX, Y_MIN
 

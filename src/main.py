@@ -2,13 +2,12 @@ import cProfile
 import pstats
 import time
 
-import numpy as np
-
 from common.types import Pose
 from config import DOCK_WIDTH, PHYSICS_DT, SIMULATION_DURATION
 from entities.dock import Dock
 from entities.robot import Robot, RobotInfo
 from render.playback import Playback
+from simulator.builders import build_docks
 from simulator.simulation import Simulator
 from simulator.world import World
 
@@ -32,12 +31,15 @@ def main():
     )
 
     world.add_robot(robot)
-    world.add_dock(Dock(Pose(2, DOCK_WIDTH / 2, 0)))
-    sim = Simulator(world)
 
+    docks = build_docks()
+    for dock in docks:
+        world.add_dock(dock)
+
+    # Makes the simulation
+    sim = Simulator(world)
     duration = SIMULATION_DURATION
     steps = int(duration / PHYSICS_DT)
-
     sim.bake(steps)
 
     # End simulation timer
