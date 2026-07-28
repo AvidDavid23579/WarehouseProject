@@ -1,16 +1,19 @@
-from simulator.world import World, WorldState
+from simulator.world import World, WorldFrame
 
 
 class Simulator:
     def __init__(self, world: World):
         self.world = world
-        self.states: list[WorldState] = []
+        self.frames: list[WorldFrame] = []
 
     def bake(self, steps: int) -> None:
-        self.states.clear()
+        """Run the simulation and record every frame."""
+
+        self.frames.clear()
+
+        # Record the initial state
+        self.frames.append(self.world.frame())
+
         for _ in range(steps):
             self.world.step()
-            self.states.append(self.world.get_state())
-
-    def timeline(self) -> list[WorldState]:
-        return self.states
+            self.frames.append(self.world.frame())

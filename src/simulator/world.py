@@ -1,28 +1,41 @@
-import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from config import PHYSICS_DT
-from entities.robot import Robot
+from entities.robot import Robot, RobotFrame
 
 
-@dataclass
-class WorldState:
+@dataclass(slots=True)
+class WorldFrame:
     time: float
-    robots: list[Robot]
+    robots: list[RobotFrame]
 
 
 class World:
     def __init__(self):
-        self.state = WorldState(time=0.0, robots=[])
+        self.time: float = 0.0
+        self.robots: list[Robot] = []
 
     def step(self) -> None:
-        self.state.time += PHYSICS_DT
+        """Advance the simulation by one physics step."""
+        self.time += PHYSICS_DT
 
-    def get_state(self) -> WorldState:
-        return WorldState(
-            time=self.state.time,
-            robots=copy.deepcopy(self.state.robots),
+        # Update every robot
+        for robot in self.robots:
+            robot.step()
+
+    def frame(self) -> WorldFrame:
+        """Return an immutable snapshot for rendering/playback."""
+        return WorldFrame(
+            time=self.time,
+            robots=[
+                RobotFrame(
+                    x=robot.state.pose.x,
+                    y=robot.state.pose.y,
+                    theta=robot.state.pose.theta,
+                )
+                for robot in self.robots
+            ],
         )
 
-    def add_robot(self, robot: Robot):
-        self.state.robots.append(robot)
+    def add_robot(self, robot: Robot) -> None:
+        self.robots.append(robot)

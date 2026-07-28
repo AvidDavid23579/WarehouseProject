@@ -7,7 +7,8 @@ import numpy as np
 from common.types import Pose
 from config import MAX_VELOCITY, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
 from entities.robot import Robot, RobotInfo, RobotState
-from renderer.renderer import Renderer
+from render.playback import Playback
+from render.renderer import Renderer
 from simulator.simulation import Simulator
 from simulator.world import World
 
@@ -29,9 +30,9 @@ def main():
             max_accel=1.0,
         ),
         RobotState(
-            pose=Pose(1.0, 2.0, 0.0),
-            velocity=0.0,
-            angular_velocity=0.0,
+            pose=Pose(10.0, 2.0, 0.0),
+            v=1.0,
+            omega=1.0,
         ),
     )
 
@@ -61,8 +62,7 @@ def main():
     stats.sort_stats(pstats.SortKey.TIME)  # Self time only
     stats.print_stats(10)
 
-    renderer = Renderer()
-    renderer.playback(sim.timeline())
+    Playback(sim.frames).run()
 
 
 if __name__ == "__main__":
