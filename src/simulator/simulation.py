@@ -1,4 +1,4 @@
-from simulator.world import World, WorldFrame
+from simulator.world import World, WorldFrame, WorldMap
 
 
 class Simulator:
@@ -17,3 +17,7 @@ class Simulator:
         for _ in range(steps):
             self.world.step()
             self.frames.append(self.world.frame())
+
+    @property
+    def world_map(self) -> WorldMap:
+        return self.world.world_map()

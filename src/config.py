@@ -3,8 +3,11 @@
 import math
 
 # --- Simulation parameters ---------------------------------------------------
-PHYSICS_DT = 0.01  # Seconds
+PHYSICS_DT = 0.01
 SIMULATION_DURATION = 10  # Seconds
+WINDOW_WIDTH = 1540
+WINDOW_HEIGHT = 800
+WAREHOUSE_WIDTH = 1300  # Pixels
 
 
 # --- World bounds (meters) ---------------------------------------------------
@@ -23,9 +26,13 @@ ROBOT_LENGTH = 0.6
 SHELF_WIDTH = 0.6
 SHELF_LENGTH = 6.0
 
+# --- Dock footprint ---------------------------------------------------------
+DOCK_WIDTH = 0.5
+DOCK_LENGTH = 0.3
+
 # --- Goal / alignment tolerances ---------------------------------------------
-DIST_TOLERANCE = 0.05
-ANGLE_TOLERANCE = math.radians(1.0)
+DIST_TOLERANCE = 0.01
+ANGLE_TOLERANCE = math.radians(0.5)
 
 # --- Velocity limits ---------------------------------------------------------
 MAX_VELOCITY = 8

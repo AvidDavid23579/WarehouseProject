@@ -3,39 +3,36 @@ import math
 import pygame
 import pygame.gfxdraw
 
-from config import ROBOT_LENGTH, ROBOT_WIDTH, X_MAX, Y_MAX
+from config import ROBOT_LENGTH, ROBOT_WIDTH, WAREHOUSE_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, X_MAX, Y_MAX
 from entities.robot import RobotFrame
 from render.camera import Camera
-from simulator.world import WorldFrame
+from simulator.world import WorldFrame, WorldMap
 
 
 class Renderer:
-    WIDTH = 1540
-    HEIGHT = 800
-
-    def __init__(self):
+    def __init__(self, world_map: WorldMap) -> None:
         pygame.init()
 
         self.screen = pygame.display.set_mode(
-            (self.WIDTH, self.HEIGHT),
+            (WINDOW_WIDTH, WINDOW_HEIGHT),
             pygame.RESIZABLE,
         )
 
         pygame.display.set_caption("Warehouse Playback")
 
         self.camera: Camera | None = None
+        self.world_map = world_map
 
-    def draw(self, frame: WorldFrame) -> None:
-        """Draw a single frame."""
+        self.background = None
+        self.last_scene_rect = None
 
-        self.screen.fill((30, 30, 30))
-
+    def _draw(self, frame: WorldFrame) -> None:
         self._draw_scene(frame)
 
     def _draw_scene(self, frame: WorldFrame) -> None:
         screen_width, screen_height = self.screen.get_size()
 
-        scene_width_px = 1300
+        scene_width_px = WAREHOUSE_WIDTH
         scene_height_px = scene_width_px * (Y_MAX / X_MAX)
 
         scene_x = (screen_width - scene_width_px) // 2
@@ -50,14 +47,27 @@ class Renderer:
 
         self.camera = Camera(scene_rect, X_MAX, Y_MAX)
 
-        pygame.draw.rect(self.screen, (45, 45, 45), scene_rect)
+        if self.background is None or scene_rect != self.last_scene_rect:
+            self.background = pygame.Surface(self.screen.get_size())
+            self.background.fill((30, 30, 30))
 
-        self._draw_grid(scene_rect)
+            pygame.draw.rect(
+                self.background,
+                (45, 45, 45),
+                scene_rect,
+            )
+
+            self._draw_grid(self.background, scene_rect)
+            self._draw_static(self.background)
+
+            self.last_scene_rect = scene_rect
+
+        self.screen.blit(self.background, (0, 0))
 
         for robot in frame.robots:
             self._draw_robot(robot)
 
-    def _draw_grid(self, scene_rect, step: int = 2) -> None:
+    def _draw_grid(self, surface, scene_rect, step: int = 2) -> None:
         x0, y0, px_width, px_height = scene_rect
 
         pixels_per_meter = px_width / X_MAX
@@ -66,7 +76,7 @@ class Renderer:
             px = int(round(x0 + x * pixels_per_meter))
 
             pygame.draw.line(
-                self.screen,
+                surface,
                 (70, 70, 70),
                 (px, y0),
                 (px, y0 + px_height),
@@ -77,7 +87,7 @@ class Renderer:
             py = int(round(y0 + px_height - y * pixels_per_meter))
 
             pygame.draw.line(
-                self.screen,
+                surface,
                 (70, 70, 70),
                 (x0, py),
                 (x0 + px_width, py),
@@ -126,3 +136,24 @@ class Renderer:
             points,
             color,
         )
+
+    def _draw_static(self, surface):
+        assert self.camera is not None
+
+        for dock in self.world_map.docks:
+            pts = [self.camera.world_to_screen(v.x, v.y) for v in dock.vertices]
+
+            pygame.draw.polygon(surface, (80, 180, 255), pts)
+            pygame.draw.polygon(surface, (30, 60, 120), pts, 2)
+
+        for shelf in self.world_map.shelves:
+            pts = [self.camera.world_to_screen(v.x, v.y) for v in shelf.vertices]
+
+            pygame.draw.polygon(surface, (170, 120, 60), pts)
+            pygame.draw.polygon(surface, (90, 60, 30), pts, 2)
+        """
+        for wall in self.world_map.walls:
+            pts = [self.camera.world_to_screen(v.x, v.y) for v in wall.vertices]
+
+            pygame.draw.polygon(surface, (100, 100, 100), pts)
+        """

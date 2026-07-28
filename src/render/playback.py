@@ -2,19 +2,18 @@ import time
 
 import pygame
 
-from config import PHYSICS_DT
-from entities.robot import RobotFrame
 from render.renderer import Renderer
-from simulator.world import WorldFrame
+from simulator.world import WorldFrame, WorldMap
 
 
 class Playback:
     FPS = 60
 
-    def __init__(self, frames: list[WorldFrame]):
+    def __init__(self, world_map: WorldMap, frames: list[WorldFrame]):
         self.frames = frames
 
-        self.renderer = Renderer()
+        self.renderer = Renderer(world_map)
+
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont(None, 24)
 
@@ -44,7 +43,7 @@ class Playback:
 
             frame = self.frames[self.current]
 
-            self.renderer.draw(frame)
+            self.renderer._draw(frame)
             self._draw_overlay(frame)
 
             pygame.display.flip()

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from config import PHYSICS_DT, X_MAX, X_MIN, Y_MAX, Y_MIN
+from entities.dock import Dock
 from entities.robot import Robot, RobotFrame
 from entities.shelf import Shelf
 
@@ -14,15 +15,18 @@ class WorldFrame:
 @dataclass(slots=True)
 class WorldMap:
     shelves: list[Shelf]
+    docks: list[Dock]
 
 
 class World:
     def __init__(self):
         self.time: float = 0.0
         self.robots: list[Robot] = []
+        self.docks: list[Dock] = []
+        self.shelves: list[Shelf] = []
 
     def step(self) -> None:
-        """Advance the simulation by one physics step."""
+        # Advance the simulation by one physics step
         self.time += PHYSICS_DT
 
         # Update every robot
@@ -31,11 +35,15 @@ class World:
             robot.drive_to_pose()
             robot.step()
 
+        # Handles crashes
         for robot in self.robot_boundary_collisions():
             robot.crash()
 
+    def world_map(self) -> WorldMap:
+        return WorldMap(shelves=self.shelves, docks=self.docks)
+
     def frame(self) -> WorldFrame:
-        """Return an immutable snapshot for rendering/playback."""
+        # Return an immutable snapshot for rendering/playback
         return WorldFrame(
             time=self.time,
             robots=[

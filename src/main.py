@@ -53,7 +53,7 @@ def main():
     stats.sort_stats(pstats.SortKey.TIME)  # Self time only
     stats.print_stats(20)
 
-    Playback(sim.frames).run()
+    Playback(sim.world_map, sim.frames).run()
 
 
 if __name__ == "__main__":

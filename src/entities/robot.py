@@ -4,7 +4,7 @@ import numpy as np
 
 from common.types import Pose
 from common.utils import clamp, rotated_rectangle_vertices, wrap_angle
-from config import MAX_OMEGA, MAX_VELOCITY, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
+from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, MAX_VELOCITY, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
 
 
 @dataclass(slots=True)
@@ -80,7 +80,7 @@ class Robot:
         dist = np.hypot(dx, dy)
 
         # Position reached
-        if dist < 0.01:
+        if dist < DIST_TOLERANCE:
             self.state.v = 0.0
 
             if goal.theta is None:
@@ -91,7 +91,7 @@ class Robot:
             heading_error = wrap_angle(goal.theta - pose.theta)
 
             self.state.omega = clamp(7.5 * heading_error, -MAX_OMEGA, MAX_OMEGA)
-            if abs(heading_error) < np.deg2rad(0.2):
+            if abs(heading_error) < ANGLE_TOLERANCE:
                 self.state.omega = 0.0
             return
 
