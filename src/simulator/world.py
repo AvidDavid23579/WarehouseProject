@@ -2,12 +2,18 @@ from dataclasses import dataclass
 
 from config import PHYSICS_DT, X_MAX, X_MIN, Y_MAX, Y_MIN
 from entities.robot import Robot, RobotFrame
+from entities.shelf import Shelf
 
 
 @dataclass(slots=True)
 class WorldFrame:
     time: float
     robots: list[RobotFrame]
+
+
+@dataclass(slots=True)
+class WorldMap:
+    shelves: list[Shelf]
 
 
 class World:

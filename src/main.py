@@ -3,7 +3,7 @@ import pstats
 import time
 
 from common.types import Pose
-from config import PHYSICS_DT
+from config import PHYSICS_DT, SIMULATION_DURATION
 from entities.robot import Robot, RobotInfo
 from render.playback import Playback
 from simulator.simulation import Simulator
@@ -31,7 +31,7 @@ def main():
     world.add_robot(robot)
     sim = Simulator(world)
 
-    duration = 10.0
+    duration = SIMULATION_DURATION
     steps = int(duration / PHYSICS_DT)
 
     sim.bake(steps)

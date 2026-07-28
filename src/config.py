@@ -2,7 +2,10 @@
 
 import math
 
+# --- Simulation parameters ---------------------------------------------------
 PHYSICS_DT = 0.01  # Seconds
+SIMULATION_DURATION = 10  # Seconds
+
 
 # --- World bounds (meters) ---------------------------------------------------
 X_MIN = 0
