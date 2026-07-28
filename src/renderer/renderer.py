@@ -1,8 +1,10 @@
+import math
 import time
 
 import pygame
 
-from config import X_MAX, Y_MAX
+from config import ROBOT_LENGTH, ROBOT_WIDTH, X_MAX, Y_MAX
+from renderer.camera import Camera
 from simulator.world import WorldState
 
 
@@ -158,10 +160,15 @@ class Renderer:
             int(scene_height_px),
         )
 
+        self.camera = Camera(scene_rect, width, height)
+
         # Background
         pygame.draw.rect(self.screen, (45, 45, 45), scene_rect)
 
         self.draw_grid(scene_rect, width, height, 2)
+
+        for robot in state.robots:
+            self.draw_robot(robot)
 
     def draw_grid(self, scene_rect, width, height, step):
 
@@ -190,3 +197,32 @@ class Renderer:
                 (x0 + px_width, py),
                 1,
             )
+
+    def draw_robot(self, robot):
+        cx, cy = self.camera.world_to_screen(robot.state.pose.x, robot.state.pose.y)
+
+        L = self.camera.length_to_pixels(ROBOT_LENGTH)
+        W = self.camera.length_to_pixels(ROBOT_WIDTH)
+
+        hl = L / 2
+        hw = W / 2
+
+        corners = [
+            (+hl, +hw),
+            (+hl, -hw),
+            (-hl, -hw),
+            (-hl, +hw),
+        ]
+
+        c = math.cos(robot.state.pose.theta)
+        s = math.sin(robot.state.pose.theta)
+
+        pts = []
+
+        for dx, dy in corners:
+            rx = dx * c - dy * s
+            ry = dx * s + dy * c
+
+            pts.append((cx + rx, cy - ry))  # subtract because screen y is inverted
+
+        pygame.draw.polygon(self.screen, (0, 170, 255), pts)

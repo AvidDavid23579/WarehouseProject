@@ -2,7 +2,11 @@ import cProfile
 import pstats
 import time
 
-from config import PHYSICS_DT
+import numpy as np
+
+from common.types import Pose
+from config import MAX_VELOCITY, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
+from entities.robot import Robot, RobotInfo, RobotState
 from renderer.renderer import Renderer
 from simulator.simulation import Simulator
 from simulator.world import World
@@ -15,6 +19,24 @@ def main():
     start = time.perf_counter()
 
     world = World()
+
+    robot = Robot(
+        RobotInfo(
+            id=0,
+            length=ROBOT_LENGTH,
+            width=ROBOT_WIDTH,
+            max_velocity=MAX_VELOCITY,
+            max_accel=1.0,
+        ),
+        RobotState(
+            pose=Pose(1.0, 2.0, 0.0),
+            velocity=0.0,
+            angular_velocity=0.0,
+        ),
+    )
+
+    world.add_robot(robot)
+
     sim = Simulator(world)
 
     duration = 10.0
