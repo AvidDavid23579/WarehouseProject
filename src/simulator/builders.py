@@ -1,31 +1,44 @@
 import math
 
 from common.types import Pose
-from config import DOCK_ONE_POSE, DOCK_SPACING, NUM_DOCKS
+from config import DOCK_ONE_POSE, DOCK_SPACING, NUM_DOCKS, ROBOT_DOCK_DIST
 from entities.dock import Dock
+from entities.robot import Robot, RobotInfo
 
 
 def build_docks(
     num_docks: int = NUM_DOCKS,
     spacing: float = DOCK_SPACING,
     first_node_id: int = 0,
-) -> list[Dock]:
+) -> tuple[list[Dock], list[Robot]]:
 
     docks = []
+    robots = []
 
     next_node_id = first_node_id
 
     for i in range(num_docks):
-        pose = Pose(
+        dock_pose = Pose(
             x=DOCK_ONE_POSE.x + i * spacing,
             y=DOCK_ONE_POSE.y,
             theta=DOCK_ONE_POSE.theta,
         )
 
-        docks.append(Dock(pose, next_node_id))
+        dock = Dock(dock_pose, next_node_id)
+
+        info = RobotInfo(id=i)
+
+        robot_pose = Pose(
+            x=DOCK_ONE_POSE.x + i * spacing,
+            y=DOCK_ONE_POSE.y + ROBOT_DOCK_DIST,
+            theta=math.pi / 2,
+        )
+        robot = Robot(info, robot_pose)
+        dock.robot = robot
+
+        docks.append(dock)
+        robots.append(robot)
+
         next_node_id += 2
 
-        docks.append(Dock(pose, next_node_id))
-        next_node_id += 2
-
-    return docks
+    return docks, robots

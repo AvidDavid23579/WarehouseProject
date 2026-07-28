@@ -12,7 +12,6 @@ from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, MAX_VELOCITY, PHY
 @dataclass(slots=True)
 class RobotInfo:
     id: int
-    goals: list[Pose]
 
 
 @dataclass(slots=True)
@@ -59,22 +58,6 @@ class Robot:
         self.state.pose.x += self.state.v * math.cos(self.state.pose.theta) * PHYSICS_DT
         self.state.pose.y += self.state.v * math.sin(self.state.pose.theta) * PHYSICS_DT
         self.state.pose.theta += self.state.omega * PHYSICS_DT
-
-    @property
-    def goal(self) -> Pose:
-        return self.info.goals[self.state.goal_index]
-
-    def update_goal(self) -> None:
-        if self.state.crashed:
-            return
-
-        goal = self.goal
-        pose = self.state.pose
-
-        dist = math.hypot(goal.x - pose.x, goal.y - pose.y)
-
-        if dist < 0.05:
-            self.state.goal_index = (self.state.goal_index + 1) % len(self.info.goals)
 
     def drive_to_pose(self) -> None:
         if self.state.crashed:

@@ -12,6 +12,7 @@ from simulator.world import WorldFrame, WorldMap
 class Renderer:
     def __init__(self, world_map: WorldMap) -> None:
         pygame.init()
+        self.font = pygame.font.SysFont(None, 18)
 
         self.screen = pygame.display.set_mode(
             (WINDOW_WIDTH, WINDOW_HEIGHT),
@@ -157,3 +158,43 @@ class Renderer:
                 outline=(70, 70, 70),
                 aa=False,
             )
+        nodes = []
+
+        for dock in self.world_map.docks:
+            nodes.append(dock.approach_node)
+            nodes.append(dock.dock_node)
+
+        self._draw_nodes(surface, nodes)
+
+    def _draw_nodes(self, surface, nodes):
+        # Draw edges
+        for node in nodes:
+            x1, y1 = self.camera.world_to_screen(node.pose.x, node.pose.y)
+
+            for neighbor in node.neighbors:
+                x2, y2 = self.camera.world_to_screen(
+                    neighbor.pose.x,
+                    neighbor.pose.y,
+                )
+
+                pygame.draw.line(
+                    surface,
+                    (180, 180, 180),
+                    (x1, y1),
+                    (x2, y2),
+                    1,
+                )
+
+        # Draw nodes
+        for node in nodes:
+            x, y = self.camera.world_to_screen(node.pose.x, node.pose.y)
+
+            pygame.draw.circle(
+                surface,
+                (255, 0, 0),
+                (x, y),
+                3,
+            )
+
+            label = self.font.render(str(node.id), True, (255, 255, 255))
+            surface.blit(label, (x, y))

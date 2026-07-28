@@ -2,7 +2,7 @@ import math
 
 from common.types import Pose
 from common.utils import rotated_rectangle_vertices
-from config import DOCK_APPROACH_DISTANCE, DOCK_LENGTH, DOCK_WIDTH
+from config import DOCK_APPROACH_DISTANCE, DOCK_LENGTH, DOCK_WIDTH, ROBOT_DOCK_DIST
 from graphs.node import Node
 
 
@@ -16,12 +16,14 @@ class Dock:
             DOCK_WIDTH,
         )
 
-        self.dock_node = Node(first_node_id, pose)
+        dock_node_pose = Pose(pose.x, pose.y + ROBOT_DOCK_DIST, math.pi / 2)
+
+        self.dock_node = Node(first_node_id, dock_node_pose)
 
         approach_pose = Pose(
-            x=pose.x - DOCK_APPROACH_DISTANCE * math.cos(pose.theta),
-            y=pose.y - DOCK_APPROACH_DISTANCE * math.sin(pose.theta),
-            theta=pose.theta,
+            x=pose.x,
+            y=dock_node_pose.y + DOCK_APPROACH_DISTANCE,
+            theta=math.pi / 2,
         )
 
         self.approach_node = Node(first_node_id + 1, approach_pose)

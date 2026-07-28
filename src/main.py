@@ -19,21 +19,8 @@ def main():
     start = time.perf_counter()
 
     world = World()
-
-    goals = [Pose(1.5, 1.5, 0), Pose(6, 1.5, None), Pose(6, 6, None), Pose(1.5, 6, None), Pose(0.5, 0.5, 0)]
-
-    robot = Robot(
-        RobotInfo(
-            id=1,
-            goals=goals,
-        ),
-        Pose(1.5, 1.5, 0),
-    )
-
-    world.add_robot(robot)
-
-    docks = build_docks()
-    for dock in docks:
+    docks, robots = build_docks()
+    for dock, robot in zip(docks, robots):
         world.add_dock(dock)
 
     # Makes the simulation
