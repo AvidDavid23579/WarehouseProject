@@ -147,35 +147,51 @@ class Renderer:
 
         screen_width, screen_height = self.screen.get_size()
 
-        # fixed pixel size of warehouse
+        # Fixed scene width in pixels
         scene_width_px = 1000
-        scene_height_px = 600
+
+        # Preserve world aspect ratio
+        scene_height_px = scene_width_px * (height / width)
 
         scene_x = (screen_width - scene_width_px) // 2
         scene_y = (screen_height - scene_height_px) // 2
 
-        scene_rect = (scene_x, scene_y, scene_width_px, scene_height_px)
+        scene_rect = (
+            int(scene_x),
+            int(scene_y),
+            int(scene_width_px),
+            int(scene_height_px),
+        )
 
-        # background
+        # Background
         pygame.draw.rect(self.screen, (45, 45, 45), scene_rect)
 
-        self.draw_grid(scene_rect, width, height)
+        self.draw_grid(scene_rect, width, height, 2)
 
-    def draw_grid(self, scene_rect, width, height):
+    def draw_grid(self, scene_rect, width, height, step):
 
         x0, y0, px_width, px_height = scene_rect
 
-        meter_size_x = px_width / width
-        meter_size_y = px_height / height
+        pixels_per_meter = px_width / width
 
-        # vertical lines
-        for x in range(int(width) + 1):
-            px = x0 + x * meter_size_x
+        # Vertical lines
+        for x in range(0, int(width) + 1, step):
+            px = int(round(x0 + x * pixels_per_meter))
+            pygame.draw.line(
+                self.screen,
+                (70, 70, 70),
+                (px, y0),
+                (px, y0 + px_height),
+                1,
+            )
 
-            pygame.draw.line(self.screen, (70, 70, 70), (px, y0), (px, y0 + px_height), 1)
-
-        # horizontal lines
-        for y in range(int(height) + 1):
-            py = y0 + px_height - y * meter_size_y
-
-            pygame.draw.line(self.screen, (70, 70, 70), (x0, py), (x0 + px_width, py), 1)
+        # Horizontal lines
+        for y in range(0, int(height) + 1, step):
+            py = int(round(y0 + px_height - y * pixels_per_meter))
+            pygame.draw.line(
+                self.screen,
+                (70, 70, 70),
+                (x0, py),
+                (x0 + px_width, py),
+                1,
+            )
