@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 from common.types import Pose
@@ -53,3 +55,77 @@ def rotated_rectangle_vertices(pose: Pose, length: float, width: float) -> list[
         )
         for lx, ly in local_corners
     ]
+
+
+def pose_from_segment(x1: float, y1: float, x2: float, y2: float) -> tuple[Pose, float]:
+    # Build centre pose and segment length from two endpoints
+    dx = x2 - x1
+    dy = y2 - y1
+    length = math.hypot(dx, dy)
+    theta = math.atan2(dy, dx) if length > 1e-9 else 0.0
+    pose = Pose((x1 + x2) / 2.0, (y1 + y2) / 2.0, theta)
+    return pose, length
+
+
+def point_to_oriented_rectangle(
+    pose: Pose,
+    length: float,
+    width: float,
+    px: float,
+    py: float,
+) -> tuple[float, float, float]:
+
+    dx = px - pose.x
+    dy = py - pose.y
+    cos_theta = math.cos(pose.theta)
+    sin_theta = math.sin(pose.theta)
+
+    # Express the query point in the rectangle body frame.
+    local_x = dx * cos_theta + dy * sin_theta
+    local_y = -dx * sin_theta + dy * cos_theta
+
+    half_length = length / 2.0
+    half_width = width / 2.0
+
+    if -half_length <= local_x <= half_length and -half_width <= local_y <= half_width:
+        # Inside the rectangle — push toward the nearest face.
+        face_distances = (
+            (half_length - local_x, (1.0, 0.0)),
+            (half_length + local_x, (-1.0, 0.0)),
+            (half_width - local_y, (0.0, 1.0)),
+            (half_width + local_y, (0.0, -1.0)),
+        )
+        distance, (local_nx, local_ny) = min(face_distances, key=lambda item: item[0])
+
+    else:
+        closest_x = clamp(local_x, -half_length, half_length)
+        closest_y = clamp(local_y, -half_width, half_width)
+        offset_x = local_x - closest_x
+        offset_y = local_y - closest_y
+        distance = math.hypot(offset_x, offset_y)
+
+        if distance > 1e-9:
+            local_nx = offset_x / distance
+            local_ny = offset_y / distance
+        else:
+            # Corner degeneracy: use the axis with larger exterior offset.
+            if abs(local_x) > half_length:
+                local_nx = math.copysign(1.0, local_x)
+                local_ny = 0.0
+            else:
+                local_nx = 0.0
+                local_ny = math.copysign(1.0, local_y)
+
+    dir_x = local_nx * cos_theta - local_ny * sin_theta
+    dir_y = local_nx * sin_theta + local_ny * cos_theta
+    return distance, dir_x, dir_y
+
+
+def _tangent(normal: np.ndarray, heading: np.ndarray) -> np.ndarray:
+    """Choose the tangent that is closest to the robot's current heading."""
+    t1 = np.array([-normal[1], normal[0]])
+    t2 = -t1
+
+    if np.dot(t1, heading) > np.dot(t2, heading):
+        return t1
+    return t2

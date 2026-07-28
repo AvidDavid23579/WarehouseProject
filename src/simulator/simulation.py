@@ -7,7 +7,7 @@ class Simulator:
         self.frames: list[WorldFrame] = []
 
     def bake(self, steps: int) -> None:
-        """Run the simulation and record every frame."""
+        # Runs the simulation and record every frame
 
         self.frames.clear()
 
