@@ -90,7 +90,7 @@ class Robot:
 
             heading_error = wrap_angle(goal.theta - pose.theta)
 
-            self.state.omega = clamp(7.5 * heading_error, -MAX_OMEGA, MAX_OMEGA)
+            self.state.omega = clamp(10 * heading_error, -MAX_OMEGA, MAX_OMEGA)
             if abs(heading_error) < ANGLE_TOLERANCE:
                 self.state.omega = 0.0
             return
@@ -99,7 +99,7 @@ class Robot:
         target_heading = np.arctan2(dy, dx)
         heading_error = wrap_angle(target_heading - pose.theta)
 
-        self.state.omega = clamp(4.0 * heading_error, -MAX_OMEGA, MAX_OMEGA)
+        self.state.omega = clamp(7.5 * heading_error, -MAX_OMEGA, MAX_OMEGA)
 
         # Slow down when facing away from the goal.
         self.state.v = clamp(5.0 * dist * max(0.0, np.cos(heading_error)), 0.0, MAX_VELOCITY)

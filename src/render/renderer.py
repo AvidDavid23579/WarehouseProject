@@ -151,9 +151,8 @@ class Renderer:
 
             pygame.draw.polygon(surface, (170, 120, 60), pts)
             pygame.draw.polygon(surface, (90, 60, 30), pts, 2)
-        """
+
         for wall in self.world_map.walls:
             pts = [self.camera.world_to_screen(v.x, v.y) for v in wall.vertices]
 
             pygame.draw.polygon(surface, (100, 100, 100), pts)
-        """

@@ -26,9 +26,12 @@ ROBOT_LENGTH = 0.6
 SHELF_WIDTH = 0.6
 SHELF_LENGTH = 6.0
 
-# --- Dock footprint ---------------------------------------------------------
+# --- Dock footprint ----------------------------------------------------------
 DOCK_WIDTH = 0.5
 DOCK_LENGTH = 0.3
+
+# --- Wall footprint ----------------------------------------------------------
+WALL_WIDTH = 0.3
 
 # --- Goal / alignment tolerances ---------------------------------------------
 DIST_TOLERANCE = 0.01
