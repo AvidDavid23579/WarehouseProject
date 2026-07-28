@@ -22,17 +22,11 @@ def main():
     world = World()
 
     robot = Robot(
-        RobotInfo(
-            id=0,
-            length=ROBOT_LENGTH,
-            width=ROBOT_WIDTH,
-            max_velocity=MAX_VELOCITY,
-            max_accel=1.0,
-        ),
-        RobotState(
-            pose=Pose(10.0, 2.0, 0.0),
-            v=4.0,
-            omega=1.0,
+        info=RobotInfo(0, Pose(12, 5, np.pi / 2)),
+        start_pose=Pose(
+            x=2.0,
+            y=5.0,
+            theta=0.0,
         ),
     )
 
