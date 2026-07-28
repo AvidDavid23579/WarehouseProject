@@ -65,15 +65,10 @@ class Renderer:
                     current += 1
 
             self.screen.fill((30, 30, 30))
-
             state = states[current]
-
             self.draw_scene(state, X_MAX, Y_MAX)
-
             self.draw_ui(state, paused, current, len(states))
-
             pygame.display.flip()
-
             self.clock.tick(self.FPS)
 
         pygame.quit()
@@ -148,7 +143,7 @@ class Renderer:
         screen_width, screen_height = self.screen.get_size()
 
         # Fixed scene width in pixels
-        scene_width_px = 1000
+        scene_width_px = 1200
 
         # Preserve world aspect ratio
         scene_height_px = scene_width_px * (height / width)
