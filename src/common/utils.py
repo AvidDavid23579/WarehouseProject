@@ -121,11 +121,22 @@ def point_to_oriented_rectangle(
     return distance, dir_x, dir_y
 
 
-def _tangent(normal: np.ndarray, heading: np.ndarray) -> np.ndarray:
-    """Choose the tangent that is closest to the robot's current heading."""
-    t1 = np.array([-normal[1], normal[0]])
-    t2 = -t1
+def _tangent(
+    normal: tuple[float, float],
+    heading: tuple[float, float],
+) -> tuple[float, float]:
+    """Choose the tangent closest to the robot's current heading."""
 
-    if np.dot(t1, heading) > np.dot(t2, heading):
-        return t1
-    return t2
+    nx, ny = normal
+    hx, hy = heading
+
+    # First tangent
+    t1x = -ny
+    t1y = nx
+
+    # dot(t1, heading)
+    if t1x * hx + t1y * hy >= 0.0:
+        return t1x, t1y
+
+    # Opposite tangent
+    return -t1x, -t1y

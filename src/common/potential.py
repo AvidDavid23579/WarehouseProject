@@ -5,6 +5,11 @@ import numpy as np
 from common.utils import _tangent, point_to_oriented_rectangle
 from config import MAX_OMEGA, ROBOT_LENGTH, ROBOT_WIDTH, X_MAX, X_MIN, Y_MAX, Y_MIN
 
+LEFT = (1.0, 0.0)
+RIGHT = (-1.0, 0.0)
+UP = (0.0, 1.0)
+DOWN = (0.0, -1.0)
+
 
 def _inverse_square_repulsion(
     distance: float,
@@ -26,23 +31,31 @@ def boundary_repulsion(
     robot,
     margin: float = 0.3,
     strength: float = 1.0,
+    tangent_gain: float = 0.25,
     max_force: float = 20.0,
-) -> np.ndarray:
-    """Repulsive force from the world boundaries."""
-    force = np.zeros(2)
+) -> tuple[float, float]:
+    pose = robot.state.pose
 
-    c = abs(np.cos(robot.state.pose.theta))
-    s = abs(np.sin(robot.state.pose.theta))
+    c = math.cos(pose.theta)
+    s = math.sin(pose.theta)
 
-    half_x = 0.5 * (ROBOT_LENGTH * c + ROBOT_WIDTH * s)
-    half_y = 0.5 * (ROBOT_LENGTH * s + ROBOT_WIDTH * c)
+    heading = (c, s)
 
-    boundaries = [
-        (robot.state.pose.x - X_MIN - half_x, np.array([1.0, 0.0])),  # Left
-        (X_MAX - robot.state.pose.x - half_x, np.array([-1.0, 0.0])),  # Right
-        (robot.state.pose.y - Y_MIN - half_y, np.array([0.0, 1.0])),  # Bottom
-        (Y_MAX - robot.state.pose.y - half_y, np.array([0.0, -1.0])),  # Top
-    ]
+    ac = abs(c)
+    ass = abs(s)
+
+    half_x = 0.5 * (ROBOT_LENGTH * ac + ROBOT_WIDTH * ass)
+    half_y = 0.5 * (ROBOT_LENGTH * ass + ROBOT_WIDTH * ac)
+
+    fx = 0.0
+    fy = 0.0
+
+    boundaries = (
+        (pose.x - X_MIN - half_x, LEFT),
+        (X_MAX - pose.x - half_x, RIGHT),
+        (pose.y - Y_MIN - half_y, UP),
+        (Y_MAX - pose.y - half_y, DOWN),
+    )
 
     for clearance, normal in boundaries:
         magnitude = _inverse_square_repulsion(
@@ -51,9 +64,16 @@ def boundary_repulsion(
             strength,
             max_force,
         )
-        force += magnitude * normal
 
-    return force
+        if magnitude == 0.0:
+            continue
+
+        tx, ty = _tangent(normal, heading)
+
+        fx += magnitude * (normal[0] + tangent_gain * tx)
+        fy += magnitude * (normal[1] + tangent_gain * ty)
+
+    return fx, fy
 
 
 def _dist_to_target(robot) -> float:
@@ -63,26 +83,21 @@ def _dist_to_target(robot) -> float:
     )
 
 
-def apply_repulsion(robot, boundary_margin: float = 0.15, boundary_strength: float = 0.8) -> None:
-    """Blend boundary, wall, robot, and shelf repulsion into the velocity command."""
-    force = boundary_repulsion(
-        robot,
-        boundary_margin,
-        boundary_strength,
-    )
+def apply_repulsion(robot) -> None:
+    fx, fy = boundary_repulsion(robot)
 
-    if not np.any(force):
+    if fx == 0.0 and fy == 0.0:
         return
 
-    heading = np.array(
-        [
-            np.cos(robot.state.pose.theta),
-            np.sin(robot.state.pose.theta),
-        ]
-    )
+    theta = robot.state.pose.theta
+    c = math.cos(theta)
+    s = math.sin(theta)
 
-    robot.state.v += float(np.dot(force, heading))
-    robot.state.omega += float(np.cross(heading, force))
+    # dot(force, heading)
+    robot.state.v += fx * c + fy * s
+
+    # cross(heading, force)
+    robot.state.omega += c * fy - s * fx
 
     dist = _dist_to_target(robot)
 
@@ -94,6 +109,4 @@ def apply_repulsion(robot, boundary_margin: float = 0.15, boundary_strength: flo
     robot.state.last_goal_dist = dist
 
     if robot.state.stuck_time > 1.0:
-        robot.omega += 2.0
-
-    robot.omega = np.clip(robot.state.omega, -MAX_OMEGA, MAX_OMEGA)
+        robot.state.omega += 2.0

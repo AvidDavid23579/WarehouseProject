@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 import numpy as np
@@ -55,8 +56,8 @@ class Robot:
         if self.state.crashed:
             return
 
-        self.state.pose.x += self.state.v * np.cos(self.state.pose.theta) * PHYSICS_DT
-        self.state.pose.y += self.state.v * np.sin(self.state.pose.theta) * PHYSICS_DT
+        self.state.pose.x += self.state.v * math.cos(self.state.pose.theta) * PHYSICS_DT
+        self.state.pose.y += self.state.v * math.sin(self.state.pose.theta) * PHYSICS_DT
         self.state.pose.theta += self.state.omega * PHYSICS_DT
 
     @property
@@ -70,7 +71,7 @@ class Robot:
         goal = self.goal
         pose = self.state.pose
 
-        dist = np.hypot(goal.x - pose.x, goal.y - pose.y)
+        dist = math.hypot(goal.x - pose.x, goal.y - pose.y)
 
         if dist < 0.05:
             self.state.goal_index = (self.state.goal_index + 1) % len(self.info.goals)
@@ -85,7 +86,7 @@ class Robot:
         # Calculate distance to goal
         dx = goal.x - pose.x
         dy = goal.y - pose.y
-        dist = np.hypot(dx, dy)
+        dist = math.hypot(dx, dy)
 
         # Position reached
         if dist < DIST_TOLERANCE:
@@ -98,19 +99,20 @@ class Robot:
 
             heading_error = wrap_angle(goal.theta - pose.theta)
 
-            self.state.omega = 10 * heading_error
             if abs(heading_error) < ANGLE_TOLERANCE:
                 self.state.omega = 0.0
+            else:
+                self.state.omega = 10.0 * heading_error
             return
 
         # Drive toward target position.
-        target_heading = np.arctan2(dy, dx)
+        target_heading = math.atan2(dy, dx)
         heading_error = wrap_angle(target_heading - pose.theta)
 
         self.state.omega = 7.5 * heading_error
 
         # Slow down when facing away from the goal.
-        self.state.v = 5.0 * dist * max(0.0, np.cos(heading_error))
+        self.state.v = 5.0 * dist * max(0.0, math.cos(heading_error))
 
         apply_repulsion(self)
 

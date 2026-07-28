@@ -21,14 +21,14 @@ def main():
 
     world = World()
 
-    goals = [Pose(1, 1, 0), Pose(6, 1, None), Pose(6, 6, None), Pose(1, 6, None), Pose(0, 0, 0)]
+    goals = [Pose(1.5, 1.5, 0), Pose(6, 1.5, None), Pose(6, 6, None), Pose(1.5, 6, None), Pose(0.5, 0.5, 0)]
 
     robot = Robot(
         RobotInfo(
             id=1,
             goals=goals,
         ),
-        Pose(1, 1, 0),
+        Pose(1.5, 1.5, 0),
     )
 
     world.add_robot(robot)
