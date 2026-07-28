@@ -18,12 +18,7 @@ def main():
 
     world = World()
 
-    goals = [
-        Pose(1, 1, 0),
-        Pose(6, 1, None),
-        Pose(6, 6, None),
-        Pose(1, 6, None),
-    ]
+    goals = [Pose(1, 1, 0), Pose(6, 1, None), Pose(6, 6, None), Pose(1, 6, None), Pose(0, 0, 0)]
 
     robot = Robot(
         RobotInfo(
@@ -34,7 +29,6 @@ def main():
     )
 
     world.add_robot(robot)
-
     sim = Simulator(world)
 
     duration = 10.0
@@ -53,11 +47,11 @@ def main():
 
     print("\n=== By cumulative time ===")
     stats.sort_stats(pstats.SortKey.CUMULATIVE)  # Time including child calls
-    stats.print_stats(10)
+    stats.print_stats(20)
 
     print("\n=== By internal time ===")
     stats.sort_stats(pstats.SortKey.TIME)  # Self time only
-    stats.print_stats(10)
+    stats.print_stats(20)
 
     Playback(sim.frames).run()
 

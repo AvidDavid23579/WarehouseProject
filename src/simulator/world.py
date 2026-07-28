@@ -1,6 +1,6 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from config import PHYSICS_DT
+from config import PHYSICS_DT, X_MAX, X_MIN, Y_MAX, Y_MIN
 from entities.robot import Robot, RobotFrame
 
 
@@ -25,6 +25,9 @@ class World:
             robot.drive_to_pose()
             robot.step()
 
+        for robot in self.robot_boundary_collisions():
+            robot.crash()
+
     def frame(self) -> WorldFrame:
         """Return an immutable snapshot for rendering/playback."""
         return WorldFrame(
@@ -41,3 +44,17 @@ class World:
 
     def add_robot(self, robot: Robot) -> None:
         self.robots.append(robot)
+
+    # Return robots whose footprint extends outside the world bounds
+    def robot_boundary_collisions(self) -> list:
+        out_of_bounds = []
+        for robot in self.robots:
+            if robot.state.crashed:
+                continue
+
+            for x, y in robot.robot_vertices():
+                if x < X_MIN or x > X_MAX or y < Y_MIN or y > Y_MAX:
+                    out_of_bounds.append(robot)
+                    break
+
+        return out_of_bounds

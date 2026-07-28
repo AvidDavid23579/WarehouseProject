@@ -3,8 +3,8 @@ from dataclasses import dataclass
 import numpy as np
 
 from common.types import Pose
-from common.utils import clamp, wrap_angle
-from config import MAX_OMEGA, MAX_VELOCITY, PHYSICS_DT
+from common.utils import clamp, rotated_rectangle_vertices, wrap_angle
+from config import MAX_OMEGA, MAX_VELOCITY, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
 
 
 @dataclass(slots=True)
@@ -17,6 +17,7 @@ class RobotInfo:
 class RobotState:
     pose: Pose
     goal_index: int
+    crashed: bool
 
     v: float
     omega: float
@@ -26,6 +27,7 @@ class RobotState:
         self.goal_index = 0
         self.v = 0.0
         self.omega = 0.0
+        self.crashed = False
 
 
 @dataclass(slots=True)
@@ -42,7 +44,8 @@ class Robot:
         self.state = RobotState(start_pose)
 
     def step(self) -> None:
-        self.drive_to_pose()
+        if self.state.crashed:
+            return
 
         self.state.pose.x += self.state.v * np.cos(self.state.pose.theta) * PHYSICS_DT
         self.state.pose.y += self.state.v * np.sin(self.state.pose.theta) * PHYSICS_DT
@@ -52,7 +55,10 @@ class Robot:
     def goal(self) -> Pose:
         return self.info.goals[self.state.goal_index]
 
-    def update_goal(self):
+    def update_goal(self) -> None:
+        if self.state.crashed:
+            return
+
         goal = self.goal
         pose = self.state.pose
 
@@ -62,6 +68,9 @@ class Robot:
             self.state.goal_index = (self.state.goal_index + 1) % len(self.info.goals)
 
     def drive_to_pose(self) -> None:
+        if self.state.crashed:
+            return
+
         goal = self.goal
         pose = self.state.pose
 
@@ -94,3 +103,14 @@ class Robot:
 
         # Slow down when facing away from the goal.
         self.state.v = clamp(5.0 * dist * max(0.0, np.cos(heading_error)), 0.0, MAX_VELOCITY)
+
+    def crash(self) -> None:
+        if self.state.crashed:
+            return
+
+        self.state.crashed = True
+        self.state.v = 0
+        self.state.omega = 0
+
+    def robot_vertices(self) -> list[tuple[float, float]]:
+        return rotated_rectangle_vertices(self.state.pose, ROBOT_LENGTH, ROBOT_WIDTH)
