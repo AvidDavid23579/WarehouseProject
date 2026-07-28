@@ -15,27 +15,42 @@ class RobotInfo:
 
 
 @dataclass(slots=True)
+class NavigationState:
+    current_node_id: int | None
+    goal_node_id: int | None
+    path: list[int]
+    path_index: int
+
+
+@dataclass(slots=True)
 class RobotState:
     pose: Pose
-    goal_index: int
-    crashed: bool
-
     v: float
     omega: float
+    crashed: bool
 
     last_goal_dist: float
     stuck_time: float
 
+    navigation: NavigationState
+
     def __init__(self, pose: Pose):
         self.pose = pose.copy()
-        self.goal_index = 0
-        self.crashed = False
 
         self.v = 0.0
         self.omega = 0.0
 
+        self.crashed = False
+
         self.last_goal_dist = 0.0
         self.stuck_time = 0.0
+
+        self.navigation = NavigationState(
+            current_node_id=None,
+            target_node_id=None,
+            path=[],
+            path_index=0,
+        )
 
 
 @dataclass(slots=True)

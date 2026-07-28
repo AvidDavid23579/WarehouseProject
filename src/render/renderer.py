@@ -180,8 +180,8 @@ class Renderer:
                 pygame.draw.line(
                     surface,
                     (180, 180, 180),
-                    (x1, y1),
-                    (x2, y2),
+                    (x1 + 1, y1),
+                    (x2 + 1, y2),
                     1,
                 )
 
@@ -192,7 +192,7 @@ class Renderer:
             pygame.draw.circle(
                 surface,
                 (255, 0, 0),
-                (x, y),
+                (x + 2, y),
                 3,
             )
 

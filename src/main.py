@@ -2,10 +2,7 @@ import cProfile
 import pstats
 import time
 
-from common.types import Pose
 from config import DOCK_WIDTH, PHYSICS_DT, SIMULATION_DURATION
-from entities.dock import Dock
-from entities.robot import Robot, RobotInfo
 from render.playback import Playback
 from simulator.builders import build_docks
 from simulator.simulation import Simulator
@@ -22,6 +19,7 @@ def main():
     docks, robots = build_docks()
     for dock, robot in zip(docks, robots):
         world.add_dock(dock)
+        world.add_robot(robot)
 
     # Makes the simulation
     sim = Simulator(world)
