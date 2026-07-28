@@ -1,6 +1,7 @@
 import math
 
 import pygame
+import pygame.gfxdraw
 
 from config import ROBOT_LENGTH, ROBOT_WIDTH, X_MAX, Y_MAX
 from entities.robot import RobotFrame
@@ -34,7 +35,7 @@ class Renderer:
     def _draw_scene(self, frame: WorldFrame) -> None:
         screen_width, screen_height = self.screen.get_size()
 
-        scene_width_px = 1200
+        scene_width_px = 1300
         scene_height_px = scene_width_px * (Y_MAX / X_MAX)
 
         scene_x = (screen_width - scene_width_px) // 2
@@ -112,8 +113,16 @@ class Renderer:
 
             points.append((cx + rx, cy - ry))
 
-        pygame.draw.polygon(
+        color = (0, 170, 255)
+
+        pygame.gfxdraw.filled_polygon(
             self.screen,
-            (0, 170, 255),
             points,
+            color,
+        )
+
+        pygame.gfxdraw.aapolygon(
+            self.screen,
+            points,
+            color,
         )

@@ -89,17 +89,11 @@ class Playback:
             if not self.paused:
                 self.start = now - self.frames[self.current].time
 
-        elif self.paused and event.key == pygame.K_RIGHT:
-            self.current = min(
-                self.current + int(1 / PHYSICS_DT),
-                len(self.frames) - 1,
-            )
-
         elif self.paused and event.key == pygame.K_LEFT:
-            self.current = max(
-                self.current - int(1 / PHYSICS_DT),
-                0,
-            )
+            self.current -= 1
+
+        elif self.paused and event.key == pygame.K_RIGHT:
+            self.current += 1
 
     def _draw_overlay(self, frame: WorldFrame) -> None:
 

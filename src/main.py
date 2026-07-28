@@ -31,7 +31,7 @@ def main():
         ),
         RobotState(
             pose=Pose(10.0, 2.0, 0.0),
-            v=1.0,
+            v=4.0,
             omega=1.0,
         ),
     )
