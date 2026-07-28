@@ -2,13 +2,10 @@ import cProfile
 import pstats
 import time
 
-import numpy as np
-
 from common.types import Pose
-from config import MAX_VELOCITY, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
-from entities.robot import Robot, RobotInfo, RobotState
+from config import PHYSICS_DT
+from entities.robot import Robot, RobotInfo
 from render.playback import Playback
-from render.renderer import Renderer
 from simulator.simulation import Simulator
 from simulator.world import World
 
@@ -21,13 +18,19 @@ def main():
 
     world = World()
 
+    goals = [
+        Pose(1, 1, 0),
+        Pose(6, 1, None),
+        Pose(6, 6, None),
+        Pose(1, 6, None),
+    ]
+
     robot = Robot(
-        info=RobotInfo(0, Pose(12, 5, np.pi / 2)),
-        start_pose=Pose(
-            x=2.0,
-            y=5.0,
-            theta=0.0,
+        RobotInfo(
+            id=1,
+            goals=goals,
         ),
+        Pose(1, 1, 0),
     )
 
     world.add_robot(robot)

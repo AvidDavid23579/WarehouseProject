@@ -21,6 +21,8 @@ class World:
 
         # Update every robot
         for robot in self.robots:
+            robot.update_goal()
+            robot.drive_to_pose()
             robot.step()
 
     def frame(self) -> WorldFrame:

@@ -10,18 +10,20 @@ from config import MAX_OMEGA, MAX_VELOCITY, PHYSICS_DT
 @dataclass(slots=True)
 class RobotInfo:
     id: int
-    goal: Pose
+    goals: list[Pose]
 
 
 @dataclass(slots=True)
 class RobotState:
     pose: Pose
+    goal_index: int
 
     v: float
     omega: float
 
     def __init__(self, pose: Pose):
         self.pose = pose.copy()
+        self.goal_index = 0
         self.v = 0.0
         self.omega = 0.0
 
@@ -46,8 +48,21 @@ class Robot:
         self.state.pose.y += self.state.v * np.sin(self.state.pose.theta) * PHYSICS_DT
         self.state.pose.theta += self.state.omega * PHYSICS_DT
 
+    @property
+    def goal(self) -> Pose:
+        return self.info.goals[self.state.goal_index]
+
+    def update_goal(self):
+        goal = self.goal
+        pose = self.state.pose
+
+        dist = np.hypot(goal.x - pose.x, goal.y - pose.y)
+
+        if dist < 0.05:
+            self.state.goal_index = (self.state.goal_index + 1) % len(self.info.goals)
+
     def drive_to_pose(self) -> None:
-        goal = self.info.goal
+        goal = self.goal
         pose = self.state.pose
 
         # Calculate distance to goal
