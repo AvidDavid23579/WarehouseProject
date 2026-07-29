@@ -44,6 +44,11 @@ class World:
         self.robot_velocity = np.empty((0, 2), dtype=np.float32)
         self.robot_crashed = np.empty((0,), dtype=np.bool_)
 
+        # Navigation
+        self.robot_target_node = np.empty((0,), dtype=np.int32)
+        self.robot_path_index = np.empty((0,), dtype=np.int32)
+        self.robot_paths = []  # list[list[int]]
+
         # Robot collision geometry
         self.robot_vertices = np.empty(
             (0, 4, 2),
@@ -81,6 +86,10 @@ class World:
         )
 
         self.robot_vertices = np.vstack((self.robot_vertices, np.array([vertices], dtype=np.float32)))
+
+        self.robot_target_node = np.append(self.robot_target_node, -1)
+        self.robot_path_index = np.append(self.robot_path_index, 0)
+        self.robot_paths.append([])
 
     def update_robot_vertices(self):
 
@@ -172,8 +181,8 @@ class World:
     def frame(self) -> WorldFrame:
         return WorldFrame(
             time=self.time,
-            robots=self.robot_pose,
-            pallets=self.pallet_pose,
+            robots=self.robot_pose.copy(),
+            pallets=self.pallet_pose.copy(),
         )
 
     def world_map(self):

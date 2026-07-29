@@ -183,9 +183,15 @@ class Renderer:
     def _draw_nodes(self, surface, graph: NavigationGraph):
         # Draw edges
         for edge in graph.edges:
-            x1, y1 = self.camera.world_to_screen(edge.start.pose.x, edge.start.pose.y)
+            x1, y1 = self.camera.world_to_screen(
+                graph.node_pose[edge.start, 0],
+                graph.node_pose[edge.start, 1],
+            )
 
-            x2, y2 = self.camera.world_to_screen(edge.end.pose.x, edge.end.pose.y)
+            x2, y2 = self.camera.world_to_screen(
+                graph.node_pose[edge.end, 0],
+                graph.node_pose[edge.end, 1],
+            )
 
             pygame.draw.line(
                 surface,
@@ -196,8 +202,8 @@ class Renderer:
             )
 
         # Draw nodes
-        for node in graph.nodes:
-            x, y = self.camera.world_to_screen(node.pose.x, node.pose.y)
+        for node_id, (xw, yw, _) in enumerate(graph.node_pose):
+            x, y = self.camera.world_to_screen(xw, yw)
 
             pygame.draw.circle(
                 surface,
@@ -206,5 +212,5 @@ class Renderer:
                 3,
             )
 
-            label = self.font.render(str(node.id), True, (255, 255, 255))
+            label = self.font.render(str(node_id), True, (255, 255, 255))
             surface.blit(label, (x, y))

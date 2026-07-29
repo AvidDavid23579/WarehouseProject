@@ -14,8 +14,8 @@ class Camera:
     def world_to_screen(self, x: float, y: float) -> tuple[int, int]:
         px, py, _, ph = self.scene_rect
 
-        sx = px + x * self.pixels_per_meter
-        sy = py + ph - y * self.pixels_per_meter
+        sx = float(px + x * self.pixels_per_meter)
+        sy = float(py + ph - y * self.pixels_per_meter)
 
         return sx, sy
 

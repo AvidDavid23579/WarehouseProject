@@ -33,6 +33,8 @@ def main():
     for robot in robots:
         world.add_robot(robot)
 
+    world.robot_target_node[0] = 1
+
     world.graph = GraphBuilder(world).build()
 
     # Makes the simulation

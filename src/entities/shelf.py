@@ -71,9 +71,12 @@ class Shelf:
             a = graph_nodes[i]
             b = graph_nodes[(i + 1) % len(graph_nodes)]
 
+            ax, ay, _ = graph.node_pose[a]
+            bx, by, _ = graph.node_pose[b]
+
             dist = math.hypot(
-                a.pose.x - b.pose.x,
-                a.pose.y - b.pose.y,
+                ax - bx,
+                ay - by,
             )
 
             graph.add_edge(a, b, dist)

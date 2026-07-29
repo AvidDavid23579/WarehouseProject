@@ -1,33 +1,27 @@
 from dataclasses import dataclass
 
+import numpy as np
+
 from common.types import Pose
 
 
 @dataclass(slots=True)
-class Node:
-    id: int
-    pose: Pose
-
-
-@dataclass(slots=True)
 class Edge:
-    start: Node
-    end: Node
+    start: int
+    end: int
     cost: float
 
 
 class NavigationGraph:
     def __init__(self):
-        self.nodes: list[Node] = []
+        self.node_pose = np.empty((0, 3), dtype=np.float32)
         self.edges: list[Edge] = []
 
-    def add_node(self, pose: Pose) -> Node:
-        node = Node(id=len(self.nodes), pose=pose)
-        self.nodes.append(node)
-        return node
+    def add_node(self, pose: Pose) -> int:
+        node_id = len(self.node_pose)
+        self.node_pose = np.vstack((self.node_pose, np.array([[pose.x, pose.y, pose.theta]], dtype=np.float32)))
 
-    def add_edge(self, start: Node, end: Node, cost: float):
+        return node_id
+
+    def add_edge(self, start: int, end: int, cost: float):
         self.edges.append(Edge(start, end, cost))
-
-    def get_nodes(self) -> list[Node]:
-        return self.nodes

@@ -1,5 +1,3 @@
-import math
-
 from graphs.graph import NavigationGraph
 from simulator.world import World
 

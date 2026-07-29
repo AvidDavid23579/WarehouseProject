@@ -1,3 +1,4 @@
+from common.drive import drive_to_pose
 from simulator.world import World, WorldFrame, WorldMap
 
 
@@ -15,6 +16,7 @@ class Simulator:
         self.frames.append(self.world.frame())
 
         for _ in range(steps):
+            drive_to_pose(world=self.world)
             self.world.step()
             self.frames.append(self.world.frame())
 
