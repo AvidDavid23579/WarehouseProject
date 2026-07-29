@@ -16,25 +16,26 @@ def main():
     profiler.enable()
     start = time.perf_counter()
 
+    # Initialize world object
     world = World()
 
+    # Build objects according to layouts
     shelves, pallets = build_shelves_vertical()
     docks, robots = build_docks()
 
+    # Add objects to the world
     for shelf in shelves:
         world.add_shelf(shelf)
-
     for pallet in pallets:
         world.add_pallet(pallet)
-
     for dock in docks:
         world.add_dock(dock)
-
     for robot in robots:
         world.add_robot(robot)
 
     world.robot_target_node[0] = 1
 
+    # Build the navigation graph
     world.graph = GraphBuilder(world).build()
 
     # Makes the simulation

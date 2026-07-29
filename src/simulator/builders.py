@@ -8,6 +8,7 @@ from entities.robot import Robot, RobotInfo
 from entities.shelf import Shelf
 
 
+# Build docks. Each dock initializes a robot at its docking pose
 def build_docks(
     num_docks: int = NUM_DOCKS,
     spacing: float = DOCK_SPACING,
@@ -41,6 +42,7 @@ def build_docks(
     return docks, robots
 
 
+# Build shelves in a vertical layout
 def build_shelves_vertical(shelf_col: int = SHELF_COL, shelf_row: int = SHELF_ROW) -> tuple[list[Shelf], list[Pallet]]:
 
     shelves = []
