@@ -98,7 +98,11 @@ class Renderer:
     def _draw_polygon(self, surface, vertices, fill, outline=None, aa=True):
         assert self.camera is not None
 
-        pts = [self.camera.world_to_screen(x, y) for x, y in vertices]
+        pts = []
+
+        for x, y in vertices:
+            px, py = self.camera.world_to_screen(x, y)
+            pts.append((int(px), int(py)))
 
         pygame.gfxdraw.filled_polygon(surface, pts, fill)
 
@@ -118,9 +122,9 @@ class Renderer:
             )
 
     def _draw_dynamic(self, surface, state):
-        for pallet in state.pallets:
+        for x, y, theta in state.pallets:
             vertices = rotated_rectangle_vertices(
-                Pose(pallet.x, pallet.y, pallet.theta),
+                Pose(x, y, theta),
                 PALLET_LENGTH,
                 PALLET_WIDTH,
             )
@@ -133,9 +137,9 @@ class Renderer:
                 aa=False,
             )
 
-        for robot in state.robots:
+        for x, y, theta in state.robots:
             vertices = rotated_rectangle_vertices(
-                Pose(robot.x, robot.y, robot.theta),
+                Pose(x, y, theta),
                 ROBOT_LENGTH,
                 ROBOT_WIDTH,
             )
@@ -160,8 +164,8 @@ class Renderer:
             self._draw_polygon(
                 surface,
                 shelf.vertices,
-                fill=(170, 120, 60),
-                outline=(90, 60, 30),
+                fill=(200, 200, 200),
+                outline=(90, 90, 90),
                 aa=False,
             )
 

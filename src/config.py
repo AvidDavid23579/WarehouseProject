@@ -4,7 +4,7 @@ from common.types import Pose
 
 # --- Simulation parameters ---------------------------------------------------
 PHYSICS_DT = 0.01
-SIMULATION_DURATION = 10  # Seconds
+SIMULATION_DURATION = 100  # Seconds
 WINDOW_WIDTH = 1540
 WINDOW_HEIGHT = 800
 WAREHOUSE_WIDTH = 1300  # Pixels
@@ -27,7 +27,7 @@ PALLET_WIDTH = 0.3
 PALLET_LENGTH = 0.4
 SHELF_WIDTH = 2 * PALLET_WIDTH
 SHELF_LENGTH = 15 * PALLET_LENGTH
-SHELF_COL = 1
+SHELF_COL = 8
 SHELF_ROW = 2
 
 # --- Dock footprint ----------------------------------------------------------

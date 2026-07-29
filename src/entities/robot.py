@@ -32,6 +32,8 @@ class RobotState:
     last_goal_dist: float
     stuck_time: float
 
+    vertices: list[tuple[float, float]]
+
     navigation: NavigationState
 
     def __init__(self, pose: Pose):
@@ -44,6 +46,12 @@ class RobotState:
 
         self.last_goal_dist = 0.0
         self.stuck_time = 0.0
+
+        self.vertices = rotated_rectangle_vertices(
+            self.pose,
+            ROBOT_LENGTH,
+            ROBOT_WIDTH,
+        )
 
         self.navigation = NavigationState(
             current_node_id=None,
@@ -73,6 +81,12 @@ class Robot:
         self.state.pose.x += self.state.v * math.cos(self.state.pose.theta) * PHYSICS_DT
         self.state.pose.y += self.state.v * math.sin(self.state.pose.theta) * PHYSICS_DT
         self.state.pose.theta += self.state.omega * PHYSICS_DT
+
+        self.state.vertices = rotated_rectangle_vertices(
+            self.state.pose,
+            ROBOT_LENGTH,
+            ROBOT_WIDTH,
+        )
 
     def drive_to_pose(self) -> None:
         if self.state.crashed:
@@ -124,6 +138,3 @@ class Robot:
         self.state.crashed = True
         self.state.v = 0
         self.state.omega = 0
-
-    def robot_vertices(self) -> list[tuple[float, float]]:
-        return rotated_rectangle_vertices(self.state.pose, ROBOT_LENGTH, ROBOT_WIDTH)

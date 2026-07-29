@@ -2,13 +2,10 @@ import cProfile
 import pstats
 import time
 
-from common.types import Pose
 from config import PHYSICS_DT, SIMULATION_DURATION
-from entities.pallet import Pallet
-from entities.shelf import Shelf
 from graphs.graph_builder import GraphBuilder
 from render.playback import Playback
-from simulator.builders import build_docks
+from simulator.builders import build_docks, build_shelves_vertical
 from simulator.simulation import Simulator
 from simulator.world import World
 
@@ -20,13 +17,15 @@ def main():
     start = time.perf_counter()
 
     world = World()
-    shelf = Shelf(Pose(4, 4, 0))
 
-    world.add_shelf(shelf)
-
-    for pose in shelf.pallet_poses():
-        world.add_pallet(Pallet(pose))
+    shelves, pallets = build_shelves_vertical()
     docks, robots = build_docks()
+
+    for shelf in shelves:
+        world.add_shelf(shelf)
+
+    for pallet in pallets:
+        world.add_pallet(pallet)
 
     for dock in docks:
         world.add_dock(dock)

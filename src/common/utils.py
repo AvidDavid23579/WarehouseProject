@@ -30,31 +30,31 @@ def clamp(value: float, min_val: float, max_val: float) -> float:
     return max(min_val, min(value, max_val))
 
 
-def rotated_rectangle_vertices(pose: Pose, length: float, width: float) -> list[tuple[float, float]]:
-    """Return world-frame corners of a rectangle centered at *pose*.
+def rotated_rectangle_vertices(
+    pose: Pose,
+    length: float,
+    width: float,
+) -> tuple[
+    tuple[float, float],
+    tuple[float, float],
+    tuple[float, float],
+    tuple[float, float],
+]:
+    hl = length * 0.5
+    hw = width * 0.5
 
-    The rectangle is defined in the body frame: length along the heading
-    axis, width perpendicular to it.
-    """
-    half_length = length / 2.0
-    half_width = width / 2.0
-    local_corners = [
-        (half_length, half_width),
-        (half_length, -half_width),
-        (-half_length, -half_width),
-        (-half_length, half_width),
-    ]
+    c = math.cos(pose.theta)
+    s = math.sin(pose.theta)
 
-    cos_theta = np.cos(pose.theta)
-    sin_theta = np.sin(pose.theta)
+    x = pose.x
+    y = pose.y
 
-    return [
-        (
-            pose.x + lx * cos_theta - ly * sin_theta,
-            pose.y + lx * sin_theta + ly * cos_theta,
-        )
-        for lx, ly in local_corners
-    ]
+    return (
+        (x + hl * c - hw * s, y + hl * s + hw * c),
+        (x + hl * c + hw * s, y + hl * s - hw * c),
+        (x - hl * c + hw * s, y - hl * s - hw * c),
+        (x - hl * c - hw * s, y - hl * s + hw * c),
+    )
 
 
 def pose_from_segment(x1: float, y1: float, x2: float, y2: float) -> tuple[Pose, float]:

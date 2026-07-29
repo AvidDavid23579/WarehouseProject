@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+import numpy as np
+
 from config import PHYSICS_DT, X_MAX, X_MIN, Y_MAX, Y_MIN
 from entities.dock import Dock
 from entities.pallet import Pallet, PalletFrame
@@ -12,8 +14,8 @@ from graphs.graph import NavigationGraph
 @dataclass(slots=True)
 class WorldFrame:
     time: float
-    robots: list[RobotFrame]
-    pallets: list[PalletFrame]
+    robots: np.ndarray  # shape (N, 3): x, y, theta
+    pallets: np.ndarray  # shape (M, 3): x, y, theta
 
 
 @dataclass(slots=True)
@@ -50,25 +52,24 @@ class World:
         return WorldMap(shelves=self.shelves, docks=self.docks, walls=self.walls, graph=self.graph)
 
     def frame(self) -> WorldFrame:
-        # Return an immutable snapshot for rendering/playback
+        robots = np.empty((len(self.robots), 3), dtype=np.float32)
+        for i, robot in enumerate(self.robots):
+            pose = robot.state.pose
+            robots[i, 0] = pose.x
+            robots[i, 1] = pose.y
+            robots[i, 2] = pose.theta
+
+        pallets = np.empty((len(self.pallets), 3), dtype=np.float32)
+        for i, pallet in enumerate(self.pallets):
+            pose = pallet.pose
+            pallets[i, 0] = pose.x
+            pallets[i, 1] = pose.y
+            pallets[i, 2] = pose.theta
+
         return WorldFrame(
             time=self.time,
-            robots=[
-                RobotFrame(
-                    x=robot.state.pose.x,
-                    y=robot.state.pose.y,
-                    theta=robot.state.pose.theta,
-                )
-                for robot in self.robots
-            ],
-            pallets=[
-                PalletFrame(
-                    x=pallet.pose.x,
-                    y=pallet.pose.y,
-                    theta=pallet.pose.theta,
-                )
-                for pallet in self.pallets
-            ],
+            robots=robots,
+            pallets=pallets,
         )
 
     def add_robot(self, robot: Robot) -> None:
@@ -93,7 +94,7 @@ class World:
             if robot.state.crashed:
                 continue
 
-            for x, y in robot.robot_vertices():
+            for x, y in robot.state.vertices:
                 if x < X_MIN or x > X_MAX or y < Y_MIN or y > Y_MAX:
                     out_of_bounds.append(robot)
                     break
