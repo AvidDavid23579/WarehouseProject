@@ -1,7 +1,5 @@
 import math
 
-from common.types import Pose
-from config import DOCK_APPROACH_DISTANCE, ROBOT_DOCK_DIST
 from graphs.graph import NavigationGraph
 from simulator.world import World
 
@@ -11,28 +9,15 @@ class GraphBuilder:
         self.world = world
         self.graph: NavigationGraph = NavigationGraph()
 
-    def build(self) -> NavigationGraph:
-        self.build_docks_graph()
-        self.build_pallets_graph()
+    def build(self):
+        self.build_subgraphs()
+        self.connect_graphs()
+
         return self.graph
 
-    def build_docks_graph(self):
-        for dock in self.world.docks:
-            dock_node = self.graph.add_node(Pose(dock.pose.x, dock.pose.y + ROBOT_DOCK_DIST, math.pi / 2))
-            approach = self.graph.add_node(
-                Pose(
-                    dock.pose.x,
-                    dock.pose.y + ROBOT_DOCK_DIST + DOCK_APPROACH_DISTANCE,
-                    math.pi / 2,
-                )
-            )
+    def build_subgraphs(self):
+        for shelf in self.world.shelves:
+            shelf.build_graph(self.graph)
 
-            dock.approach_node = approach
-            dock.dock_node = dock_node
-
-            self.graph.add_edge(approach, dock_node, ROBOT_DOCK_DIST)
-            self.graph.add_edge(dock_node, approach, ROBOT_DOCK_DIST)
-
-    def build_pallets_graph(self):
-        for pallet in self.world.pallets:
-            pass
+    def connect_graphs(self):
+        pass

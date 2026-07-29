@@ -28,3 +28,6 @@ class NavigationGraph:
 
     def add_edge(self, start: Node, end: Node, cost: float):
         self.edges.append(Edge(start, end, cost))
+
+    def get_nodes(self) -> list[Node]:
+        return self.nodes
