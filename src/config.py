@@ -2,6 +2,11 @@ import math
 
 from common.types import Pose
 
+# Warehouse parameters
+SHELF_COL = 14
+SHELF_ROW = 2
+NUM_DOCKS = 38
+
 # --- Simulation parameters ---------------------------------------------------
 PHYSICS_DT = 0.01
 SIMULATION_DURATION = 100  # Seconds
@@ -27,15 +32,12 @@ PALLET_WIDTH = 0.3
 PALLET_LENGTH = 0.4
 SHELF_WIDTH = 2 * PALLET_WIDTH
 SHELF_LENGTH = 15 * PALLET_LENGTH
-SHELF_COL = 12
-SHELF_ROW = 2
 
 # --- Dock footprint ----------------------------------------------------------
 DOCK_WIDTH = 0.3
 DOCK_LENGTH = 0.5
 DOCK_APPROACH_DISTANCE = 0.4
 DOCK_SPACING = 1.0
-NUM_DOCKS = 38
 DOCK_ONE_POSE = Pose(1.0, DOCK_WIDTH / 2, 0.0)
 ROBOT_DOCK_DIST = 0.5
 

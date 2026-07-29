@@ -13,6 +13,7 @@ class GraphBuilder:
 
     def build(self) -> NavigationGraph:
         self.build_docks_graph()
+        self.build_pallets_graph()
         return self.graph
 
     def build_docks_graph(self):
@@ -31,3 +32,7 @@ class GraphBuilder:
 
             self.graph.add_edge(approach, dock_node, ROBOT_DOCK_DIST)
             self.graph.add_edge(dock_node, approach, ROBOT_DOCK_DIST)
+
+    def build_pallets_graph(self):
+        for pallet in self.world.pallets:
+            pass

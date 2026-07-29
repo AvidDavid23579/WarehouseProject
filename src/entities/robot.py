@@ -1,12 +1,8 @@
-import math
 from dataclasses import dataclass
 
-import numpy as np
-
-from common.potential import apply_repulsion
 from common.types import Pose
-from common.utils import clamp, rotated_rectangle_vertices, wrap_angle
-from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, MAX_VELOCITY, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
+from common.utils import rotated_rectangle_vertices
+from config import ROBOT_LENGTH, ROBOT_WIDTH
 
 
 @dataclass(slots=True)
