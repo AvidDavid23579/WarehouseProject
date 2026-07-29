@@ -2,7 +2,7 @@ import math
 
 from common.types import Pose
 from common.utils import rotated_rectangle_vertices
-from config import NUM_PALLETS_PER_SHELF, PALLET_LENGTH, PALLET_WIDTH, ROBOT_WIDTH, SHELF_LENGTH, SHELF_WIDTH
+from config import NUM_PALLETS_PER_SHELF, PALLET_LENGTH, PALLET_WIDTH, ROBOT_LENGTH, SHELF_LENGTH, SHELF_WIDTH
 
 
 class Shelf:
@@ -31,29 +31,29 @@ class Shelf:
         return poses
 
     def navigation_nodes(self) -> list[Pose]:
-        margin = ROBOT_WIDTH * 1.5
+        margin = ROBOT_LENGTH * 1.2
 
         half_length = SHELF_LENGTH / 2
         half_width = SHELF_WIDTH / 2
 
         return [
             Pose(
-                self.pose.x + half_width + margin,
+                self.pose.x - half_width - margin,
                 self.pose.y - half_length - margin,
                 -math.pi / 2,
             ),
             Pose(
-                self.pose.x + half_width + margin,
+                self.pose.x - half_width - margin,
                 self.pose.y + half_length + margin,
                 math.pi,
             ),
             Pose(
-                self.pose.x - half_width - margin,
+                self.pose.x + half_width + margin,
                 self.pose.y + half_length + margin,
                 math.pi / 2,
             ),
             Pose(
-                self.pose.x - half_width - margin,
+                self.pose.x + half_width + margin,
                 self.pose.y - half_length - margin,
                 0,
             ),

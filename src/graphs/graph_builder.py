@@ -16,6 +16,8 @@ class GraphBuilder:
         return self.graph
 
     def build_subgraphs(self):
+        for dock in self.world.docks:
+            dock.build_graph(self.graph)
         for shelf in self.world.shelves:
             shelf.build_graph(self.graph)
 

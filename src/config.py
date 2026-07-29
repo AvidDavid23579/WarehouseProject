@@ -18,9 +18,9 @@ WAREHOUSE_WIDTH = 1300  # Pixels
 
 # --- World bounds (meters) ---------------------------------------------------
 X_MIN = 0
-X_MAX = 40
+X_MAX = 60
 Y_MIN = 0
-Y_MAX = 20
+Y_MAX = 30
 
 WORLD_BOUNDS = (X_MIN, X_MAX, Y_MIN, Y_MAX)
 

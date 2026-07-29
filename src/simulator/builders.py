@@ -32,7 +32,7 @@ def build_docks(
             y=DOCK_ONE_POSE.y + ROBOT_DOCK_DIST,
             theta=math.pi / 2,
         )
-        robot = Robot(info, robot_pose)
+        robot = Robot(info, dock.node_pose)
         dock.robot = robot
 
         docks.append(dock)
