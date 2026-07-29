@@ -6,6 +6,7 @@ from common.types import Pose
 from config import PHYSICS_DT, SIMULATION_DURATION
 from entities.pallet import Pallet
 from entities.shelf import Shelf
+from graphs.graph_builder import GraphBuilder
 from render.playback import Playback
 from simulator.builders import build_docks
 from simulator.simulation import Simulator
@@ -26,9 +27,14 @@ def main():
     for pose in shelf.pallet_poses():
         world.add_pallet(Pallet(pose))
     docks, robots = build_docks()
-    for dock, robot in zip(docks, robots):
+
+    for dock in docks:
         world.add_dock(dock)
+
+    for robot in robots:
         world.add_robot(robot)
+
+    world.graph = GraphBuilder(world).build()
 
     # Makes the simulation
     sim = Simulator(world)

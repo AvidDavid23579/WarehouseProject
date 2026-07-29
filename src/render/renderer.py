@@ -4,6 +4,7 @@ import pygame.gfxdraw
 from common.types import Pose
 from common.utils import rotated_rectangle_vertices
 from config import PALLET_LENGTH, PALLET_WIDTH, ROBOT_LENGTH, ROBOT_WIDTH, WAREHOUSE_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, X_MAX, Y_MAX
+from graphs.graph import NavigationGraph
 from render.camera import Camera
 from simulator.world import WorldFrame, WorldMap
 
@@ -172,35 +173,26 @@ class Renderer:
                 outline=(70, 70, 70),
                 aa=False,
             )
-        nodes = []
 
-        for dock in self.world_map.docks:
-            nodes.append(dock.approach_node)
-            nodes.append(dock.dock_node)
+        self._draw_nodes(surface, self.world_map.graph)
 
-        self._draw_nodes(surface, nodes)
-
-    def _draw_nodes(self, surface, nodes):
+    def _draw_nodes(self, surface, graph: NavigationGraph):
         # Draw edges
-        for node in nodes:
-            x1, y1 = self.camera.world_to_screen(node.pose.x, node.pose.y)
+        for edge in graph.edges:
+            x1, y1 = self.camera.world_to_screen(edge.start.pose.x, edge.start.pose.y)
 
-            for neighbor in node.neighbors:
-                x2, y2 = self.camera.world_to_screen(
-                    neighbor.pose.x,
-                    neighbor.pose.y,
-                )
+            x2, y2 = self.camera.world_to_screen(edge.end.pose.x, edge.end.pose.y)
 
-                pygame.draw.line(
-                    surface,
-                    (180, 180, 180),
-                    (x1 + 0.5, y1),
-                    (x2 + 0.5, y2),
-                    1,
-                )
+            pygame.draw.line(
+                surface,
+                (180, 180, 180),
+                (x1 + 0.5, y1),
+                (x2 + 0.5, y2),
+                1,
+            )
 
         # Draw nodes
-        for node in nodes:
+        for node in graph.nodes:
             x, y = self.camera.world_to_screen(node.pose.x, node.pose.y)
 
             pygame.draw.circle(

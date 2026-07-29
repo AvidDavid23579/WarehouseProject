@@ -6,6 +6,7 @@ from entities.pallet import Pallet, PalletFrame
 from entities.robot import Robot, RobotFrame
 from entities.shelf import Shelf
 from entities.wall import Wall
+from graphs.graph import NavigationGraph
 
 
 @dataclass(slots=True)
@@ -20,6 +21,7 @@ class WorldMap:
     shelves: list[Shelf]
     docks: list[Dock]
     walls: list[Wall]
+    graph: NavigationGraph
 
 
 class World:
@@ -30,6 +32,7 @@ class World:
         self.shelves: list[Shelf] = []
         self.walls: list[Wall] = []
         self.pallets: list[Pallet] = []
+        self.graph: NavigationGraph = NavigationGraph()
 
     def step(self) -> None:
         # Advance the simulation by one physics step
@@ -44,7 +47,7 @@ class World:
             robot.crash()
 
     def world_map(self) -> WorldMap:
-        return WorldMap(shelves=self.shelves, docks=self.docks, walls=self.walls)
+        return WorldMap(shelves=self.shelves, docks=self.docks, walls=self.walls, graph=self.graph)
 
     def frame(self) -> WorldFrame:
         # Return an immutable snapshot for rendering/playback

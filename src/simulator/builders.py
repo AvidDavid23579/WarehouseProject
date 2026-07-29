@@ -11,13 +11,10 @@ from entities.shelf import Shelf
 def build_docks(
     num_docks: int = NUM_DOCKS,
     spacing: float = DOCK_SPACING,
-    first_node_id: int = 0,
 ) -> tuple[list[Dock], list[Robot]]:
 
     docks = []
     robots = []
-
-    next_node_id = first_node_id
 
     for i in range(num_docks):
         dock_pose = Pose(
@@ -26,7 +23,7 @@ def build_docks(
             theta=DOCK_ONE_POSE.theta,
         )
 
-        dock = Dock(dock_pose, next_node_id)
+        dock = Dock(dock_pose)
 
         info = RobotInfo(id=i)
 
@@ -40,8 +37,6 @@ def build_docks(
 
         docks.append(dock)
         robots.append(robot)
-
-        next_node_id += 2
 
     return docks, robots
 
