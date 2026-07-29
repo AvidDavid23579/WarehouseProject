@@ -3,9 +3,9 @@ import math
 from common.types import Pose
 
 # Warehouse parameters
-SHELF_COL = 4
-SHELF_ROW = 2
-NUM_DOCKS = 1
+SHELF_COL = 14
+SHELF_ROW = 3
+NUM_DOCKS = 38
 NUM_PALLETS_PER_SHELF = 8
 
 # --- Simulation parameters ---------------------------------------------------
@@ -38,7 +38,7 @@ SHELF_LENGTH = NUM_PALLETS_PER_SHELF * PALLET_LENGTH + (NUM_PALLETS_PER_SHELF - 
 DOCK_WIDTH = 0.3
 DOCK_LENGTH = 0.5
 DOCK_APPROACH_DISTANCE = 0.4
-DOCK_SPACING = 1.0
+DOCK_SPACING = 0.5
 DOCK_ONE_POSE = Pose(1.0, DOCK_WIDTH / 2, 0.0)
 ROBOT_DOCK_DIST = 0.5
 

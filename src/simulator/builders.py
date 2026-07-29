@@ -1,7 +1,7 @@
 import math
 
 from common.types import Pose
-from config import DOCK_ONE_POSE, DOCK_SPACING, NUM_DOCKS, ROBOT_DOCK_DIST, SHELF_COL, SHELF_LENGTH, SHELF_ROW, SHELF_WIDTH, X_MAX, Y_MAX
+from config import DOCK_ONE_POSE, DOCK_SPACING, NUM_DOCKS, SHELF_COL, SHELF_LENGTH, SHELF_ROW, SHELF_WIDTH, X_MAX, Y_MAX
 from entities.dock import Dock
 from entities.pallet import Pallet
 from entities.robot import Robot, RobotInfo
@@ -25,14 +25,8 @@ def build_docks(
         )
 
         dock = Dock(dock_pose)
-
         info = RobotInfo(id=i)
 
-        robot_pose = Pose(
-            x=DOCK_ONE_POSE.x + i * spacing,
-            y=DOCK_ONE_POSE.y + ROBOT_DOCK_DIST,
-            theta=math.pi / 2,
-        )
         robot = Robot(info, dock.node_pose)
         dock.robot = robot
 

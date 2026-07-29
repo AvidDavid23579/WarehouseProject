@@ -11,6 +11,7 @@ from entities.wall import Wall
 from graphs.graph import NavigationGraph
 
 
+# Data needed to render each frame
 @dataclass(slots=True)
 class WorldFrame:
     time: float
@@ -18,6 +19,7 @@ class WorldFrame:
     pallets: np.ndarray
 
 
+# One time initialization of static objects
 @dataclass(slots=True)
 class WorldMap:
     shelves: list[Shelf]
@@ -40,13 +42,17 @@ class World:
         self.graph = NavigationGraph()
 
         # Robot SoA data
+
+        # Empty matrix of shape 3: x, y, and theta
         self.robot_pose = np.empty((0, 3), dtype=np.float32)
+        # Empty matrix of shape 2: v and omega
         self.robot_velocity = np.empty((0, 2), dtype=np.float32)
-        self.robot_crashed = np.empty((0,), dtype=np.bool_)
+        # Empty list of booleans to check crash state
+        self.robot_crashed = np.empty(0, dtype=np.bool_)
 
         # Navigation
-        self.robot_target_node = np.empty((0,), dtype=np.int32)
-        self.robot_path_index = np.empty((0,), dtype=np.int32)
+        self.robot_target_node = np.empty(0, dtype=np.int32)
+        self.robot_path_index = np.empty(0, dtype=np.int32)
         self.robot_paths = []  # list[list[int]]
 
         # Robot collision geometry
@@ -128,13 +134,9 @@ class World:
         self.robot_vertices[:, :, 1] = y[:, None] + local[:, 0][None, :] * s[:, None] + local[:, 1][None, :] * c[:, None]
 
     def robot_boundary_collisions(self):
-
         vertices = self.robot_vertices
-
         outside = (vertices[:, :, 0] < X_MIN) | (vertices[:, :, 0] > X_MAX) | (vertices[:, :, 1] < Y_MIN) | (vertices[:, :, 1] > Y_MAX)
-
         crashed = np.any(outside, axis=1)
-
         new = crashed & (~self.robot_crashed)
 
         self.robot_crashed[new] = True
