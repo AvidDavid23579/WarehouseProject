@@ -27,7 +27,7 @@ PALLET_WIDTH = 0.3
 PALLET_LENGTH = 0.4
 SHELF_WIDTH = 2 * PALLET_WIDTH
 SHELF_LENGTH = 15 * PALLET_LENGTH
-SHELF_COL = 8
+SHELF_COL = 12
 SHELF_ROW = 2
 
 # --- Dock footprint ----------------------------------------------------------
