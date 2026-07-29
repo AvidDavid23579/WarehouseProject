@@ -23,15 +23,19 @@ ROBOT_WIDTH = 0.4
 ROBOT_LENGTH = 0.6
 
 # --- Shelf footprint ---------------------------------------------------------
-SHELF_WIDTH = 0.6
-SHELF_LENGTH = 6.0
+PALLET_WIDTH = 0.3
+PALLET_LENGTH = 0.4
+SHELF_WIDTH = 2 * PALLET_WIDTH
+SHELF_LENGTH = 15 * PALLET_LENGTH
+SHELF_COL = 1
+SHELF_ROW = 2
 
 # --- Dock footprint ----------------------------------------------------------
 DOCK_WIDTH = 0.3
 DOCK_LENGTH = 0.5
 DOCK_APPROACH_DISTANCE = 0.4
 DOCK_SPACING = 1.0
-NUM_DOCKS = 38
+NUM_DOCKS = 1
 DOCK_ONE_POSE = Pose(1.0, DOCK_WIDTH / 2, 0.0)
 ROBOT_DOCK_DIST = 0.5
 

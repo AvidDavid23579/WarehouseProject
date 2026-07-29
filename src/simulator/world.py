@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from config import PHYSICS_DT, X_MAX, X_MIN, Y_MAX, Y_MIN
 from entities.dock import Dock
+from entities.pallet import Pallet, PalletFrame
 from entities.robot import Robot, RobotFrame
 from entities.shelf import Shelf
 from entities.wall import Wall
@@ -11,6 +12,7 @@ from entities.wall import Wall
 class WorldFrame:
     time: float
     robots: list[RobotFrame]
+    pallets: list[PalletFrame]
 
 
 @dataclass(slots=True)
@@ -27,6 +29,7 @@ class World:
         self.docks: list[Dock] = []
         self.shelves: list[Shelf] = []
         self.walls: list[Wall] = []
+        self.pallets: list[Pallet] = []
 
     def step(self) -> None:
         # Advance the simulation by one physics step
@@ -55,6 +58,14 @@ class World:
                 )
                 for robot in self.robots
             ],
+            pallets=[
+                PalletFrame(
+                    x=pallet.pose.x,
+                    y=pallet.pose.y,
+                    theta=pallet.pose.theta,
+                )
+                for pallet in self.pallets
+            ],
         )
 
     def add_robot(self, robot: Robot) -> None:
@@ -65,6 +76,9 @@ class World:
 
     def add_shelf(self, shelf: Shelf) -> None:
         self.shelves.append(shelf)
+
+    def add_pallet(self, pallet):
+        self.pallets.append(pallet)
 
     def add_wall(self, wall: Wall) -> None:
         self.walls.append(wall)

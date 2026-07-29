@@ -17,7 +17,7 @@ class RobotInfo:
 @dataclass(slots=True)
 class NavigationState:
     current_node_id: int | None
-    goal_node_id: int | None
+    target_node_id: int | None
     path: list[int]
     path_index: int
 

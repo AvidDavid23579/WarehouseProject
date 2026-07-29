@@ -3,8 +3,7 @@ import pygame.gfxdraw
 
 from common.types import Pose
 from common.utils import rotated_rectangle_vertices
-from config import ROBOT_LENGTH, ROBOT_WIDTH, WAREHOUSE_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, X_MAX, Y_MAX
-from entities.robot import RobotFrame
+from config import PALLET_LENGTH, PALLET_WIDTH, ROBOT_LENGTH, ROBOT_WIDTH, WAREHOUSE_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, X_MAX, Y_MAX
 from render.camera import Camera
 from simulator.world import WorldFrame, WorldMap
 
@@ -65,8 +64,7 @@ class Renderer:
 
         self.screen.blit(self.background, (0, 0))
 
-        for robot in frame.robots:
-            self._draw_robot(robot)
+        self._draw_dynamic(self.screen, frame)
 
     @staticmethod
     def _draw_grid(surface, scene_rect, step: int = 2) -> None:
@@ -118,18 +116,34 @@ class Renderer:
                 2,
             )
 
-    def _draw_robot(self, robot: RobotFrame) -> None:
-        vertices = rotated_rectangle_vertices(
-            Pose(robot.x, robot.y, robot.theta),
-            ROBOT_LENGTH,
-            ROBOT_WIDTH,
-        )
+    def _draw_dynamic(self, surface, state):
+        for pallet in state.pallets:
+            vertices = rotated_rectangle_vertices(
+                Pose(pallet.x, pallet.y, pallet.theta),
+                PALLET_LENGTH,
+                PALLET_WIDTH,
+            )
 
-        self._draw_polygon(
-            self.screen,
-            vertices,
-            fill=(0, 170, 255),
-        )
+            self._draw_polygon(
+                surface,
+                vertices,
+                fill=(170, 120, 60),
+                outline=(90, 60, 30),
+                aa=False,
+            )
+
+        for robot in state.robots:
+            vertices = rotated_rectangle_vertices(
+                Pose(robot.x, robot.y, robot.theta),
+                ROBOT_LENGTH,
+                ROBOT_WIDTH,
+            )
+
+            self._draw_polygon(
+                self.screen,
+                vertices,
+                fill=(0, 170, 255),
+            )
 
     def _draw_static(self, surface):
         for dock in self.world_map.docks:
@@ -180,8 +194,8 @@ class Renderer:
                 pygame.draw.line(
                     surface,
                     (180, 180, 180),
-                    (x1 + 1, y1),
-                    (x2 + 1, y2),
+                    (x1 + 0.5, y1),
+                    (x2 + 0.5, y2),
                     1,
                 )
 
@@ -191,8 +205,8 @@ class Renderer:
 
             pygame.draw.circle(
                 surface,
-                (255, 0, 0),
-                (x + 2, y),
+                (255, 178, 54),
+                (x + 1.5, y),
                 3,
             )
 

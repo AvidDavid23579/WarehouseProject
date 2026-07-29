@@ -1,9 +1,11 @@
 import math
 
 from common.types import Pose
-from config import DOCK_ONE_POSE, DOCK_SPACING, NUM_DOCKS, ROBOT_DOCK_DIST
+from config import DOCK_ONE_POSE, DOCK_SPACING, NUM_DOCKS, ROBOT_DOCK_DIST, SHELF_COL, SHELF_ROW
 from entities.dock import Dock
+from entities.pallet import Pallet
 from entities.robot import Robot, RobotInfo
+from entities.shelf import Shelf
 
 
 def build_docks(
@@ -42,3 +44,9 @@ def build_docks(
         next_node_id += 2
 
     return docks, robots
+
+
+def build_shelves_vertical(shelves_col: int = SHELF_COL, shelves_row: int = SHELF_ROW) -> tuple[list[Shelf], list[Pallet]]:
+
+    shelves = []
+    pallets = []
