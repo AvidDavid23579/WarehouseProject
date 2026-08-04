@@ -28,13 +28,24 @@ class WorldMap:
     graph: NavigationGraph
 
 
+# Module constants
+HL = ROBOT_LENGTH * 0.5
+HW = ROBOT_WIDTH * 0.5
+
+# Local robot coordinates  
+LX = np.array([-HL, HL, HL, -HL], dtype=np.float32)
+LY = np.array([-HW, -HW, HW, HW], dtype=np.float32)
+
+
 class World:
     def __init__(self):
         self.time = 0.0
 
+        # Dynamic objects
         self.robots = []
         self.pallets = []
 
+        # Static objects
         self.docks = []
         self.shelves = []
         self.walls = []
@@ -56,23 +67,10 @@ class World:
         self.robot_paths = []  # list[list[int]]
 
         # Robot collision geometry
-        self.robot_vertices = np.empty(
-            (0, 4, 2),
-            dtype=np.float32,
-        )
+        self.robot_vertices = np.empty((0, 4, 2), dtype=np.float32)  # 4 corners, 2D coordinates
 
         # Pallets
         self.pallet_pose = np.empty((0, 3), dtype=np.float32)
-
-    @property
-    def nodes(self):
-        nodes = []
-
-        for dock in self.docks:
-            nodes.append(dock.approach_node)
-            nodes.append(dock.dock_node)
-
-        return nodes
 
     # ----------- Robot update functions ---------------------------------------
 
@@ -98,8 +96,8 @@ class World:
         self.robot_paths.append([])
 
     def update_robot_vertices(self):
-
         pose = self.robot_pose
+        vertices = self.robot_vertices
 
         # Extract columns
         x = pose[:, 0]
@@ -110,28 +108,23 @@ class World:
         c = np.cos(theta)
         s = np.sin(theta)
 
-        # Define corners in local coordinates
-        hl = ROBOT_LENGTH / 2
-        hw = ROBOT_WIDTH / 2
+        # Create views once
+        x = x[:, None]
+        y = y[:, None]
+        c = c[:, None]
+        s = s[:, None]
 
-        # Local corner coordinates
-        local = np.array(
-            [
-                [-hl, -hw],
-                [hl, -hw],
-                [hl, hw],
-                [-hl, hw],
-            ],
-            dtype=np.float32,
-        )
+        vx = vertices[:, :, 0]
+        vy = vertices[:, :, 1]
 
-        # rotation for all robots
+        # Write directly into destination arrays
+        np.multiply(c, LX, out=vx)
+        vx -= s * LY
+        vx += x
 
-        # Column 0 equation: apply x transform
-        self.robot_vertices[:, :, 0] = x[:, None] + local[:, 0][None, :] * c[:, None] - local[:, 1][None, :] * s[:, None]
-
-        # Column 1 equation: apply y transform
-        self.robot_vertices[:, :, 1] = y[:, None] + local[:, 0][None, :] * s[:, None] + local[:, 1][None, :] * c[:, None]
+        np.multiply(s, LX, out=vy)
+        vy += c * LY
+        vy += y
 
     def robot_boundary_collisions(self):
         vertices = self.robot_vertices

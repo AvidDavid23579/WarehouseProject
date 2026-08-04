@@ -40,22 +40,22 @@ class Shelf:
             Pose(
                 self.pose.x - half_width - margin,
                 self.pose.y - half_length - margin,
-                -math.pi / 2,
+                None,
             ),
             Pose(
                 self.pose.x - half_width - margin,
                 self.pose.y + half_length + margin,
-                math.pi,
+                None,
             ),
             Pose(
                 self.pose.x + half_width + margin,
                 self.pose.y + half_length + margin,
-                math.pi / 2,
+                None,
             ),
             Pose(
                 self.pose.x + half_width + margin,
                 self.pose.y - half_length - margin,
-                0,
+                None,
             ),
         ]
 

@@ -32,6 +32,7 @@ def boundary_repulsion(
     tangent_gain: float = 0.25,
     max_force: float = 20.0,
 ) -> tuple[float, float]:
+
     pose = robot.state.pose
 
     c = math.cos(pose.theta)
