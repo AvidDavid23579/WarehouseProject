@@ -1,4 +1,4 @@
-from common.drive import drive_to_pose
+from common.drive import drive_to_pose, patrol, random_navigation
 from simulator.world import World, WorldFrame, WorldMap
 
 
@@ -17,6 +17,7 @@ class Simulator:
 
         for _ in range(steps):
             drive_to_pose(world=self.world)
+            random_navigation(world=self.world)
             self.world.step()
             self.frames.append(self.world.frame())
 

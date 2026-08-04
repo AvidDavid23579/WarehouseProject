@@ -22,7 +22,7 @@ class NavigationState:
 class RobotState:
     # Physics
     pose: np.ndarray = field(default_factory=lambda: np.empty((0, 3), dtype=np.float32))
-    velocity: np.ndarray = field(default_factory=lambda: np.empty((0, 2), dtype=np.float32))
+    twist: np.ndarray = field(default_factory=lambda: np.empty((0, 2), dtype=np.float32))
 
     # Collision
     crashed: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.bool_))

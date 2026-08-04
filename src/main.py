@@ -49,7 +49,6 @@ def main():
 
     # End profiling process
     profiler.disable()
-
     stats = pstats.Stats(profiler)
 
     print("\n=== By cumulative time ===")

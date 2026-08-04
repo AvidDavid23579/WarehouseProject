@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from common.utils import rotated_rectangle_vertices, update_robot_vertices
-from config import PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH, X_MAX, X_MIN, Y_MAX, Y_MIN
+from config import NUM_DOCKS, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH, X_MAX, X_MIN, Y_MAX, Y_MIN
 from entities.dock import Dock
 from entities.robot import Robot
 from entities.shelf import Shelf
@@ -48,9 +48,10 @@ class World:
         # Empty matrix of shape 3: x, y, and theta
         self.robot_pose = np.empty((0, 3), dtype=np.float32)
         # Empty matrix of shape 2: v and omega
-        self.robot_velocity = np.empty((0, 2), dtype=np.float32)
+        self.robot_twist = np.empty((0, 2), dtype=np.float32)
         # Empty list of booleans to check crash state
         self.robot_crashed = np.empty(0, dtype=np.bool_)
+        self.robot_arrived = np.empty(NUM_DOCKS, dtype=np.bool_)
 
         # Navigation
         self.robot_target_node = np.empty(0, dtype=np.int32)
@@ -71,7 +72,7 @@ class World:
         p = robot.start_pose
 
         self.robot_pose = np.vstack((self.robot_pose, np.array([[p.x, p.y, p.theta]], dtype=np.float32)))
-        self.robot_velocity = np.vstack((self.robot_velocity, np.array([[0.0, 0.0]], dtype=np.float32)))
+        self.robot_twist = np.vstack((self.robot_twist, np.array([[0.0, 0.0]], dtype=np.float32)))
         self.robot_crashed = np.append(self.robot_crashed, False)
 
         vertices = rotated_rectangle_vertices(p, ROBOT_LENGTH, ROBOT_WIDTH)
@@ -89,7 +90,7 @@ class World:
         new = crashed & (~self.robot_crashed)
 
         self.robot_crashed[new] = True
-        self.robot_velocity[new] = 0.0
+        self.robot_twist[new] = 0.0
 
     def crash_robot(self, i):
 
@@ -97,7 +98,7 @@ class World:
             return
 
         self.robot_crashed[i] = True
-        self.robot_velocity[i] = 0.0
+        self.robot_twist[i] = 0.0
 
         self.robots[i].crash()
 
@@ -149,7 +150,7 @@ class World:
         self.time += PHYSICS_DT
 
         pose = self.robot_pose
-        vel = self.robot_velocity
+        vel = self.robot_twist
 
         pose[:, 0] += vel[:, 0] * np.cos(pose[:, 2]) * PHYSICS_DT
         pose[:, 1] += vel[:, 0] * np.sin(pose[:, 2]) * PHYSICS_DT

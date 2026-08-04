@@ -1,70 +1,113 @@
-import math
-
 import numpy as np
 
-from common.utils import clamp, wrap_angle
-from config import (
-    ANGLE_TOLERANCE,
-    DIST_TOLERANCE,
-    MAX_OMEGA,
-    MAX_VELOCITY,
-)
+from common.utils import wrap_angle
+from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, MAX_VELOCITY
 
 
 def drive_to_pose(world) -> None:
-
+    world.robot_arrived.fill(False)
     pose = world.robot_pose
-    velocity = world.robot_velocity
+    twist = world.robot_twist
     crashed = world.robot_crashed
     target_node = world.robot_target_node
     node_pose = world.graph.node_pose
+    kP_velocity = 5.0
+    kP_angular = 7.5
+    kP_final = 10.0
 
-    for i in range(len(pose)):
-        if crashed[i]:
-            continue
+    # Default: stop every robot.
+    twist.fill(0.0)
 
-        node_id = target_node[i]
+    # Active robots will receive commands below.
+    active = (~crashed) & (target_node != -1)
 
-        if node_id == -1:
-            velocity[i] = 0.0
-            continue
+    if not np.any(active):
+        return
 
-        px, py, theta = pose[i]
-        gx, gy, goal_theta = node_pose[node_id]
+    active_idx = np.flatnonzero(active)  # returns the indices where the mask is True
+    node_idx = target_node[active]
 
-        dx = gx - px
-        dy = gy - py
-        dist = math.hypot(dx, dy)
+    p = pose[active]
+    g = node_pose[node_idx]
 
-        if dist < DIST_TOLERANCE:
-            velocity[i, 0] = 0.0
+    px = p[:, 0]
+    py = p[:, 1]
+    theta = p[:, 2]
 
-            # Rotate to the node heading first (if required)
-            if not np.isnan(goal_theta):
-                heading_error = wrap_angle(goal_theta - theta)
+    gx = g[:, 0]
+    gy = g[:, 1]
+    goal_theta = g[:, 2]
 
-                if abs(heading_error) >= ANGLE_TOLERANCE:
-                    velocity[i, 1] = clamp(
-                        10.0 * heading_error,
-                        -MAX_OMEGA,
-                        MAX_OMEGA,
-                    )
-                    continue
+    dx = gx - px
+    dy = gy - py
+    dist = np.hypot(dx, dy)
 
-            # Heading satisfied -> advance to next node
-            target_node[i] = (node_id + 1) % len(node_pose)
+    arrived = dist < DIST_TOLERANCE
+    moving = ~arrived
 
-            velocity[i, 0] = 0.0
-            velocity[i, 1] = 0.0
+    # Moving
+    if np.any(moving):
+        moving_idx = active_idx[moving]
 
-            continue
+        target_heading = np.arctan2(dy[moving], dx[moving])
+        heading_error = wrap_angle(target_heading - theta[moving])
 
-        target_heading = math.atan2(dy, dx)
-        heading_error = wrap_angle(target_heading - theta)
+        twist[moving_idx, 0] = np.clip(
+            kP_velocity * dist[moving] * np.maximum(0.0, np.cos(heading_error)),
+            -MAX_VELOCITY,
+            MAX_VELOCITY,
+        )
 
-        velocity[i, 1] = 7.5 * heading_error
-        velocity[i, 0] = 5.0 * dist * max(0.0, math.cos(heading_error))
+        twist[moving_idx, 1] = np.clip(
+            kP_angular * heading_error,
+            -MAX_OMEGA,
+            MAX_OMEGA,
+        )
 
-        velocity[i, 0] = clamp(velocity[i, 0], -MAX_VELOCITY, MAX_VELOCITY)
+    # Arrived
 
-        velocity[i, 1] = clamp(velocity[i, 1], -MAX_OMEGA, MAX_OMEGA)
+    if np.any(arrived):
+        arrived_idx = active_idx[arrived]
+
+        theta_a = theta[arrived]
+        goal_theta_a = goal_theta[arrived]
+
+        has_heading = ~np.isnan(goal_theta_a)
+
+        advance = np.ones(len(arrived_idx), dtype=bool)
+
+        if np.any(has_heading):
+            heading_error = wrap_angle(goal_theta_a[has_heading] - theta_a[has_heading])
+
+            rotate = np.abs(heading_error) >= ANGLE_TOLERANCE
+            rotate_idx = arrived_idx[has_heading][rotate]
+            twist[rotate_idx, 1] = np.clip(kP_final * heading_error[rotate], -MAX_OMEGA, MAX_OMEGA)
+            advance[np.flatnonzero(has_heading)[rotate]] = False
+
+        advance_idx = arrived_idx[advance]
+
+        if len(advance_idx):
+            world.robot_arrived[advance_idx] = True
+
+
+def patrol(world):
+    arrived = world.robot_arrived
+    target = world.robot_target_node
+
+    target[arrived] += 1
+    target %= len(world.graph.node_pose)
+
+
+def random_navigation(world):
+    arrived = world.robot_arrived
+
+    n = np.count_nonzero(arrived)
+
+    if n == 0:
+        return
+
+    world.robot_target_node[arrived] = np.random.randint(
+        0,
+        len(world.graph.node_pose),
+        size=n,
+    )
