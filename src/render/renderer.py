@@ -4,7 +4,7 @@ import pygame.gfxdraw
 from common.types import Pose
 from common.utils import rotated_rectangle_vertices
 from config import PALLET_LENGTH, PALLET_WIDTH, ROBOT_LENGTH, ROBOT_WIDTH, WAREHOUSE_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, X_MAX, Y_MAX
-from graphs.graph import NavigationGraph
+from navigation.graph import NavigationGraph
 from render.camera import Camera
 from simulator.world import WorldFrame, WorldMap
 

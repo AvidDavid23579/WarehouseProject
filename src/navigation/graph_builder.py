@@ -1,4 +1,4 @@
-from graphs.graph import NavigationGraph
+from navigation.graph import NavigationGraph
 from simulator.world import World
 
 

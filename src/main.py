@@ -3,7 +3,7 @@ import pstats
 import time
 
 from config import PHYSICS_DT, SIMULATION_DURATION
-from graphs.graph_builder import GraphBuilder
+from navigation.graph_builder import GraphBuilder
 from render.playback import Playback
 from simulator.builders import build_docks, build_shelves_vertical
 from simulator.simulation import Simulator
@@ -32,7 +32,7 @@ def main():
         world.add_dock(dock)
     for robot in robots:
         world.add_robot(robot)
-        world.robot_target_node[robot.info.id] = robot.info.id + 1  # Assign each robot a target node
+        world.robot.target_node_id[robot.info.id] = robot.info.id  # Assign each robot a target node
 
     # Build the navigation graph
     world.graph = GraphBuilder(world).build()

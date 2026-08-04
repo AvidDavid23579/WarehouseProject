@@ -5,11 +5,11 @@ from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, MAX_VELOCITY
 
 
 def drive_to_pose(world) -> None:
-    world.robot_arrived.fill(False)
-    pose = world.robot_pose
-    twist = world.robot_twist
-    crashed = world.robot_crashed
-    target_node = world.robot_target_node
+    world.robot.arrived.fill(False)
+    pose = world.robot.pose
+    twist = world.robot.twist
+    crashed = world.robot.crashed
+    target_node = world.robot.target_node_id
     node_pose = world.graph.node_pose
     kP_velocity = 5.0
     kP_angular = 7.5
@@ -46,7 +46,9 @@ def drive_to_pose(world) -> None:
     moving = ~arrived
 
     # Moving
-    if np.any(moving):
+    moving_idx = active_idx[moving]
+
+    if moving_idx.size:
         moving_idx = active_idx[moving]
 
         target_heading = np.arctan2(dy[moving], dx[moving])
@@ -66,9 +68,9 @@ def drive_to_pose(world) -> None:
 
     # Arrived
 
-    if np.any(arrived):
-        arrived_idx = active_idx[arrived]
+    arrived_idx = active_idx[arrived]
 
+    if arrived_idx.size:
         theta_a = theta[arrived]
         goal_theta_a = goal_theta[arrived]
 
@@ -86,8 +88,8 @@ def drive_to_pose(world) -> None:
 
         advance_idx = arrived_idx[advance]
 
-        if len(advance_idx):
-            world.robot_arrived[advance_idx] = True
+        if advance_idx.size:
+            world.robot.arrived[advance_idx] = True
 
 
 def patrol(world):
@@ -99,14 +101,14 @@ def patrol(world):
 
 
 def random_navigation(world):
-    arrived = world.robot_arrived
+    arrived = world.robot.arrived
 
     n = np.count_nonzero(arrived)
 
     if n == 0:
         return
 
-    world.robot_target_node[arrived] = np.random.randint(
+    world.robot.target_node_id[arrived] = np.random.randint(
         0,
         len(world.graph.node_pose),
         size=n,

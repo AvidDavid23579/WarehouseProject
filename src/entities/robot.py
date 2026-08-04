@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from common.types import Pose
+from config import NUM_DOCKS
 
 
 @dataclass(slots=True)
@@ -29,8 +30,9 @@ class RobotState:
     vertices: np.ndarray = field(default_factory=lambda: np.empty((0, 4, 2), dtype=np.float32))
 
     # Controller
-    last_goal_dist: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.float32))
-    stuck_time: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.float32))
+    arrived: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.bool_))
+    last_goal_dist: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.float32))
+    stuck_time: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.float32))
 
     # Navigation
     current_node_id: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.int32))

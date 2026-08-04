@@ -3,12 +3,13 @@ from dataclasses import dataclass
 import numpy as np
 
 from common.utils import rotated_rectangle_vertices, update_robot_vertices
-from config import NUM_DOCKS, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH, X_MAX, X_MIN, Y_MAX, Y_MIN
+from config import PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
 from entities.dock import Dock
-from entities.robot import Robot
+from entities.robot import Robot, RobotState
 from entities.shelf import Shelf
 from entities.wall import Wall
-from graphs.graph import NavigationGraph
+from geometry.collision import robot_boundary_collisions
+from navigation.graph import NavigationGraph
 
 
 # Data needed to render each frame
@@ -44,22 +45,7 @@ class World:
         self.graph = NavigationGraph()
 
         # Robot SoA data
-
-        # Empty matrix of shape 3: x, y, and theta
-        self.robot_pose = np.empty((0, 3), dtype=np.float32)
-        # Empty matrix of shape 2: v and omega
-        self.robot_twist = np.empty((0, 2), dtype=np.float32)
-        # Empty list of booleans to check crash state
-        self.robot_crashed = np.empty(0, dtype=np.bool_)
-        self.robot_arrived = np.empty(NUM_DOCKS, dtype=np.bool_)
-
-        # Navigation
-        self.robot_target_node = np.empty(0, dtype=np.int32)
-        self.robot_path_index = np.empty(0, dtype=np.int32)
-        self.robot_paths = []  # list[list[int]]
-
-        # Robot collision geometry
-        self.robot_vertices = np.empty((0, 4, 2), dtype=np.float32)  # 4 corners, 2D coordinates
+        self.robot = RobotState()
 
         # Pallets
         self.pallet_pose = np.empty((0, 3), dtype=np.float32)
@@ -71,34 +57,25 @@ class World:
 
         p = robot.start_pose
 
-        self.robot_pose = np.vstack((self.robot_pose, np.array([[p.x, p.y, p.theta]], dtype=np.float32)))
-        self.robot_twist = np.vstack((self.robot_twist, np.array([[0.0, 0.0]], dtype=np.float32)))
-        self.robot_crashed = np.append(self.robot_crashed, False)
+        self.robot.pose = np.vstack((self.robot.pose, np.array([[p.x, p.y, p.theta]], dtype=np.float32)))
+        self.robot.twist = np.vstack((self.robot.twist, np.array([[0.0, 0.0]], dtype=np.float32)))
+        self.robot.crashed = np.append(self.robot.crashed, False)
 
         vertices = rotated_rectangle_vertices(p, ROBOT_LENGTH, ROBOT_WIDTH)
 
-        self.robot_vertices = np.vstack((self.robot_vertices, np.array([vertices], dtype=np.float32)))
+        self.robot.vertices = np.vstack((self.robot.vertices, np.array([vertices], dtype=np.float32)))
 
-        self.robot_target_node = np.append(self.robot_target_node, -1)
-        self.robot_path_index = np.append(self.robot_path_index, 0)
-        self.robot_paths.append([])
-
-    def robot_boundary_collisions(self):
-        vertices = self.robot_vertices
-        outside = (vertices[:, :, 0] < X_MIN) | (vertices[:, :, 0] > X_MAX) | (vertices[:, :, 1] < Y_MIN) | (vertices[:, :, 1] > Y_MAX)
-        crashed = np.any(outside, axis=1)
-        new = crashed & (~self.robot_crashed)
-
-        self.robot_crashed[new] = True
-        self.robot_twist[new] = 0.0
+        self.robot.target_node_id = np.append(self.robot.target_node_id, -1)
+        self.robot.path_index = np.append(self.robot.path_index, 0)
+        self.robot.paths.append([])
 
     def crash_robot(self, i):
 
-        if self.robot_crashed[i]:
+        if self.robot.crashed[i]:
             return
 
-        self.robot_crashed[i] = True
-        self.robot_twist[i] = 0.0
+        self.robot.crashed[i] = True
+        self.robot.twist[i] = 0.0
 
         self.robots[i].crash()
 
@@ -133,7 +110,7 @@ class World:
     def frame(self) -> WorldFrame:
         return WorldFrame(
             time=self.time,
-            robots=self.robot_pose.copy(),
+            robots=self.robot.pose.copy(),
             pallets=self.pallet_pose.copy(),
         )
 
@@ -149,8 +126,8 @@ class World:
 
         self.time += PHYSICS_DT
 
-        pose = self.robot_pose
-        vel = self.robot_twist
+        pose = self.robot.pose
+        vel = self.robot.twist
 
         pose[:, 0] += vel[:, 0] * np.cos(pose[:, 2]) * PHYSICS_DT
         pose[:, 1] += vel[:, 0] * np.sin(pose[:, 2]) * PHYSICS_DT
@@ -158,4 +135,4 @@ class World:
 
         update_robot_vertices(self)
 
-        self.robot_boundary_collisions()
+        robot_boundary_collisions(self)

@@ -1,4 +1,5 @@
 import math
+from collections import defaultdict
 
 import numpy as np
 
@@ -14,22 +15,13 @@ LX = np.array([-HL, HL, HL, -HL], dtype=np.float32)
 LY = np.array([-HW, -HW, HW, HW], dtype=np.float32)
 
 
-def world_to_screen(self, x, y, scene_rect, meters_width, meters_height):
-    px, py, pw, ph = scene_rect
-    sx = px + (x / meters_width) * pw
-    # Flip y because pygame y increases downward
-    sy = py + ph - (y / meters_height) * ph
-
-    return int(sx), int(sy)
-
-
 # Wraps angles to the interval [-pi, pi]
 def wrap_angle(angle):
     return (angle + np.pi) % (2 * np.pi) - np.pi
 
 
+# Clamps values to the interval [min, max]
 def clamp(value: float, min_val: float, max_val: float) -> float:
-    """Clamp *value* to the closed interval [min_val, max_val]."""
     return max(min_val, min(value, max_val))
 
 
@@ -112,7 +104,7 @@ def point_to_oriented_rectangle(
     return distance, dir_x, dir_y
 
 
-def _tangent(
+def tangent(
     normal: tuple[float, float],
     heading: tuple[float, float],
 ) -> tuple[float, float]:
@@ -134,8 +126,8 @@ def _tangent(
 
 
 def update_robot_vertices(world):
-    pose = world.robot_pose
-    vertices = world.robot_vertices
+    pose = world.robot.pose
+    vertices = world.robot.vertices
 
     # Extract columns
     x = pose[:, 0]
@@ -163,3 +155,28 @@ def update_robot_vertices(world):
     np.multiply(s, LX, out=vy)
     vy += c * LY
     vy += y
+
+
+class SpatialHash:
+    def __init__(self, cell_size: float):
+        self.cell_size = cell_size
+        self.cells = defaultdict(list)
+
+    def clear(self):
+        self.cells.clear()
+
+    def _cell(self, x: float, y: float):
+        return (
+            int(x // self.cell_size),
+            int(y // self.cell_size),
+        )
+
+    def insert(self, obj):
+        self.cells[self._cell(obj.pose.x, obj.pose.y)].append(obj)
+
+    def nearby(self, obj):
+        cx, cy = self._cell(obj.pose.x, obj.pose.y)
+
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                yield from self.cells.get((cx + dx, cy + dy), [])

@@ -1,5 +1,18 @@
 import math
-from collections import defaultdict
+
+import numpy as np
+
+from config import X_MAX, X_MIN, Y_MAX, Y_MIN
+
+
+def robot_boundary_collisions(world):
+    vertices = world.robot.vertices
+    outside = (vertices[:, :, 0] < X_MIN) | (vertices[:, :, 0] > X_MAX) | (vertices[:, :, 1] < Y_MIN) | (vertices[:, :, 1] > Y_MAX)
+    crashed = np.any(outside, axis=1)
+    new = crashed & (~world.robot.crashed)
+
+    world.robot.crashed[new] = True
+    world.robot.twist[new] = 0.0
 
 
 # Yield unit normals for each edge of a convex polygon
@@ -32,28 +45,3 @@ def sat_collision(polygon_a: list[tuple[float, float]], polygon_b: list[tuple[fl
             return False
 
     return True
-
-
-class SpatialHash:
-    def __init__(self, cell_size: float):
-        self.cell_size = cell_size
-        self.cells = defaultdict(list)
-
-    def clear(self):
-        self.cells.clear()
-
-    def _cell(self, x: float, y: float):
-        return (
-            int(x // self.cell_size),
-            int(y // self.cell_size),
-        )
-
-    def insert(self, obj):
-        self.cells[self._cell(obj.pose.x, obj.pose.y)].append(obj)
-
-    def nearby(self, obj):
-        cx, cy = self._cell(obj.pose.x, obj.pose.y)
-
-        for dx in (-1, 0, 1):
-            for dy in (-1, 0, 1):
-                yield from self.cells.get((cx + dx, cy + dy), [])
