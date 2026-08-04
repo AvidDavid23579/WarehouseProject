@@ -1,8 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+import numpy as np
 
 from common.types import Pose
-from common.utils import rotated_rectangle_vertices
-from config import ROBOT_LENGTH, ROBOT_WIDTH
 
 
 @dataclass(slots=True)
@@ -20,41 +20,23 @@ class NavigationState:
 
 @dataclass(slots=True)
 class RobotState:
-    pose: Pose
-    v: float
-    omega: float
-    crashed: bool
+    # Physics
+    pose: np.ndarray = field(default_factory=lambda: np.empty((0, 3), dtype=np.float32))
+    velocity: np.ndarray = field(default_factory=lambda: np.empty((0, 2), dtype=np.float32))
 
-    last_goal_dist: float
-    stuck_time: float
+    # Collision
+    crashed: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.bool_))
+    vertices: np.ndarray = field(default_factory=lambda: np.empty((0, 4, 2), dtype=np.float32))
 
-    vertices: list[tuple[float, float]]
+    # Controller
+    last_goal_dist: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.float32))
+    stuck_time: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.float32))
 
-    navigation: NavigationState
-
-    def __init__(self, pose: Pose):
-        self.pose = pose.copy()
-
-        self.v = 0.0
-        self.omega = 0.0
-
-        self.crashed = False
-
-        self.last_goal_dist = 0.0
-        self.stuck_time = 0.0
-
-        self.vertices = rotated_rectangle_vertices(
-            self.pose,
-            ROBOT_LENGTH,
-            ROBOT_WIDTH,
-        )
-
-        self.navigation = NavigationState(
-            current_node_id=None,
-            target_node_id=None,
-            path=[],
-            path_index=0,
-        )
+    # Navigation
+    current_node_id: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.int32))
+    target_node_id: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.int32))
+    path_index: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.int32))
+    paths: list[list[int]] = field(default_factory=list)
 
 
 @dataclass(slots=True)

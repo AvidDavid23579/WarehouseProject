@@ -32,8 +32,7 @@ def main():
         world.add_dock(dock)
     for robot in robots:
         world.add_robot(robot)
-
-    world.robot_target_node[0] = 1
+        world.robot_target_node[robot.info.id] = robot.info.id + 1  # Assign each robot a target node
 
     # Build the navigation graph
     world.graph = GraphBuilder(world).build()

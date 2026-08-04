@@ -65,16 +65,6 @@ def drive_to_pose(world) -> None:
         velocity[i, 1] = 7.5 * heading_error
         velocity[i, 0] = 5.0 * dist * max(0.0, math.cos(heading_error))
 
-        # apply_repulsion(world, i)
+        velocity[i, 0] = clamp(velocity[i, 0], -MAX_VELOCITY, MAX_VELOCITY)
 
-        velocity[i, 0] = clamp(
-            velocity[i, 0],
-            -MAX_VELOCITY,
-            MAX_VELOCITY,
-        )
-
-        velocity[i, 1] = clamp(
-            velocity[i, 1],
-            -MAX_OMEGA,
-            MAX_OMEGA,
-        )
+        velocity[i, 1] = clamp(velocity[i, 1], -MAX_OMEGA, MAX_OMEGA)
