@@ -3,6 +3,15 @@ import math
 import numpy as np
 
 from common.types import Pose
+from config import ROBOT_LENGTH, ROBOT_WIDTH
+
+# Module constants
+HL = ROBOT_LENGTH * 0.5
+HW = ROBOT_WIDTH * 0.5
+
+# Local robot coordinates
+LX = np.array([-HL, HL, HL, -HL], dtype=np.float32)
+LY = np.array([-HW, -HW, HW, HW], dtype=np.float32)
 
 
 def world_to_screen(self, x, y, scene_rect, meters_width, meters_height):
@@ -55,16 +64,6 @@ def rotated_rectangle_vertices(
         (x - hl * c + hw * s, y - hl * s - hw * c),
         (x - hl * c - hw * s, y - hl * s + hw * c),
     )
-
-
-def pose_from_segment(x1: float, y1: float, x2: float, y2: float) -> tuple[Pose, float]:
-    # Build centre pose and segment length from two endpoints
-    dx = x2 - x1
-    dy = y2 - y1
-    length = math.hypot(dx, dy)
-    theta = math.atan2(dy, dx) if length > 1e-9 else 0.0
-    pose = Pose((x1 + x2) / 2.0, (y1 + y2) / 2.0, theta)
-    return pose, length
 
 
 def point_to_oriented_rectangle(
@@ -140,3 +139,35 @@ def _tangent(
 
     # Opposite tangent
     return -t1x, -t1y
+
+
+def update_robot_vertices(world):
+    pose = world.robot_pose
+    vertices = world.robot_vertices
+
+    # Extract columns
+    x = pose[:, 0]
+    y = pose[:, 1]
+    theta = pose[:, 2]
+
+    # Typedef
+    c = np.cos(theta)
+    s = np.sin(theta)
+
+    # Create views once
+    x = x[:, None]
+    y = y[:, None]
+    c = c[:, None]
+    s = s[:, None]
+
+    vx = vertices[:, :, 0]
+    vy = vertices[:, :, 1]
+
+    # Write directly into destination arrays
+    np.multiply(c, LX, out=vx)
+    vx -= s * LY
+    vx += x
+
+    np.multiply(s, LX, out=vy)
+    vy += c * LY
+    vy += y

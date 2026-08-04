@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from common.utils import rotated_rectangle_vertices
+from common.utils import rotated_rectangle_vertices, update_robot_vertices
 from config import PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH, X_MAX, X_MIN, Y_MAX, Y_MIN
 from entities.dock import Dock
 from entities.robot import Robot
@@ -26,15 +26,6 @@ class WorldMap:
     docks: list[Dock]
     walls: list[Wall]
     graph: NavigationGraph
-
-
-# Module constants
-HL = ROBOT_LENGTH * 0.5
-HW = ROBOT_WIDTH * 0.5
-
-# Local robot coordinates  
-LX = np.array([-HL, HL, HL, -HL], dtype=np.float32)
-LY = np.array([-HW, -HW, HW, HW], dtype=np.float32)
 
 
 class World:
@@ -83,48 +74,13 @@ class World:
         self.robot_velocity = np.vstack((self.robot_velocity, np.array([[0.0, 0.0]], dtype=np.float32)))
         self.robot_crashed = np.append(self.robot_crashed, False)
 
-        vertices = rotated_rectangle_vertices(
-            p,
-            ROBOT_LENGTH,
-            ROBOT_WIDTH,
-        )
+        vertices = rotated_rectangle_vertices(p, ROBOT_LENGTH, ROBOT_WIDTH)
 
         self.robot_vertices = np.vstack((self.robot_vertices, np.array([vertices], dtype=np.float32)))
 
         self.robot_target_node = np.append(self.robot_target_node, -1)
         self.robot_path_index = np.append(self.robot_path_index, 0)
         self.robot_paths.append([])
-
-    def update_robot_vertices(self):
-        pose = self.robot_pose
-        vertices = self.robot_vertices
-
-        # Extract columns
-        x = pose[:, 0]
-        y = pose[:, 1]
-        theta = pose[:, 2]
-
-        # Typedef
-        c = np.cos(theta)
-        s = np.sin(theta)
-
-        # Create views once
-        x = x[:, None]
-        y = y[:, None]
-        c = c[:, None]
-        s = s[:, None]
-
-        vx = vertices[:, :, 0]
-        vy = vertices[:, :, 1]
-
-        # Write directly into destination arrays
-        np.multiply(c, LX, out=vx)
-        vx -= s * LY
-        vx += x
-
-        np.multiply(s, LX, out=vy)
-        vy += c * LY
-        vy += y
 
     def robot_boundary_collisions(self):
         vertices = self.robot_vertices
@@ -199,6 +155,6 @@ class World:
         pose[:, 1] += vel[:, 0] * np.sin(pose[:, 2]) * PHYSICS_DT
         pose[:, 2] += vel[:, 1] * PHYSICS_DT
 
-        self.update_robot_vertices()
+        update_robot_vertices(self)
 
         self.robot_boundary_collisions()
