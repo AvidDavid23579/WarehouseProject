@@ -2,6 +2,7 @@ import math
 from collections import defaultdict
 
 import numpy as np
+from numpy.typing import NDArray
 
 from common.types import Pose
 from config import ROBOT_LENGTH, ROBOT_WIDTH
@@ -104,25 +105,13 @@ def point_to_oriented_rectangle(
     return distance, dir_x, dir_y
 
 
-def tangent(
-    normal: tuple[float, float],
-    heading: tuple[float, float],
-) -> tuple[float, float]:
-    """Choose the tangent closest to the robot's current heading."""
-
-    nx, ny = normal
-    hx, hy = heading
-
-    # First tangent
-    t1x = -ny
-    t1y = nx
-
-    # dot(t1, heading)
-    if t1x * hx + t1y * hy >= 0.0:
-        return t1x, t1y
-
-    # Opposite tangent
-    return -t1x, -t1y
+def tangent(normal: NDArray[np.float32], heading: NDArray[np.float32]) -> NDArray[np.float32]:
+    tg = np.empty_like(normal)
+    tg[:, 0] = -normal[:, 1]
+    tg[:, 1] = normal[:, 0]
+    dot = np.sum(tg * heading, axis=1)
+    tg[dot < 0] *= -1
+    return tg
 
 
 def update_robot_vertices(world):
