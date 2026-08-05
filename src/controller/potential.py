@@ -1,9 +1,8 @@
-import math
-
 import numpy as np
+from numpy.typing import NDArray
 
-from common.utils import tangent
-from config import ROBOT_LENGTH, ROBOT_WIDTH, X_MAX, X_MIN, Y_MAX, Y_MIN
+from common.utils import point_to_oriented_rectangle, tangent
+from config import MAX_OMEGA, MAX_VELOCITY, ROBOT_LENGTH, ROBOT_WIDTH, SHELF_LENGTH, SHELF_WIDTH, X_MAX, X_MIN, Y_MAX, Y_MIN
 from simulator.world import World
 
 LEFT = (1.0, 0.0)
@@ -12,12 +11,23 @@ UP = (0.0, 1.0)
 DOWN = (0.0, -1.0)
 
 
+def dist_to_target(world: World) -> np.ndarray:
+    mask = world.robot.target_node_id >= 0
+
+    dist = np.zeros(world.robot.pose.shape[0], dtype=np.float32)
+    target_xy = world.graph.node_pose[world.robot.target_node_id[mask]]
+
+    dist[mask] = np.hypot(target_xy[:, 0] - world.robot.pose[mask, 0], target_xy[:, 1] - world.robot.pose[mask, 1])
+
+    return dist
+
+
 def inverse_square_repulsion(
     distance: np.ndarray,
     margin: float,
     strength: float,
     max_force: float,
-) -> float:
+) -> NDArray[np.float32]:
 
     force = np.zeros_like(distance)
 
@@ -27,7 +37,7 @@ def inverse_square_repulsion(
     np.maximum(d, 1e-3, out=d)
 
     force[mask] = strength * (1 / d - 1 / margin) / d**2
-    np.minimum(force, max_force, out=force)
+    np.minimum(force[mask], max_force, out=force[mask])
 
     return force
 
@@ -64,19 +74,70 @@ def boundary_repulsion(
     return fx, fy
 
 
-def dist_to_target(world: World) -> np.ndarray:
-    mask = world.robot.target_node_id >= 0
+def obstacle_repulsion(
+    world: World,
+    obstacles,
+    margin: float = 0.3,
+    strength: float = 1.0,
+    max_force: float = 20.0,
+    tangent_gain: float = 0.25,
+) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
 
-    dist = np.zeros(world.robot.pose.shape[0], dtype=np.float32)
-    target_xy = world.graph.node_pose[world.robot.target_node_id[mask]]
+    n = world.robot.pose.shape[0]
 
-    dist[mask] = np.hypot(target_xy[:, 0] - world.robot.pose[mask, 0], target_xy[:, 1] - world.robot.pose[mask, 1])
+    fx = np.zeros(n, dtype=np.float32)
+    fy = np.zeros(n, dtype=np.float32)
 
-    return dist
+    theta = world.robot.pose[:, 2]
+    heading = np.empty((n, 2), dtype=np.float32)
+    heading[:, 0] = np.cos(theta)
+    heading[:, 1] = np.sin(theta)
+
+    robot_pos = world.robot.pose[:, :2]
+
+    for obstacle in obstacles:
+        clearance, normal = point_to_oriented_rectangle(
+            obstacle.pose,
+            SHELF_LENGTH,
+            SHELF_WIDTH,
+            robot_pos,
+        )
+
+        clearance -= ROBOT_LENGTH / 2.0
+
+        magnitude = inverse_square_repulsion(
+            clearance,
+            margin,
+            strength,
+            max_force,
+        )
+
+        active = magnitude > 0.0
+        if not np.any(active):
+            continue
+
+        tg = tangent(normal, heading)
+
+        fx[active] += magnitude[active] * (normal[active, 0] + tangent_gain * tg[active, 0])
+
+        fy[active] += magnitude[active] * (normal[active, 1] + tangent_gain * tg[active, 1])
+
+    return fx, fy
 
 
 def apply_repulsion(world: World) -> None:
     fx, fy = boundary_repulsion(world)
+
+    ofx, ofy = obstacle_repulsion(
+        world,
+        world.shelves,
+        margin=0.2,
+        strength=0.1,
+        max_force=20.0,
+    )
+
+    fx += ofx
+    fy += ofy
 
     # Robots experiencing any repulsion
     active = (fx != 0.0) | (fy != 0.0)
@@ -91,9 +152,11 @@ def apply_repulsion(world: World) -> None:
 
     # dot(force, heading)
     world.robot.twist[active, 0] += fx[active] * c[active] + fy[active] * s[active]
+    world.robot.twist[active, 0] = np.clip(world.robot.twist[active, 0], -MAX_VELOCITY, MAX_VELOCITY)
 
     # cross(heading, force)
     world.robot.twist[active, 1] += c[active] * fy[active] - s[active] * fx[active]
+    world.robot.twist[active, 1] = np.clip(world.robot.twist[active, 1], -MAX_OMEGA, MAX_OMEGA)
 
     dist = dist_to_target(world)
 

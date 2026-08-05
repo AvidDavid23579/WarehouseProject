@@ -55,54 +55,103 @@ def point_to_oriented_rectangle(
     pose: Pose,
     length: float,
     width: float,
-    px: float,
-    py: float,
-) -> tuple[float, float, float]:
+    points: NDArray[np.float32],  # (N,2)
+) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
 
-    dx = px - pose.x
-    dy = py - pose.y
-    cos_theta = math.cos(pose.theta)
-    sin_theta = math.sin(pose.theta)
+    dx = points[:, 0] - pose.x
+    dy = points[:, 1] - pose.y
 
-    # Express the query point in the rectangle body frame.
-    local_x = dx * cos_theta + dy * sin_theta
-    local_y = -dx * sin_theta + dy * cos_theta
+    c = np.cos(pose.theta)
+    s = np.sin(pose.theta)
 
-    half_length = length / 2.0
-    half_width = width / 2.0
+    # Transform into rectangle frame
+    local_x = dx * c + dy * s
+    local_y = -dx * s + dy * c
 
-    if -half_length <= local_x <= half_length and -half_width <= local_y <= half_width:
-        # Inside the rectangle — push toward the nearest face.
-        face_distances = (
-            (half_length - local_x, (1.0, 0.0)),
-            (half_length + local_x, (-1.0, 0.0)),
-            (half_width - local_y, (0.0, 1.0)),
-            (half_width + local_y, (0.0, -1.0)),
+    half_length = length * 0.5
+    half_width = width * 0.5
+
+    inside = (local_x >= -half_length) & (local_x <= half_length) & (local_y >= -half_width) & (local_y <= half_width)
+
+    n = len(points)
+
+    distance = np.empty(n, dtype=np.float32)
+
+    local_normal = np.empty((n, 2), dtype=np.float32)
+
+    # Outside points
+
+    closest_x = np.clip(local_x, -half_length, half_length)
+    closest_y = np.clip(local_y, -half_width, half_width)
+
+    offset_x = local_x - closest_x
+    offset_y = local_y - closest_y
+
+    outside = ~inside
+
+    distance[outside] = np.hypot(
+        offset_x[outside],
+        offset_y[outside],
+    )
+
+    nz = outside & (distance > 1e-9)
+
+    local_normal[nz, 0] = offset_x[nz] / distance[nz]
+    local_normal[nz, 1] = offset_y[nz] / distance[nz]
+
+    # Degenerate corners
+
+    deg = outside & ~nz
+
+    x_major = np.abs(local_x) > half_length
+
+    mask = deg & x_major
+    local_normal[mask, 0] = np.sign(local_x[mask])
+    local_normal[mask, 1] = 0.0
+
+    mask = deg & ~x_major
+    local_normal[mask, 0] = 0.0
+    local_normal[mask, 1] = np.sign(local_y[mask])
+
+    # Inside points
+
+    if np.any(inside):
+        face_dist = np.stack(
+            (
+                half_length - local_x,
+                half_length + local_x,
+                half_width - local_y,
+                half_width + local_y,
+            ),
+            axis=1,
         )
-        distance, (local_nx, local_ny) = min(face_distances, key=lambda item: item[0])
 
-    else:
-        closest_x = clamp(local_x, -half_length, half_length)
-        closest_y = clamp(local_y, -half_width, half_width)
-        offset_x = local_x - closest_x
-        offset_y = local_y - closest_y
-        distance = math.hypot(offset_x, offset_y)
+        face = np.argmin(face_dist[inside], axis=1)
 
-        if distance > 1e-9:
-            local_nx = offset_x / distance
-            local_ny = offset_y / distance
-        else:
-            # Corner degeneracy: use the axis with larger exterior offset.
-            if abs(local_x) > half_length:
-                local_nx = math.copysign(1.0, local_x)
-                local_ny = 0.0
-            else:
-                local_nx = 0.0
-                local_ny = math.copysign(1.0, local_y)
+        distance[inside] = face_dist[inside, face]
 
-    dir_x = local_nx * cos_theta - local_ny * sin_theta
-    dir_y = local_nx * sin_theta + local_ny * cos_theta
-    return distance, dir_x, dir_y
+        normals = np.array(
+            (
+                (1.0, 0.0),
+                (-1.0, 0.0),
+                (0.0, 1.0),
+                (0.0, -1.0),
+            ),
+            dtype=np.float32,
+        )
+
+        local_normal[inside] = normals[face]
+
+    #
+    # Rotate normals back to world frame
+    #
+
+    normal = np.empty_like(local_normal)
+
+    normal[:, 0] = local_normal[:, 0] * c - local_normal[:, 1] * s
+    normal[:, 1] = local_normal[:, 0] * s + local_normal[:, 1] * c
+
+    return distance, normal
 
 
 def tangent(normal: NDArray[np.float32], heading: NDArray[np.float32]) -> NDArray[np.float32]:
