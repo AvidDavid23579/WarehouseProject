@@ -627,42 +627,4 @@ def obb_aabb_distance(
     np.multiply(best_nx, t0, out=best_nx)
     np.multiply(best_ny, t0, out=best_ny)
 
-    # ------------------------------------------------------------------
-    # Degenerate zero-distance fallback.
-    #
-    # If distance is exactly zero, the closest-point residual has zero
-    # length and the normal is not uniquely defined by the distance query.
-    # Use center-to-center direction as a stable fallback.
-    #
-    # px/py were overwritten for candidate set 2, so recompute the center
-    # offset from the original pose only for the zero-distance subset.
-    # ------------------------------------------------------------------
-    if not np.all(mask):
-        np.logical_not(mask, out=mask)  # mask now means "invalid distance"
-        invalid = mask
-
-        # Advanced indexing returns writable copies.
-        fx = pose[invalid, 0]
-        fy = pose[invalid, 1]
-
-        np.subtract(fx, cx, out=fx)
-        np.subtract(fy, cy, out=fy)
-
-        fd = np.empty_like(fx)
-        np.hypot(fx, fy, out=fd)
-
-        ok = fd > zero
-
-        with np.errstate(divide="ignore", invalid="ignore"):
-            np.divide(fx, fd, out=fx, where=ok)
-            np.divide(fy, fd, out=fy, where=ok)
-
-        # Entries with zero center distance fall back to (1, 0).
-        np.logical_not(ok, out=ok)
-        fx[ok] = one
-        fy[ok] = zero
-
-        best_nx[invalid] = fx
-        best_ny[invalid] = fy
-
     return distance, normal

@@ -12,7 +12,7 @@ def drive_to_pose(world) -> None:
     target_node = world.robot.target_node_id
     node_pose = world.graph.node_pose
     kP_velocity = 5.0
-    kP_angular = 7.5
+    kP_angular = 4.0
     kP_final = 10.0
 
     # Default: stop every robot.

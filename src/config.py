@@ -3,14 +3,14 @@ import math
 from common.types import Pose
 
 # Warehouse parameters
-SHELF_COL = 6
+SHELF_COL = 2
 SHELF_ROW = 2
 NUM_DOCKS = 1
 NUM_PALLETS_PER_SHELF = 8
 
 # --- Simulation parameters ---------------------------------------------------
-PHYSICS_DT = 0.01
-SIMULATION_DURATION = 20  # Seconds
+PHYSICS_DT = 1 / 60
+SIMULATION_DURATION = 60  # Seconds
 WINDOW_WIDTH = 1540
 WINDOW_HEIGHT = 800
 WAREHOUSE_WIDTH = 1300  # Pixels
