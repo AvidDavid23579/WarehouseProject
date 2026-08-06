@@ -51,6 +51,98 @@ def rotated_rectangle_vertices(
     )
 
 
+def point_to_aabb(
+    center_x: float,
+    center_y: float,
+    length: float,
+    width: float,
+    points: NDArray[np.float32],  # (N, 2)
+) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
+    dx = points[:, 0] - center_x
+    dy = points[:, 1] - center_y
+
+    half_length = length * 0.5
+    half_width = width * 0.5
+
+    inside = (np.abs(dx) <= half_length) & (np.abs(dy) <= half_width)
+
+    n = len(points)
+
+    distance = np.empty(n, dtype=np.float32)
+    normal = np.empty((n, 2), dtype=np.float32)
+
+    #
+    # Outside points
+    #
+
+    closest_x = np.clip(dx, -half_length, half_length)
+    closest_y = np.clip(dy, -half_width, half_width)
+
+    offset_x = dx - closest_x
+    offset_y = dy - closest_y
+
+    outside = ~inside
+
+    distance[outside] = np.hypot(
+        offset_x[outside],
+        offset_y[outside],
+    )
+
+    nz = outside & (distance > 1e-9)
+
+    normal[nz, 0] = offset_x[nz] / distance[nz]
+    normal[nz, 1] = offset_y[nz] / distance[nz]
+
+    #
+    # Degenerate (exactly on an edge/corner)
+    #
+
+    deg = outside & ~nz
+
+    x_major = np.abs(dx) > half_length
+
+    mask = deg & x_major
+    normal[mask, 0] = np.sign(dx[mask])
+    normal[mask, 1] = 0.0
+
+    mask = deg & ~x_major
+    normal[mask, 0] = 0.0
+    normal[mask, 1] = np.sign(dy[mask])
+
+    #
+    # Inside points
+    #
+
+    if np.any(inside):
+        face_dist = np.stack(
+            (
+                half_length - dx,
+                half_length + dx,
+                half_width - dy,
+                half_width + dy,
+            ),
+            axis=1,
+        )
+
+        face = np.argmin(face_dist[inside], axis=1)
+
+        distance[inside] = face_dist[inside, face]
+
+        normals = np.array(
+            (
+                (1.0, 0.0),
+                (-1.0, 0.0),
+                (0.0, 1.0),
+                (0.0, -1.0),
+            ),
+            dtype=np.float32,
+        )
+
+        normal[inside] = normals[face]
+
+    return distance, normal
+
+
 def point_to_oriented_rectangle(
     pose: Pose,
     length: float,

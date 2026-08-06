@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.typing import NDArray
 
-from common.utils import point_to_oriented_rectangle, tangent
+from common.utils import point_to_aabb, tangent
 from config import MAX_OMEGA, MAX_VELOCITY, ROBOT_LENGTH, ROBOT_WIDTH, SHELF_LENGTH, SHELF_WIDTH, X_MAX, X_MIN, Y_MAX, Y_MIN
 from simulator.world import World
 
@@ -96,10 +96,11 @@ def obstacle_repulsion(
     robot_pos = world.robot.pose[:, :2]
 
     for obstacle in obstacles:
-        clearance, normal = point_to_oriented_rectangle(
-            obstacle.pose,
-            SHELF_LENGTH,
+        clearance, normal = point_to_aabb(
+            obstacle.pose.x,
+            obstacle.pose.y,
             SHELF_WIDTH,
+            SHELF_LENGTH,
             robot_pos,
         )
 
@@ -128,13 +129,7 @@ def obstacle_repulsion(
 def apply_repulsion(world: World) -> None:
     fx, fy = boundary_repulsion(world)
 
-    ofx, ofy = obstacle_repulsion(
-        world,
-        world.shelves,
-        margin=0.2,
-        strength=0.1,
-        max_force=20.0,
-    )
+    ofx, ofy = obstacle_repulsion(world, world.shelves, margin=1.0, strength=0.05, max_force=5.0, tangent_gain=0.01)
 
     fx += ofx
     fy += ofy
