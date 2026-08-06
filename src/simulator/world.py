@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from common.utils import rotated_rectangle_vertices, update_robot_vertices
+from common.utils import rotated_rectangle_vertices, update_rotated_rectangle_vertices
 from config import PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
 from entities.dock import Dock
 from entities.robot import Robot, RobotState
@@ -128,11 +128,12 @@ class World:
 
         pose = self.robot.pose
         vel = self.robot.twist
+        vertices = self.robot.vertices
 
         pose[:, 0] += vel[:, 0] * np.cos(pose[:, 2]) * PHYSICS_DT
         pose[:, 1] += vel[:, 0] * np.sin(pose[:, 2]) * PHYSICS_DT
         pose[:, 2] += vel[:, 1] * PHYSICS_DT
 
-        update_robot_vertices(self)
+        update_rotated_rectangle_vertices(pose, vertices, ROBOT_LENGTH, ROBOT_WIDTH)
 
         robot_boundary_collisions(self)

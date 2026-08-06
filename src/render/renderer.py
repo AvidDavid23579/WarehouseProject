@@ -102,7 +102,7 @@ class Renderer:
 
         for x, y in vertices:
             px, py = self.camera.world_to_screen(x, y)
-            pts.append((int(px), int(py)))
+            pts.append((px, py))
 
         pygame.gfxdraw.filled_polygon(surface, pts, fill)
 

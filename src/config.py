@@ -3,14 +3,14 @@ import math
 from common.types import Pose
 
 # Warehouse parameters
-SHELF_COL = 20
-SHELF_ROW = 4
-NUM_DOCKS = 59
+SHELF_COL = 6
+SHELF_ROW = 2
+NUM_DOCKS = 1
 NUM_PALLETS_PER_SHELF = 8
 
 # --- Simulation parameters ---------------------------------------------------
 PHYSICS_DT = 0.01
-SIMULATION_DURATION = 100  # Seconds
+SIMULATION_DURATION = 20  # Seconds
 WINDOW_WIDTH = 1540
 WINDOW_HEIGHT = 800
 WAREHOUSE_WIDTH = 1300  # Pixels
@@ -18,9 +18,9 @@ WAREHOUSE_WIDTH = 1300  # Pixels
 
 # --- World bounds (meters) ---------------------------------------------------
 X_MIN = 0
-X_MAX = 60
+X_MAX = 30
 Y_MIN = 0
-Y_MAX = 30
+Y_MAX = 15
 
 WORLD_BOUNDS = (X_MIN, X_MAX, Y_MIN, Y_MAX)
 
@@ -32,7 +32,7 @@ ROBOT_LENGTH = 0.6
 PALLET_WIDTH = 0.3
 PALLET_LENGTH = 0.4
 SHELF_WIDTH = 2 * PALLET_WIDTH
-SHELF_LENGTH = NUM_PALLETS_PER_SHELF * PALLET_LENGTH + (NUM_PALLETS_PER_SHELF - 1) * 0.05
+SHELF_LENGTH = NUM_PALLETS_PER_SHELF * PALLET_LENGTH
 
 # --- Dock footprint ----------------------------------------------------------
 DOCK_WIDTH = 0.3
@@ -50,5 +50,5 @@ DIST_TOLERANCE = 0.01
 ANGLE_TOLERANCE = math.radians(0.5)
 
 # --- Velocity limits ---------------------------------------------------------
-MAX_VELOCITY = 8
-MAX_OMEGA = 16
+MAX_VELOCITY = 4
+MAX_OMEGA = 8
