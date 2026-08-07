@@ -45,8 +45,6 @@ class World:
         # Warehouse graph
         self.graph = NavigationGraph()
 
-        # Robot SoA data
-
         # Pallets
         self.pallet_pose = np.empty((0, 3), dtype=np.float32)
 

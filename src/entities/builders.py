@@ -79,15 +79,15 @@ def build_shelves_vertical(shelf_col: int = SHELF_COL, shelf_row: int = SHELF_RO
     pose = np.empty((num_shelves, 3), dtype=np.float32)
     index = np.arange(num_shelves, dtype=np.int32)
 
-    horizontal_gap = (X_MAX - shelf_col * SHELF_LENGTH) / (shelf_col + 1)
-    vertical_gap = (Y_MAX - shelf_row * SHELF_WIDTH) / (shelf_row + 1)
+    horizontal_gap = (X_MAX - shelf_col * SHELF_WIDTH) / (shelf_col + 1)
+    vertical_gap = (Y_MAX - shelf_row * SHELF_LENGTH) / (shelf_row + 1)
 
     k = 0
     for i in range(shelf_col):
         for j in range(shelf_row):
             pose[k] = (
-                horizontal_gap + SHELF_LENGTH / 2 + i * (SHELF_LENGTH + horizontal_gap),
-                vertical_gap + SHELF_WIDTH / 2 + j * (SHELF_WIDTH + vertical_gap),
+                horizontal_gap + SHELF_WIDTH / 2 + i * (SHELF_WIDTH + horizontal_gap),
+                vertical_gap + SHELF_LENGTH / 2 + j * (SHELF_LENGTH + vertical_gap),
                 math.pi / 2,
             )
             k += 1
