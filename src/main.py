@@ -34,6 +34,9 @@ def main():
         world.add_robot(robot)
         world.robot.target_node_id[robot.info.id] = robot.info.id  # Assign each robot a target node
 
+    for shelf in world.shelves:
+        world.static_hash.insert(shelf)
+
     # Build the navigation graph
     world.graph = GraphBuilder(world).build()
 

@@ -55,6 +55,7 @@ def build_shelves_vertical(shelf_col: int = SHELF_COL, shelf_row: int = SHELF_RO
             shelves.append(Shelf(shelf_pose))
 
     for shelf in shelves:
+        shelf.index += 1
         for pose in shelf.pallet_poses():
             pallets.append(Pallet(pose))
 

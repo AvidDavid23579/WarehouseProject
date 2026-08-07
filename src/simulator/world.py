@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from common.utils import rotated_rectangle_vertices, update_rotated_rectangle_vertices
-from config import PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
+from common.utils import SpatialHash, rotated_rectangle_vertices, update_rotated_rectangle_vertices
+from config import CELL_SIZE, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
 from entities.dock import Dock
 from entities.robot import Robot, RobotState
 from entities.shelf import Shelf
@@ -41,6 +41,8 @@ class World:
         self.docks = []
         self.shelves = []
         self.walls = []
+
+        self.static_hash = SpatialHash(CELL_SIZE)
 
         self.graph = NavigationGraph()
 

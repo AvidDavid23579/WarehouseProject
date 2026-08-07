@@ -187,14 +187,35 @@ class SpatialHash:
         )
 
     def insert(self, obj):
-        self.cells[self._cell(obj.pose.x, obj.pose.y)].append(obj)
+        vertices = obj.vertices
 
-    def nearby(self, obj):
-        cx, cy = self._cell(obj.pose.x, obj.pose.y)
+        xmin = min(v[0] for v in vertices)
+        xmax = max(v[0] for v in vertices)
+        ymin = min(v[1] for v in vertices)
+        ymax = max(v[1] for v in vertices)
 
-        for dx in (-1, 0, 1):
-            for dy in (-1, 0, 1):
-                yield from self.cells.get((cx + dx, cy + dy), [])
+        ix0, iy0 = self._cell(xmin, ymin)
+        ix1, iy1 = self._cell(xmax, ymax)
+
+        for ix in range(ix0, ix1 + 1):
+            for iy in range(iy0, iy1 + 1):
+                self.cells[(ix, iy)].append(obj)
+
+    def nearby(self, positions):
+        result = []
+
+        for x, y in positions[:, :2]:
+            cx, cy = self._cell(x, y)
+
+            objs = set()
+
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    objs.update(self.cells.get((cx + dx, cy + dy), []))
+
+            result.append(list(objs))
+
+        return result
 
 
 def obb_aabb_distance(

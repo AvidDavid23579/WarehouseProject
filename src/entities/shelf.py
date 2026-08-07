@@ -8,6 +8,7 @@ from config import NUM_PALLETS_PER_SHELF, PALLET_LENGTH, PALLET_WIDTH, ROBOT_LEN
 class Shelf:
     def __init__(self, pose: Pose) -> None:
         self.pose = pose
+        self.index = 0
         self.vertices = rotated_rectangle_vertices(self.pose, SHELF_LENGTH, SHELF_WIDTH)
 
     def pallet_poses(self) -> list[Pose]:
