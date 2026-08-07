@@ -3,9 +3,9 @@ import pstats
 import time
 
 from config import PHYSICS_DT, SIMULATION_DURATION
+from entities.builders import build_docks, build_shelves_vertical
 from navigation.graph_builder import GraphBuilder
 from render.playback import Playback
-from simulator.builders import build_docks, build_robots, build_shelves_vertical
 from simulator.simulation import Simulator
 from simulator.world import World
 
