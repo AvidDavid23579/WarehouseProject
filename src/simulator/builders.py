@@ -1,10 +1,29 @@
 import math
 
+import numpy as np
+
 from common.types import Pose
-from config import DOCK_ONE_POSE, DOCK_SPACING, NUM_DOCKS, SHELF_COL, SHELF_LENGTH, SHELF_ROW, SHELF_WIDTH, X_MAX, Y_MAX
-from entities.dock import Dock
+from common.utils import rotated_rectangle_vertices
+from config import (
+    DOCK_APPROACH_DISTANCE,
+    DOCK_LENGTH,
+    DOCK_ONE_POSE,
+    DOCK_SPACING,
+    DOCK_WIDTH,
+    NUM_DOCKS,
+    ROBOT_DOCK_DIST,
+    ROBOT_LENGTH,
+    ROBOT_WIDTH,
+    SHELF_COL,
+    SHELF_LENGTH,
+    SHELF_ROW,
+    SHELF_WIDTH,
+    X_MAX,
+    Y_MAX,
+)
+from entities.dock import DockState
 from entities.pallet import Pallet
-from entities.robot import Robot, RobotInfo
+from entities.robot import RobotState
 from entities.shelf import Shelf
 
 
@@ -12,28 +31,48 @@ from entities.shelf import Shelf
 def build_docks(
     num_docks: int = NUM_DOCKS,
     spacing: float = DOCK_SPACING,
-) -> tuple[list[Dock], list[Robot]]:
+) -> DockState:
+    pose = np.empty((num_docks, 3), dtype=np.float32)
 
-    docks = []
-    robots = []
+    pose[:, 0] = DOCK_ONE_POSE.x + np.arange(num_docks, dtype=np.float32) * spacing
+    pose[:, 1] = DOCK_ONE_POSE.y
+    pose[:, 2] = DOCK_ONE_POSE.theta
 
-    for i in range(num_docks):
-        dock_pose = Pose(
-            x=DOCK_ONE_POSE.x + i * spacing,
-            y=DOCK_ONE_POSE.y,
-            theta=DOCK_ONE_POSE.theta,
-        )
+    vertices = rotated_rectangle_vertices(
+        pose,
+        DOCK_LENGTH,
+        DOCK_WIDTH,
+    )
 
-        dock = Dock(dock_pose)
-        info = RobotInfo(id=i)
+    node_pose = np.empty((num_docks, 3), dtype=np.float32)
+    node_pose[:, 0] = pose[:, 0]
+    node_pose[:, 1] = pose[:, 1] + ROBOT_DOCK_DIST + DOCK_APPROACH_DISTANCE
+    node_pose[:, 2] = np.pi / 2
 
-        robot = Robot(info, dock.node_pose)
-        dock.robot = robot
+    robot_id = np.arange(num_docks, dtype=np.int32)
 
-        docks.append(dock)
-        robots.append(robot)
+    return DockState(
+        pose=pose,
+        vertices=vertices,
+        node_pose=node_pose,
+        robot_id=robot_id,
+    )
 
-    return docks, robots
+
+def build_robots(start_pose: np.ndarray) -> RobotState:
+    return RobotState(
+        pose=start_pose.copy(),
+        twist=np.zeros((NUM_DOCKS, 2), dtype=np.float32),
+        crashed=np.zeros(NUM_DOCKS, dtype=bool),
+        vertices=rotated_rectangle_vertices(
+            start_pose,
+            ROBOT_LENGTH,
+            ROBOT_WIDTH,
+        ),
+        target_node_id=np.full(NUM_DOCKS, -1, dtype=np.int32),
+        path_index=np.zeros(NUM_DOCKS, dtype=np.int32),
+        paths=[[] for _ in range(NUM_DOCKS)],
+    )
 
 
 # Build shelves in a vertical layout

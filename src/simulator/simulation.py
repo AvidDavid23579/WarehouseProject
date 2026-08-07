@@ -1,7 +1,4 @@
-import numpy as np
-
 from controller.drive import drive_to_pose, random_navigation
-from controller.potential import apply_repulsion
 from simulator.world import World, WorldFrame, WorldMap
 
 
@@ -21,7 +18,6 @@ class Simulator:
         for step in range(steps):
             random_navigation(world=self.world)
             drive_to_pose(world=self.world)
-            # apply_repulsion(world=self.world)
             self.world.step()
             self.frames.append(self.world.frame())
 

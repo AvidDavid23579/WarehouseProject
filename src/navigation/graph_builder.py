@@ -1,3 +1,4 @@
+from common.types import Pose
 from navigation.graph import NavigationGraph
 from simulator.world import World
 
@@ -13,9 +14,11 @@ class GraphBuilder:
 
         return self.graph
 
+    def build_dock_graph(self):
+        self.graph.add_nodes(self.world.dock.node_pose)
+
     def build_subgraphs(self):
-        for dock in self.world.docks:
-            dock.build_graph(self.graph)
+        self.build_dock_graph()
         for shelf in self.world.shelves:
             shelf.build_graph(self.graph)
 

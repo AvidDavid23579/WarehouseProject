@@ -151,10 +151,10 @@ class Renderer:
             )
 
     def _draw_static(self, surface):
-        for dock in self.world_map.docks:
+        for vertices in self.world_map.dock.vertices:
             self._draw_polygon(
                 surface,
-                dock.vertices,
+                vertices,
                 fill=(110, 110, 110),
                 outline=(40, 40, 40),
                 aa=False,
@@ -166,15 +166,6 @@ class Renderer:
                 shelf.vertices,
                 fill=(200, 200, 200),
                 outline=(90, 90, 90),
-                aa=False,
-            )
-
-        for wall in self.world_map.walls:
-            self._draw_polygon(
-                surface,
-                wall.vertices,
-                fill=(100, 100, 100),
-                outline=(70, 70, 70),
                 aa=False,
             )
 

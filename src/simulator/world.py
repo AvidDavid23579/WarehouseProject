@@ -4,11 +4,9 @@ import numpy as np
 
 from common.utils import SpatialHash, rotated_rectangle_vertices, update_rotated_rectangle_vertices
 from config import CELL_SIZE, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
-from entities.dock import Dock
+from entities.dock import DockState
 from entities.robot import Robot, RobotState
 from entities.shelf import Shelf
-from entities.wall import Wall
-from geometry.collision import robot_boundary_collisions
 from navigation.graph import NavigationGraph
 
 
@@ -24,8 +22,7 @@ class WorldFrame:
 @dataclass(slots=True)
 class WorldMap:
     shelves: list[Shelf]
-    docks: list[Dock]
-    walls: list[Wall]
+    dock: DockState
     graph: NavigationGraph
 
 
@@ -34,20 +31,21 @@ class World:
         self.time = 0.0
 
         # Dynamic objects
-        self.robots = []
+        self.robot = RobotState()
         self.pallets = []
 
         # Static objects
-        self.docks = []
+        self.dock = DockState()
         self.shelves = []
         self.walls = []
 
+        # Spatial hash for potential fields/ORCA...
         self.static_hash = SpatialHash(CELL_SIZE)
 
+        # Warehouse graph
         self.graph = NavigationGraph()
 
         # Robot SoA data
-        self.robot = RobotState()
 
         # Pallets
         self.pallet_pose = np.empty((0, 3), dtype=np.float32)
@@ -119,8 +117,7 @@ class World:
     def world_map(self):
         return WorldMap(
             shelves=self.shelves,
-            docks=self.docks,
-            walls=self.walls,
+            dock=self.dock,
             graph=self.graph,
         )
 
@@ -137,5 +134,3 @@ class World:
         pose[:, 2] += vel[:, 1] * PHYSICS_DT
 
         update_rotated_rectangle_vertices(pose, vertices, ROBOT_LENGTH, ROBOT_WIDTH)
-
-        robot_boundary_collisions(self)

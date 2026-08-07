@@ -1,22 +1,11 @@
-import math
+from dataclasses import dataclass, field
 
-from common.types import Pose
-from common.utils import rotated_rectangle_vertices
-from config import DOCK_APPROACH_DISTANCE, DOCK_LENGTH, DOCK_WIDTH, ROBOT_DOCK_DIST
+import numpy as np
 
 
-class Dock:
-    def __init__(self, pose: Pose) -> None:
-        self.pose = pose
-
-        self.vertices = rotated_rectangle_vertices(
-            self.pose,
-            DOCK_LENGTH,
-            DOCK_WIDTH,
-        )
-
-        self.node_pose = Pose(self.pose.x, self.pose.y + ROBOT_DOCK_DIST + DOCK_APPROACH_DISTANCE, math.pi / 2)
-        self.robot = None
-
-    def build_graph(self, graph):
-        graph.add_node(self.node_pose)
+@dataclass(slots=True)
+class DockState:
+    pose: np.ndarray = field(default_factory=lambda: np.empty((0, 3), np.float32))
+    vertices: np.ndarray = field(default_factory=lambda: np.empty((0, 4, 2), np.float32))
+    node_pose: np.ndarray = field(default_factory=lambda: np.empty((0, 3), np.float32))
+    robot_id: np.ndarray = field(default_factory=lambda: np.empty((0,), np.int32))

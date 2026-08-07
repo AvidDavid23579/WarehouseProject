@@ -18,28 +18,49 @@ def clamp(value: float, min_val: float, max_val: float) -> float:
 
 
 def rotated_rectangle_vertices(
-    pose: Pose, length: float, width: float
-) -> tuple[
-    tuple[float, float],
-    tuple[float, float],
-    tuple[float, float],
-    tuple[float, float],
-]:
+    pose: Pose | NDArray[np.float32],
+    length: float,
+    width: float,
+) -> NDArray[np.float32]:
     hl = length * 0.5
     hw = width * 0.5
 
-    c = math.cos(pose.theta)
-    s = math.sin(pose.theta)
+    lx = np.array([-hl, hl, hl, -hl], dtype=np.float32)
+    ly = np.array([-hw, -hw, hw, hw], dtype=np.float32)
 
-    x = pose.x
-    y = pose.y
+    # ------------------------------------------------------------------
+    # Single pose
+    # ------------------------------------------------------------------
+    if isinstance(pose, Pose):
+        c = np.cos(pose.theta)
+        s = np.sin(pose.theta)
 
-    return (
-        (x + hl * c - hw * s, y + hl * s + hw * c),
-        (x + hl * c + hw * s, y + hl * s - hw * c),
-        (x - hl * c + hw * s, y - hl * s - hw * c),
-        (x - hl * c - hw * s, y - hl * s + hw * c),
-    )
+        x = pose.x
+        y = pose.y
+
+        vertices = np.empty((4, 2), dtype=np.float32)
+
+        vertices[:, 0] = c * lx - s * ly + x
+        vertices[:, 1] = s * lx + c * ly + y
+
+        return vertices
+
+    # ------------------------------------------------------------------
+    # Batch of poses
+    # ------------------------------------------------------------------
+    x = pose[:, 0:1]
+    y = pose[:, 1:2]
+    theta = pose[:, 2]
+
+    c = np.cos(theta)[:, None]
+    s = np.sin(theta)[:, None]
+
+    vertices = np.empty((len(pose), 4, 2), dtype=np.float32)
+
+    vertices[:, :, 0] = c * lx - s * ly + x
+    vertices[:, :, 1] = s * lx + c * ly + y
+
+    return vertices
 
 
 def update_rotated_rectangle_vertices(pose: NDArray[np.float32], vertices: NDArray[np.float32], length: float, width: float):
@@ -134,8 +155,6 @@ def point_to_obb(
     distance = np.empty(n, dtype=np.float32)
 
     local_normal = np.empty((n, 2), dtype=np.float32)
-
-    # Outside points
 
     closest_x = np.clip(local_x, -half_length, half_length)
     closest_y = np.clip(local_y, -half_width, half_width)

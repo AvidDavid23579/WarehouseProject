@@ -23,5 +23,11 @@ class NavigationGraph:
 
         return node_id
 
+    def add_nodes(self, poses: np.ndarray) -> np.ndarray:
+        start = len(self.node_pose)
+        self.node_pose = np.vstack((self.node_pose, poses))
+
+        return np.arange(start, start + len(poses), dtype=np.int32)
+
     def add_edge(self, start: int, end: int, cost: float):
         self.edges.append(Edge(start, end, cost))
