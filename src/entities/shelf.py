@@ -17,7 +17,7 @@ class Shelf:
         s = math.sin(self.pose.theta)
 
         y = SHELF_WIDTH / 2 - PALLET_WIDTH / 2
-        spacing = PALLET_LENGTH + 0.05
+        spacing = PALLET_LENGTH
 
         for i in range(NUM_PALLETS_PER_SHELF):
             x = -SHELF_LENGTH / 2 + PALLET_LENGTH / 2 + i * spacing

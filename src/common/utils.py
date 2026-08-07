@@ -155,53 +155,6 @@ def point_to_obb(
     local_normal[nz, 0] = offset_x[nz] / distance[nz]
     local_normal[nz, 1] = offset_y[nz] / distance[nz]
 
-    # Degenerate corners
-
-    deg = outside & ~nz
-
-    x_major = np.abs(local_x) > half_length
-
-    mask = deg & x_major
-    local_normal[mask, 0] = np.sign(local_x[mask])
-    local_normal[mask, 1] = 0.0
-
-    mask = deg & ~x_major
-    local_normal[mask, 0] = 0.0
-    local_normal[mask, 1] = np.sign(local_y[mask])
-
-    # Inside points
-
-    if np.any(inside):
-        face_dist = np.stack(
-            (
-                half_length - local_x,
-                half_length + local_x,
-                half_width - local_y,
-                half_width + local_y,
-            ),
-            axis=1,
-        )
-
-        face = np.argmin(face_dist[inside], axis=1)
-
-        distance[inside] = face_dist[inside, face]
-
-        normals = np.array(
-            (
-                (1.0, 0.0),
-                (-1.0, 0.0),
-                (0.0, 1.0),
-                (0.0, -1.0),
-            ),
-            dtype=np.float32,
-        )
-
-        local_normal[inside] = normals[face]
-
-    #
-    # Rotate normals back to world frame
-    #
-
     normal = np.empty_like(local_normal)
 
     normal[:, 0] = local_normal[:, 0] * c - local_normal[:, 1] * s
@@ -247,61 +200,16 @@ class SpatialHash:
 def obb_aabb_distance(
     obb_pose: NDArray[np.float32],
     obb_length: float,
-    robot_width: float,
+    obb_width: float,
     center_x: float,
     center_y: float,
     length: float,
     width: float,
 ) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
-    """
-    Exact minimum distance and outward normal from one AABB to many robot OBBs.
 
-    Parameters
-    ----------
-    obb_pose : (N, 3) float32
-        Columns are x, y, theta. Theta is in radians.
-    obb_length : float
-        Full length of robot OBB along its local x-axis.
-    robot_width : float
-        Full width of robot OBB along its local y-axis.
-    center_x, center_y : float
-        AABB center.
-    length : float
-        Full AABB length along world x-axis.
-    width : float
-        Full AABB width along world y-axis.
-
-    Returns
-    -------
-    distance : (N,) float32
-        Exact minimum Euclidean distance from each robot OBB to the AABB,
-        according to the stated 8-candidate algorithm.
-    normal : (N, 2) float32
-        Unit outward normal pointing from the AABB toward each robot.
-
-    Notes
-    -----
-    The normal buffer is returned in Fortran order. This preserves the
-    (N, 2) shape while making normal[:, 0] and normal[:, 1] contiguous
-    structure-of-arrays columns. This is significantly faster for the
-    masked updates and normalization in this kernel.
-
-    The implementation preserves the continuous mathematical result.
-    Some floating-point operations are reassociated for performance, so
-    bit-for-bit equality with the original implementation is not guaranteed.
-    """
     pose = np.asarray(obb_pose, dtype=np.float32)
 
-    if pose.ndim != 2 or pose.shape[1] != 3:
-        raise ValueError("obb_pose must have shape (N, 3).")
-
     N = pose.shape[0]
-
-    if N == 0:
-        return (
-            np.empty(0, dtype=np.float32),
-            np.empty((0, 2), dtype=np.float32, order="F"),
-        )
 
     zero = np.float32(0.0)
     one = np.float32(1.0)
@@ -313,7 +221,7 @@ def obb_aabb_distance(
     hlb = half * np.float32(length)  # AABB half length
     hwb = half * np.float32(width)  # AABB half width
     hlr = half * np.float32(obb_length)  # robot half length
-    hwr = half * np.float32(robot_width)  # robot half width
+    hwr = half * np.float32(obb_width)  # robot half width
 
     # Output distance is also the running best squared distance.
     distance = np.empty(N, dtype=np.float32)

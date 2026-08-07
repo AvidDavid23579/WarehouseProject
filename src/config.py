@@ -10,7 +10,7 @@ NUM_PALLETS_PER_SHELF = 8
 
 # --- Simulation parameters ---------------------------------------------------
 PHYSICS_DT = 1 / 60
-SIMULATION_DURATION = 60  # Seconds
+SIMULATION_DURATION = 10  # Seconds
 WINDOW_WIDTH = 1540
 WINDOW_HEIGHT = 800
 WAREHOUSE_WIDTH = 1300  # Pixels
@@ -46,7 +46,7 @@ ROBOT_DOCK_DIST = 0.5
 WALL_WIDTH = 0.3
 
 # --- Goal / alignment tolerances ---------------------------------------------
-DIST_TOLERANCE = 0.01
+DIST_TOLERANCE = 0.03
 ANGLE_TOLERANCE = math.radians(0.5)
 
 # --- Velocity limits ---------------------------------------------------------

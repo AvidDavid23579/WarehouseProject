@@ -123,7 +123,7 @@ def obstacle_repulsion(
 def apply_repulsion(world: World) -> None:
     fx, fy = boundary_repulsion(world)
 
-    ofx, ofy = obstacle_repulsion(world, world.shelves, margin=0.5, strength=0.02, max_force=50.0, tangent_gain=0.65)
+    ofx, ofy = obstacle_repulsion(world, world.shelves, margin=0.5, strength=0.02, max_force=50.0, tangent_gain=0.55)
 
     fx += ofx
     fy += ofy
