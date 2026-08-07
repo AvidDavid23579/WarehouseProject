@@ -2,7 +2,6 @@ import math
 
 import numpy as np
 
-from common.utils import rotated_rectangle_vertices
 from config import (
     DOCK_APPROACH_DISTANCE,
     DOCK_LENGTH,
@@ -27,6 +26,7 @@ from entities.dock import DockState
 from entities.pallet import PalletState
 from entities.robot import RobotState
 from entities.shelf import ShelfState
+from geometry.geo_compute import obb_vertices
 
 
 # Build docks. Each dock initializes a robot at its docking pose
@@ -40,7 +40,7 @@ def build_docks(
     pose[:, 1] = DOCK_ONE_POSE.y
     pose[:, 2] = DOCK_ONE_POSE.theta
 
-    vertices = rotated_rectangle_vertices(
+    vertices = obb_vertices(
         pose,
         DOCK_LENGTH,
         DOCK_WIDTH,
@@ -63,7 +63,7 @@ def build_robots(start_pose: np.ndarray) -> RobotState:
         pose=start_pose.copy(),
         twist=np.zeros((NUM_DOCKS, 2), dtype=np.float32),
         crashed=np.zeros(NUM_DOCKS, dtype=bool),
-        vertices=rotated_rectangle_vertices(
+        vertices=obb_vertices(
             start_pose,
             ROBOT_LENGTH,
             ROBOT_WIDTH,
@@ -98,7 +98,7 @@ def build_shelves_vertical(
             )
             k += 1
 
-    vertices = rotated_rectangle_vertices(pose, SHELF_LENGTH, SHELF_WIDTH)
+    vertices = obb_vertices(pose, SHELF_LENGTH, SHELF_WIDTH)
 
     return ShelfState(pose=pose, vertices=vertices, index=index)
 
@@ -128,7 +128,7 @@ def build_pallets(shelves: ShelfState) -> PalletState:
                 )
                 k += 1
 
-    vertices = rotated_rectangle_vertices(
+    vertices = obb_vertices(
         pose,
         PALLET_LENGTH,
         PALLET_WIDTH,

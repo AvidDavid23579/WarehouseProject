@@ -2,8 +2,8 @@ import pygame
 import pygame.gfxdraw
 
 from common.types import Pose
-from common.utils import rotated_rectangle_vertices
 from config import PALLET_LENGTH, PALLET_WIDTH, ROBOT_LENGTH, ROBOT_WIDTH, WAREHOUSE_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, X_MAX, Y_MAX
+from geometry.geo_compute import obb_vertices
 from navigation.graph import NavigationGraph
 from render.camera import Camera
 from simulator.world import WorldFrame, WorldMap
@@ -132,7 +132,7 @@ class Renderer:
             )
 
         for x, y, theta in frame.robots:
-            vertices = rotated_rectangle_vertices(
+            vertices = obb_vertices(
                 Pose(x, y, theta),
                 ROBOT_LENGTH,
                 ROBOT_WIDTH,

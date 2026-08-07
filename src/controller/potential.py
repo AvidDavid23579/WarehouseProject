@@ -1,9 +1,8 @@
 import numpy as np
 from numpy.typing import NDArray
 
-from common.utils import obb_aabb_distance, point_to_aabb, tangent
 from config import MAX_OMEGA, MAX_VELOCITY, ROBOT_LENGTH, ROBOT_WIDTH, SHELF_LENGTH, SHELF_WIDTH, X_MAX, X_MIN, Y_MAX, Y_MIN
-from entities import robot
+from geometry.geo_compute import obb_aabb_distance, tangent
 from simulator.world import World
 
 LEFT = (1.0, 0.0)
@@ -77,6 +76,7 @@ def boundary_repulsion(
 
 def obstacle_repulsion(
     world: World,
+    obstacles,
     margin: float = 0.3,
     strength: float = 1.0,
     max_force: float = 20.0,
@@ -98,53 +98,46 @@ def obstacle_repulsion(
 
     half_robot = ROBOT_LENGTH * 0.5
 
-    nearby = world.static_hash.nearby(world.robot.pose)
-    for i, obstacles in enumerate(nearby):
-        for obstacle in obstacles:
-            # Cheap check
-            sx = obstacle.pose.x
-            sy = obstacle.pose.y
+    for obstacle in obstacles:
+        # Cheap check
+        sx = obstacle.pose.x
+        sy = obstacle.pose.y
 
-            half_x = SHELF_WIDTH * 0.5 + half_robot + margin
-            half_y = SHELF_LENGTH * 0.5 + half_robot + margin
+        half_x = SHELF_WIDTH * 0.5 + half_robot + margin
+        half_y = SHELF_LENGTH * 0.5 + half_robot + margin
 
-            active = (np.abs(robot_x - sx) <= half_x) & (np.abs(robot_y - sy) <= half_y)
+        active = (np.abs(robot_x - sx) <= half_x) & (np.abs(robot_y - sy) <= half_y)
 
-            if not np.any(active):
-                continue
+        if not np.any(active):
+            continue
 
-            # Expensive check
-            clearance, normal = obb_aabb_distance(world.robot.pose, ROBOT_LENGTH, ROBOT_WIDTH, sx, sy, SHELF_WIDTH, SHELF_LENGTH)
+        # Expensive check
+        clearance, normal = obb_aabb_distance(world.robot.pose, ROBOT_LENGTH, ROBOT_WIDTH, sx, sy, SHELF_WIDTH, SHELF_LENGTH)
 
-            clearance -= ROBOT_LENGTH / 2.0
+        clearance -= ROBOT_LENGTH / 2.0
 
-            magnitude = inverse_square_repulsion(
-                clearance,
-                margin,
-                strength,
-                max_force,
-            )
+        magnitude = inverse_square_repulsion(
+            clearance,
+            margin,
+            strength,
+            max_force,
+        )
 
-            active = magnitude > 0.0
-            if not np.any(active):
-                continue
+        active = magnitude > 0.0
+        if not np.any(active):
+            continue
 
-            tg = tangent(normal, heading)
+        tg = tangent(normal, heading)
 
-            fx[active] += magnitude[active] * (normal[active, 0] + tangent_gain * tg[active, 0])
+        fx[active] += magnitude[active] * (normal[active, 0] + tangent_gain * tg[active, 0])
 
-            fy[active] += magnitude[active] * (normal[active, 1] + tangent_gain * tg[active, 1])
+        fy[active] += magnitude[active] * (normal[active, 1] + tangent_gain * tg[active, 1])
 
     return fx, fy
 
 
 def apply_repulsion(world: World) -> None:
     fx, fy = boundary_repulsion(world)
-
-    ofx, ofy = obstacle_repulsion(world, margin=0.5, strength=0.02, max_force=50.0, tangent_gain=0.5)
-
-    fx += ofx
-    fy += ofy
 
     # Robots experiencing any repulsion
     active = (fx != 0.0) | (fy != 0.0)

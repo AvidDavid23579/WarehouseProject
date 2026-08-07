@@ -2,10 +2,6 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from common.types import Pose
-from common.utils import rotated_rectangle_vertices
-from config import PALLET_LENGTH, PALLET_WIDTH
-
 
 @dataclass(slots=True)
 class PalletState:

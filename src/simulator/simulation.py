@@ -19,7 +19,6 @@ class Simulator:
         for step in range(steps):
             random_navigation(world=self.world)
             drive_to_pose(world=self.world)
-            apply_repulsion(world=self.world)
             self.world.step()
             self.frames.append(self.world.frame())
 

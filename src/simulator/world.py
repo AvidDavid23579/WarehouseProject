@@ -2,12 +2,12 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from common.utils import SpatialHash, rotated_rectangle_vertices, update_rotated_rectangle_vertices
-from config import CELL_SIZE, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
+from config import PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
 from entities.dock import DockState
 from entities.pallet import PalletState
-from entities.robot import Robot, RobotState
+from entities.robot import RobotState
 from entities.shelf import ShelfState
+from geometry.geo_compute import update_obb_vertices
 from navigation.graph import NavigationGraph
 
 
@@ -15,7 +15,7 @@ from navigation.graph import NavigationGraph
 @dataclass(slots=True)
 class WorldFrame:
     time: float
-    robots: np.ndarray
+    robots: RobotState
     pallet: PalletState
 
 
@@ -38,9 +38,6 @@ class World:
         # Static objects
         self.dock = DockState()
         self.shelf = ShelfState()
-
-        # Spatial hash for potential fields/ORCA...
-        self.static_hash = SpatialHash(CELL_SIZE)
 
         # Warehouse graph
         self.graph = NavigationGraph()
@@ -97,4 +94,4 @@ class World:
         pose[:, 1] += vel[:, 0] * np.sin(pose[:, 2]) * PHYSICS_DT
         pose[:, 2] += vel[:, 1] * PHYSICS_DT
 
-        update_rotated_rectangle_vertices(pose, vertices, ROBOT_LENGTH, ROBOT_WIDTH)
+        update_obb_vertices(pose, vertices, ROBOT_LENGTH, ROBOT_WIDTH)
