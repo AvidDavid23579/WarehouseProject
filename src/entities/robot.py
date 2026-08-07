@@ -30,7 +30,7 @@ class RobotState:
     vertices: np.ndarray = field(default_factory=lambda: np.empty((0, 4, 2), dtype=np.float32))
 
     # Controller
-    arrived: np.ndarray = field(default_factory=lambda: np.zeros(NUM_DOCKS, dtype=np.bool_))
+    arrived: np.ndarray = field(default_factory=lambda: np.ones(NUM_DOCKS, dtype=np.bool_))
     last_goal_dist: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.float32))
     stuck_time: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.float32))
     repulsion_force: np.ndarray = field(default_factory=lambda: np.zeros((NUM_DOCKS, 2), dtype=np.float32))

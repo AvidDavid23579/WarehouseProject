@@ -22,9 +22,9 @@ from config import (
     Y_MAX,
 )
 from entities.dock import DockState
-from entities.pallet import Pallet
+from entities.pallet import PalletState
 from entities.robot import RobotState
-from entities.shelf import Shelf
+from entities.shelf import ShelfState
 
 
 # Build docks. Each dock initializes a robot at its docking pose
@@ -49,13 +49,10 @@ def build_docks(
     node_pose[:, 1] = pose[:, 1] + ROBOT_DOCK_DIST + DOCK_APPROACH_DISTANCE
     node_pose[:, 2] = np.pi / 2
 
-    robot_id = np.arange(num_docks, dtype=np.int32)
-
     return DockState(
         pose=pose,
         vertices=vertices,
         node_pose=node_pose,
-        robot_id=robot_id,
     )
 
 
@@ -76,26 +73,29 @@ def build_robots(start_pose: np.ndarray) -> RobotState:
 
 
 # Build shelves in a vertical layout
-def build_shelves_vertical(shelf_col: int = SHELF_COL, shelf_row: int = SHELF_ROW) -> tuple[list[Shelf], list[Pallet]]:
+def build_shelves_vertical(shelf_col: int = SHELF_COL, shelf_row: int = SHELF_ROW) -> ShelfState:
+    num_shelves = shelf_col * shelf_row
 
-    shelves = []
-    pallets = []
+    pose = np.empty((num_shelves, 3), dtype=np.float32)
+    index = np.arange(num_shelves, dtype=np.int32)
 
-    horizontal_gap = (X_MAX - shelf_col * SHELF_WIDTH) / (shelf_col + 1)
-    vertical_gap = (Y_MAX - shelf_row * SHELF_LENGTH) / (shelf_row + 1)
+    horizontal_gap = (X_MAX - shelf_col * SHELF_LENGTH) / (shelf_col + 1)
+    vertical_gap = (Y_MAX - shelf_row * SHELF_WIDTH) / (shelf_row + 1)
 
+    k = 0
     for i in range(shelf_col):
         for j in range(shelf_row):
-            shelf_pose = Pose(
-                horizontal_gap + SHELF_WIDTH / 2 + i * (SHELF_WIDTH + horizontal_gap),
-                vertical_gap + SHELF_LENGTH / 2 + j * (SHELF_LENGTH + vertical_gap),
+            pose[k] = (
+                horizontal_gap + SHELF_LENGTH / 2 + i * (SHELF_LENGTH + horizontal_gap),
+                vertical_gap + SHELF_WIDTH / 2 + j * (SHELF_WIDTH + vertical_gap),
                 math.pi / 2,
             )
-            shelves.append(Shelf(shelf_pose))
+            k += 1
 
-    for shelf in shelves:
-        shelf.index += 1
-        for pose in shelf.pallet_poses():
-            pallets.append(Pallet(pose))
+    vertices = rotated_rectangle_vertices(pose, SHELF_LENGTH, SHELF_WIDTH)
 
-    return shelves, pallets
+    return ShelfState(pose=pose, vertices=vertices, index=index)
+
+
+def build_pallets():
+    return

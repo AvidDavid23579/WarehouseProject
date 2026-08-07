@@ -3,7 +3,7 @@ import pstats
 import time
 
 from config import PHYSICS_DT, SIMULATION_DURATION
-from entities.builders import build_docks, build_shelves_vertical
+from entities.builders import build_docks, build_robots, build_shelves_vertical
 from navigation.graph_builder import GraphBuilder
 from render.playback import Playback
 from simulator.simulation import Simulator
@@ -19,18 +19,10 @@ def main():
     # Initialize world object
     world = World()
 
-    # Build objects according to layouts
-    shelves, pallets = build_shelves_vertical()
-
     # Add objects to the world
-    for shelf in shelves:
-        world.add_shelf(shelf)
-    for pallet in pallets:
-        world.add_pallet(pallet)
+    world.shelf = build_shelves_vertical()
     world.dock = build_docks()
-
-    for shelf in world.shelves:
-        world.static_hash.insert(shelf)
+    world.robot = build_robots(world.dock.node_pose)
 
     # Build the navigation graph
     world.graph = GraphBuilder(world).build()

@@ -19,11 +19,11 @@ def clamp(value: float, min_val: float, max_val: float) -> float:
 
 def rotated_rectangle_vertices(
     pose: Pose | NDArray[np.float32],
-    length: float,
-    width: float,
+    x: float,
+    y: float,
 ) -> NDArray[np.float32]:
-    hl = length * 0.5
-    hw = width * 0.5
+    hl = x * 0.5
+    hw = y * 0.5
 
     lx = np.array([-hl, hl, hl, -hl], dtype=np.float32)
     ly = np.array([-hw, -hw, hw, hw], dtype=np.float32)

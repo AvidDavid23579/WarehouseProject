@@ -1,35 +1,17 @@
 import math
+from dataclasses import dataclass, field
+
+import numpy as np
 
 from common.types import Pose
-from common.utils import rotated_rectangle_vertices
-from config import NUM_PALLETS_PER_SHELF, PALLET_LENGTH, PALLET_WIDTH, ROBOT_LENGTH, SHELF_LENGTH, SHELF_WIDTH
+from config import ROBOT_LENGTH, SHELF_LENGTH, SHELF_WIDTH
 
 
-class Shelf:
-    def __init__(self, pose: Pose) -> None:
-        self.pose = pose
-        self.index = 0
-        self.vertices = rotated_rectangle_vertices(self.pose, SHELF_LENGTH, SHELF_WIDTH)
-
-    def pallet_poses(self) -> list[Pose]:
-        poses = []
-
-        c = math.cos(self.pose.theta)
-        s = math.sin(self.pose.theta)
-
-        y = SHELF_WIDTH / 2 - PALLET_WIDTH / 2
-        spacing = PALLET_LENGTH
-
-        for i in range(NUM_PALLETS_PER_SHELF):
-            x = -SHELF_LENGTH / 2 + PALLET_LENGTH / 2 + i * spacing
-
-            for y_local in (y, -y):
-                wx = self.pose.x + x * c - y_local * s
-                wy = self.pose.y + x * s + y_local * c
-
-                poses.append(Pose(wx, wy, self.pose.theta))
-
-        return poses
+@dataclass(slots=True)
+class ShelfState:
+    pose: np.ndarray = field(default_factory=lambda: np.empty((0, 3), np.float32))
+    vertices: np.ndarray = field(default_factory=lambda: np.empty((0, 4, 2), np.float32))
+    index: np.ndarray = field(default_factory=lambda: np.empty((0, 1), np.float32))
 
     def navigation_nodes(self) -> list[Pose]:
         margin = ROBOT_LENGTH * 1.2

@@ -5,8 +5,9 @@ import numpy as np
 from common.utils import SpatialHash, rotated_rectangle_vertices, update_rotated_rectangle_vertices
 from config import CELL_SIZE, PHYSICS_DT, ROBOT_LENGTH, ROBOT_WIDTH
 from entities.dock import DockState
+from entities.pallet import PalletState
 from entities.robot import Robot, RobotState
-from entities.shelf import Shelf
+from entities.shelf import ShelfState
 from navigation.graph import NavigationGraph
 
 
@@ -21,7 +22,7 @@ class WorldFrame:
 # One time initialization of static objects
 @dataclass(slots=True)
 class WorldMap:
-    shelves: list[Shelf]
+    shelf: ShelfState
     dock: DockState
     graph: NavigationGraph
 
@@ -32,12 +33,11 @@ class World:
 
         # Dynamic objects
         self.robot = RobotState()
-        self.pallets = []
+        self.pallet = PalletState()
 
         # Static objects
         self.dock = DockState()
-        self.shelves = []
-        self.walls = []
+        self.shelf = ShelfState()
 
         # Spatial hash for potential fields/ORCA...
         self.static_hash = SpatialHash(CELL_SIZE)
@@ -49,35 +49,6 @@ class World:
 
         # Pallets
         self.pallet_pose = np.empty((0, 3), dtype=np.float32)
-
-    # ----------- Robot update functions ---------------------------------------
-
-    def add_robot(self, robot: Robot) -> None:
-        self.robots.append(robot)
-
-        p = robot.start_pose
-
-        self.robot.pose = np.vstack((self.robot.pose, np.array([[p.x, p.y, p.theta]], dtype=np.float32)))
-        self.robot.twist = np.vstack((self.robot.twist, np.array([[0.0, 0.0]], dtype=np.float32)))
-        self.robot.crashed = np.append(self.robot.crashed, False)
-
-        vertices = rotated_rectangle_vertices(p, ROBOT_LENGTH, ROBOT_WIDTH)
-
-        self.robot.vertices = np.vstack((self.robot.vertices, np.array([vertices], dtype=np.float32)))
-
-        self.robot.target_node_id = np.append(self.robot.target_node_id, -1)
-        self.robot.path_index = np.append(self.robot.path_index, 0)
-        self.robot.paths.append([])
-
-    def crash_robot(self, i):
-
-        if self.robot.crashed[i]:
-            return
-
-        self.robot.crashed[i] = True
-        self.robot.twist[i] = 0.0
-
-        self.robots[i].crash()
 
     # ----------- Entity addition functions ------------------------------------
 
@@ -96,15 +67,6 @@ class World:
             )
         )
 
-    def add_dock(self, dock):
-        self.docks.append(dock)
-
-    def add_shelf(self, shelf):
-        self.shelves.append(shelf)
-
-    def add_wall(self, wall):
-        self.walls.append(wall)
-
     # ----------- Simulation update functions ---------------------------------------
 
     def frame(self) -> WorldFrame:
@@ -116,7 +78,7 @@ class World:
 
     def world_map(self):
         return WorldMap(
-            shelves=self.shelves,
+            shelf=self.shelf,
             dock=self.dock,
             graph=self.graph,
         )

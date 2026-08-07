@@ -19,8 +19,8 @@ class GraphBuilder:
 
     def build_subgraphs(self):
         self.build_dock_graph()
-        for shelf in self.world.shelves:
-            shelf.build_graph(self.graph)
+        # for shelf in self.world.shelf:
+        #   shelf.build_graph(self.graph)
 
     def connect_graphs(self):
         pass

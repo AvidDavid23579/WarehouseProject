@@ -160,10 +160,10 @@ class Renderer:
                 aa=False,
             )
 
-        for shelf in self.world_map.shelves:
+        for vertices in self.world_map.shelf.vertices:
             self._draw_polygon(
                 surface,
-                shelf.vertices,
+                vertices,
                 fill=(200, 200, 200),
                 outline=(90, 90, 90),
                 aa=False,
