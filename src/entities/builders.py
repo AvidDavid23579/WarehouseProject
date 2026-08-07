@@ -2,7 +2,6 @@ import math
 
 import numpy as np
 
-from common.types import Pose
 from common.utils import rotated_rectangle_vertices
 from config import (
     DOCK_APPROACH_DISTANCE,
@@ -11,6 +10,9 @@ from config import (
     DOCK_SPACING,
     DOCK_WIDTH,
     NUM_DOCKS,
+    NUM_PALLETS_PER_SHELF,
+    PALLET_LENGTH,
+    PALLET_WIDTH,
     ROBOT_DOCK_DIST,
     ROBOT_LENGTH,
     ROBOT_WIDTH,
@@ -73,21 +75,25 @@ def build_robots(start_pose: np.ndarray) -> RobotState:
 
 
 # Build shelves in a vertical layout
-def build_shelves_vertical(shelf_col: int = SHELF_COL, shelf_row: int = SHELF_ROW) -> ShelfState:
+def build_shelves_vertical(
+    shelf_col: int = SHELF_COL,
+    shelf_row: int = SHELF_ROW,
+    margin: float = 1.0,
+) -> ShelfState:
     num_shelves = shelf_col * shelf_row
 
     pose = np.empty((num_shelves, 3), dtype=np.float32)
     index = np.arange(num_shelves, dtype=np.int32)
 
-    horizontal_gap = (X_MAX - shelf_col * SHELF_WIDTH) / (shelf_col + 1)
-    vertical_gap = (Y_MAX - shelf_row * SHELF_LENGTH) / (shelf_row + 1)
+    horizontal_gap = (X_MAX - 2 * margin - shelf_col * SHELF_WIDTH) / (shelf_col + 1)
+    vertical_gap = (Y_MAX - 2 * margin - shelf_row * SHELF_LENGTH) / (shelf_row + 1)
 
     k = 0
     for i in range(shelf_col):
         for j in range(shelf_row):
             pose[k] = (
-                horizontal_gap + SHELF_WIDTH / 2 + i * (SHELF_WIDTH + horizontal_gap),
-                vertical_gap + SHELF_LENGTH / 2 + j * (SHELF_LENGTH + vertical_gap),
+                margin + horizontal_gap + SHELF_WIDTH / 2 + i * (SHELF_WIDTH + horizontal_gap),
+                margin + vertical_gap + SHELF_LENGTH / 2 + j * (SHELF_LENGTH + vertical_gap),
                 math.pi / 2,
             )
             k += 1
@@ -97,5 +103,35 @@ def build_shelves_vertical(shelf_col: int = SHELF_COL, shelf_row: int = SHELF_RO
     return ShelfState(pose=pose, vertices=vertices, index=index)
 
 
-def build_pallets():
-    return
+def build_pallets(shelves: ShelfState) -> PalletState:
+    num_pallets = len(shelves.pose) * 2 * NUM_PALLETS_PER_SHELF
+
+    pose = np.empty((num_pallets, 3), dtype=np.float32)
+    index = np.arange(2 * NUM_PALLETS_PER_SHELF * SHELF_ROW * SHELF_COL, dtype=np.int32)
+
+    k = 0
+    y = SHELF_WIDTH / 2 - PALLET_WIDTH / 2
+    spacing = PALLET_LENGTH
+
+    for x_shelf, y_shelf, theta in shelves.pose:
+        c = math.cos(theta)
+        s = math.sin(theta)
+
+        for i in range(NUM_PALLETS_PER_SHELF):
+            x = -SHELF_LENGTH / 2 + PALLET_LENGTH / 2 + i * spacing
+
+            for y_local in (y, -y):
+                pose[k] = (
+                    x_shelf + x * c - y_local * s,
+                    y_shelf + x * s + y_local * c,
+                    theta,
+                )
+                k += 1
+
+    vertices = rotated_rectangle_vertices(
+        pose,
+        PALLET_LENGTH,
+        PALLET_WIDTH,
+    )
+
+    return PalletState(pose=pose, vertices=vertices, index=index)

@@ -121,14 +121,8 @@ class Renderer:
                 2,
             )
 
-    def _draw_dynamic(self, surface, state):
-        for x, y, theta in state.pallets:
-            vertices = rotated_rectangle_vertices(
-                Pose(x, y, theta),
-                PALLET_LENGTH,
-                PALLET_WIDTH,
-            )
-
+    def _draw_dynamic(self, surface, frame: WorldFrame):
+        for vertices in frame.pallet.vertices:
             self._draw_polygon(
                 surface,
                 vertices,
@@ -137,7 +131,7 @@ class Renderer:
                 aa=False,
             )
 
-        for x, y, theta in state.robots:
+        for x, y, theta in frame.robots:
             vertices = rotated_rectangle_vertices(
                 Pose(x, y, theta),
                 ROBOT_LENGTH,

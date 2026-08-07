@@ -16,7 +16,7 @@ from navigation.graph import NavigationGraph
 class WorldFrame:
     time: float
     robots: np.ndarray
-    pallets: np.ndarray
+    pallet: PalletState
 
 
 # One time initialization of static objects
@@ -71,7 +71,11 @@ class World:
         return WorldFrame(
             time=self.time,
             robots=self.robot.pose.copy(),
-            pallets=self.pallet_pose.copy(),
+            pallet=PalletState(
+                pose=self.pallet.pose.copy(),
+                vertices=self.pallet.vertices.copy(),
+                index=self.pallet.index.copy(),
+            ),
         )
 
     def world_map(self):
