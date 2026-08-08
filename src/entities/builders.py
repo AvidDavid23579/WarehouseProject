@@ -78,7 +78,7 @@ def build_robots(start_pose: np.ndarray) -> RobotState:
 def build_shelves_vertical(
     shelf_col: int = SHELF_COL,
     shelf_row: int = SHELF_ROW,
-    margin: float = 1.0,
+    margin: float = 1.5,
 ) -> ShelfState:
     num_shelves = shelf_col * shelf_row
 

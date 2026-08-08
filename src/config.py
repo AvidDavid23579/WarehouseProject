@@ -3,10 +3,10 @@ import math
 from common.types import Pose
 
 # Warehouse parameters
-SHELF_COL = 16
-SHELF_ROW = 4
+SHELF_COL = 8
+SHELF_ROW = 2
 NUM_DOCKS = 1
-NUM_PALLETS_PER_SHELF = 8
+NUM_PALLETS_PER_SHELF = 6
 
 # --- Simulation parameters ---------------------------------------------------
 PHYSICS_DT = 1 / 60
@@ -19,9 +19,9 @@ CELL_SIZE = 1.0  # Meters
 
 # --- World bounds (meters) ---------------------------------------------------
 X_MIN = 0
-X_MAX = 60
+X_MAX = 30
 Y_MIN = 0
-Y_MAX = 30
+Y_MAX = 15
 
 WORLD_BOUNDS = (X_MIN, X_MAX, Y_MIN, Y_MAX)
 

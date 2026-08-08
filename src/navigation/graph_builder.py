@@ -1,7 +1,7 @@
 import math
 
 from common.types import Pose
-from config import ROBOT_LENGTH, SHELF_LENGTH, SHELF_WIDTH
+from config import DOCK_APPROACH_DISTANCE, DOCK_ONE_POSE, ROBOT_DOCK_DIST, ROBOT_LENGTH, SHELF_LENGTH, SHELF_WIDTH, X_MAX, Y_MAX
 from navigation.graph import NavigationGraph
 from simulator.world import World
 
@@ -25,26 +25,10 @@ class GraphBuilder:
 
         for x, y, _ in self.world.shelf.pose:
             poses = [
-                Pose(
-                    x - half_width - margin,
-                    y - half_length - margin,
-                    None,
-                ),
-                Pose(
-                    x - half_width - margin,
-                    y + half_length + margin,
-                    None,
-                ),
-                Pose(
-                    x + half_width + margin,
-                    y + half_length + margin,
-                    None,
-                ),
-                Pose(
-                    x + half_width + margin,
-                    y - half_length - margin,
-                    None,
-                ),
+                Pose(x - half_width - margin, y - half_length - margin, None),
+                Pose(x - half_width - margin, y + half_length + margin, None),
+                Pose(x + half_width + margin, y + half_length + margin, None),
+                Pose(x + half_width + margin, y - half_length - margin, None),
             ]
 
             graph_nodes = [self.graph.add_node(pose) for pose in poses]
@@ -64,9 +48,23 @@ class GraphBuilder:
     def build_dock_graph(self):
         self.graph.add_nodes(self.world.dock.node_pose)
 
+    def build_lane_graph(self):
+        x = DOCK_ONE_POSE.x
+        y = DOCK_ONE_POSE.y
+
+        poses = [
+            Pose(x, y + DOCK_APPROACH_DISTANCE + ROBOT_DOCK_DIST, None),
+            Pose(x, Y_MAX - y - DOCK_APPROACH_DISTANCE - ROBOT_DOCK_DIST, None),
+            Pose(X_MAX - x, Y_MAX - y - DOCK_APPROACH_DISTANCE - ROBOT_DOCK_DIST, None),
+            Pose(X_MAX - x, y + DOCK_APPROACH_DISTANCE + ROBOT_DOCK_DIST, None),
+        ]
+
+        graph_nodes = [self.graph.add_node(pose) for pose in poses]
+
     def build_subgraphs(self):
         self.build_dock_graph()
         self.build_shelf_graph()
+        self.build_lane_graph()
 
     def connect_graphs(self):
         EPS = 1e-5
