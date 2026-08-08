@@ -72,6 +72,7 @@ def build_robots(start_pose: np.ndarray) -> RobotState:
         path_index=np.zeros(NUM_DOCKS, dtype=np.int32),
         nav_phase=np.full(NUM_DOCKS, NavPhase.DRIVE, dtype=np.int8),
         path=[[] for _ in range(NUM_DOCKS)],
+        path_length=np.zeros(NUM_DOCKS, dtype=np.int32),
     )
 
 

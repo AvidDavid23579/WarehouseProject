@@ -32,8 +32,8 @@ class RobotState:
     target_node_id: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.int32))
     path_index: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.int32))
     nav_phase: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.int8))
-    path: np.ndarray = field(default_factory=lambda: np.full((NUM_DOCKS, 1000), -1, dtype=np.int32))
     path_length: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.int32))
+    path: list[list[int]] = field(default_factory=list)
 
 
 @dataclass(slots=True)
