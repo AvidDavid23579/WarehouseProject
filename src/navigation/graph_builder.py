@@ -69,4 +69,51 @@ class GraphBuilder:
         self.build_shelf_graph()
 
     def connect_graphs(self):
-        pass
+        EPS = 1e-5
+
+        nodes = self.graph.node_pose
+        n = len(nodes)
+
+        for i in range(n):
+            x, y, _ = nodes[i]
+
+            nearest = {
+                "left": (None, math.inf),
+                "right": (None, math.inf),
+                "up": (None, math.inf),
+                "down": (None, math.inf),
+            }
+
+            for j in range(n):
+                if i == j:
+                    continue
+
+                x2, y2, _ = nodes[j]
+
+                dx = x2 - x
+                dy = y2 - y
+
+                # Same horizontal line
+                if abs(dy) < EPS:
+                    distance = abs(dx)
+
+                    if dx < -EPS and distance < nearest["left"][1]:
+                        nearest["left"] = (j, distance)
+
+                    elif dx > EPS and distance < nearest["right"][1]:
+                        nearest["right"] = (j, distance)
+
+                # Same vertical line
+                elif abs(dx) < EPS:
+                    distance = abs(dy)
+
+                    if dy < -EPS and distance < nearest["down"][1]:
+                        nearest["down"] = (j, distance)
+
+                    elif dy > EPS and distance < nearest["up"][1]:
+                        nearest["up"] = (j, distance)
+
+            for node, distance in nearest.values():
+                if node is not None:
+                    self.graph.add_edge(i, node, distance)
+                    self.graph.add_edge(node, i, distance)
