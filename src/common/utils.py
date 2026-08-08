@@ -1,5 +1,6 @@
 import numpy as np
-from numpy.typing import NDArray
+
+from navigation.graph import NavigationGraph
 
 
 # Clamps values to the interval [min, max]

@@ -1,6 +1,3 @@
-import numpy as np
-
-
 class Navigator:
     def __init__(self, graph):
         self.graph = graph

@@ -1,3 +1,5 @@
+import heapq
+from collections import deque
 from dataclasses import dataclass
 
 import numpy as np
@@ -123,6 +125,82 @@ class NavigationGraph:
                 if neighbor not in visited:
                     parent[neighbor] = current
                     stack.append(neighbor)
+
+        if goal not in parent:
+            return None
+
+        path = []
+        current = goal
+
+        while current is not None:
+            path.append(current)
+            current = parent[current]
+
+        path.reverse()
+
+        return path
+
+    def bfs(self, start: int, goal: int) -> list[int] | None:
+        adjacency = self.adjacency_list()
+
+        visited = {start}
+        parent = {start: None}
+
+        queue = deque([start])
+
+        while queue:
+            current = queue.popleft()
+
+            if current == goal:
+                break
+
+            for neighbor, _ in adjacency[current]:
+                if neighbor in visited:
+                    continue
+
+                visited.add(neighbor)
+                parent[neighbor] = current
+                queue.append(neighbor)
+
+        if goal not in parent:
+            return None
+
+        path = []
+        current = goal
+
+        while current is not None:
+            path.append(current)
+            current = parent[current]
+
+        path.reverse()
+
+        return path
+
+    def dijkstra(self, start: int, goal: int) -> list[int] | None:
+        adjacency = self.adjacency_list()
+
+        distances = {start: 0.0}
+        parent = {start: None}
+
+        heap = [(0.0, start)]
+
+        while heap:
+            distance, current = heapq.heappop(heap)
+
+            # Ignore stale heap entries.
+            if distance > distances[current]:
+                continue
+
+            if current == goal:
+                break
+
+            for neighbor, weight in adjacency[current]:
+                new_distance = distance + weight
+
+                if new_distance < distances.get(neighbor, float("inf")):
+                    distances[neighbor] = new_distance
+                    parent[neighbor] = current
+                    heapq.heappush(heap, (new_distance, neighbor))
 
         if goal not in parent:
             return None
