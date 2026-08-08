@@ -20,7 +20,7 @@ class Simulator:
         self.frames.append(self.world.frame())
 
         for i in range(NUM_DOCKS):
-            self.world.robot.path[i] = self.graph.dfs(i, self.graph.corner_nodes[1])
+            self.world.robot.path[i] = self.graph.dfs(i, 56)
 
             self.world.robot.path_index[i] = 0
             self.world.robot.current_node_id[i] = i

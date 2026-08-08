@@ -34,6 +34,8 @@ class GraphBuilder:
         half_length = SHELF_LENGTH / 2
         half_width = SHELF_WIDTH / 2
 
+        self.graph.shelf_nodes = []
+
         for x, y, _ in self.world.shelf.pose:
             poses = [
                 Pose(x - half_width - margin, y - half_length - margin, None),
@@ -42,11 +44,12 @@ class GraphBuilder:
                 Pose(x + half_width + margin, y - half_length - margin, None),
             ]
 
-            graph_nodes = [self.graph.add_node(pose) for pose in poses]
+            shelf_nodes = [self.graph.add_node(pose) for pose in poses]
+            self.graph.shelf_nodes.extend(shelf_nodes)
 
             for i in range(4):
-                a = graph_nodes[i]
-                b = graph_nodes[(i + 1) % 4]
+                a = self.graph.shelf_nodes[i]
+                b = self.graph.shelf_nodes[(i + 1) % 4]
 
                 ax, ay, _ = self.graph.node_pose[a]
                 bx, by, _ = self.graph.node_pose[b]
@@ -86,13 +89,38 @@ class GraphBuilder:
         graph_nodes = [self.graph.add_node(pose) for pose in poses]
 
     def build_shelf_lane_graph(self):
-        poses = []
+        poses = set()
+
+        for node in self.graph.shelf_nodes:
+            if self.graph.deg_node(node) == 8:
+                continue
+
+            left, right, up, down = self.graph.nodes_cardinal(node)
+
+            for neighbor in left:
+                _, y, _ = self.graph.node_pose[neighbor]
+                poses.add((DOCK_ONE_POSE.x, y))
+
+            for neighbor in right:
+                _, y, _ = self.graph.node_pose[neighbor]
+                poses.add((X_MAX - DOCK_ONE_POSE.x, y))
+
+            for neighbor in up:
+                x, _, _ = self.graph.node_pose[neighbor]
+                poses.add((x, Y_MAX - DOCK_ONE_POSE.y - DOCK_APPROACH_DISTANCE - ROBOT_DOCK_DIST - 0.75))
+
+            for neighbor in down:
+                x, _, _ = self.graph.node_pose[neighbor]
+                poses.add((x, DOCK_ONE_POSE.y + DOCK_APPROACH_DISTANCE + ROBOT_DOCK_DIST + 0.75))
+
+        graph_nodes = [self.graph.add_node(Pose(x, y, None)) for x, y in poses]
 
     def build_subgraphs(self):
         self.build_dock_graph()
         self.build_shelf_graph()
         self.build_corner_graph()
         self.build_dock_lane_graph()
+        self.build_shelf_lane_graph()
 
     def connect_graphs(self):
         EPS = 1e-5
@@ -143,6 +171,8 @@ class GraphBuilder:
                         nearest["up"] = (j, distance)
 
             for node, distance in nearest.values():
-                if node is not None:
-                    self.graph.add_edge(i, node, distance)
-                    self.graph.add_edge(node, i, distance)
+                if node is None:
+                    continue
+
+                self.graph.add_edge(i, node, distance)
+                self.graph.add_edge(node, i, distance)
