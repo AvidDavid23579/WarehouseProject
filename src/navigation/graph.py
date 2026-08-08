@@ -18,8 +18,7 @@ class NavigationGraph:
         self.edges: list[Edge] = []
 
         self.dock_nodes = np.empty(0, dtype=np.int32)
-        self.lane_nodes = np.empty(0, dtype=np.int32)
-        self.shelf_nodes: list[list[int]] = []
+        self.corner_nodes = np.empty(0, dtype=np.int32)
 
     def add_node(self, pose: Pose) -> int:
         node_id = len(self.node_pose)

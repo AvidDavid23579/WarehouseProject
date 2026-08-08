@@ -53,8 +53,6 @@ def main():
 
     Playback(sim.world_map, sim.frames).run()
 
-    print(world.graph.adjacency_list())
-
 
 if __name__ == "__main__":
     main()
