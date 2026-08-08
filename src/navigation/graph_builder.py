@@ -1,7 +1,7 @@
 import math
 
 from common.types import Pose
-from config import DOCK_APPROACH_DISTANCE, DOCK_ONE_POSE, ROBOT_DOCK_DIST, ROBOT_LENGTH, SHELF_LENGTH, SHELF_WIDTH, X_MAX, Y_MAX
+from config import DOCK_APPROACH_DISTANCE, DOCK_ONE_POSE, NUM_DOCKS, ROBOT_DOCK_DIST, ROBOT_LENGTH, SHELF_LENGTH, SHELF_WIDTH, X_MAX, Y_MAX
 from navigation.graph import NavigationGraph
 from simulator.world import World
 
@@ -46,25 +46,27 @@ class GraphBuilder:
                 self.graph.add_edge(b, a, dist)
 
     def build_dock_graph(self):
-        self.graph.add_nodes(self.world.dock.node_pose)
+        self.graph.dock_nodes = self.graph.add_nodes(self.world.dock.node_pose)
 
-    def build_lane_graph(self):
+    def build_corner_graph(self):
         x = DOCK_ONE_POSE.x
         y = DOCK_ONE_POSE.y
 
+        margin = 0.75
+
         poses = [
-            Pose(x, y + DOCK_APPROACH_DISTANCE + ROBOT_DOCK_DIST, None),
+            Pose(x, y + DOCK_APPROACH_DISTANCE + ROBOT_DOCK_DIST + margin, None),
             Pose(x, Y_MAX - y - DOCK_APPROACH_DISTANCE - ROBOT_DOCK_DIST, None),
             Pose(X_MAX - x, Y_MAX - y - DOCK_APPROACH_DISTANCE - ROBOT_DOCK_DIST, None),
-            Pose(X_MAX - x, y + DOCK_APPROACH_DISTANCE + ROBOT_DOCK_DIST, None),
+            Pose(X_MAX - x, y + DOCK_APPROACH_DISTANCE + ROBOT_DOCK_DIST + margin, None),
         ]
 
-        graph_nodes = [self.graph.add_node(pose) for pose in poses]
+        self.graph.corner_nodes = [self.graph.add_node(pose) for pose in poses]
 
     def build_subgraphs(self):
         self.build_dock_graph()
         self.build_shelf_graph()
-        self.build_lane_graph()
+        self.build_corner_graph()
 
     def connect_graphs(self):
         EPS = 1e-5
@@ -84,6 +86,9 @@ class GraphBuilder:
 
             for j in range(n):
                 if i == j:
+                    continue
+
+                if i < NUM_DOCKS and j < NUM_DOCKS:
                     continue
 
                 x2, y2, _ = nodes[j]

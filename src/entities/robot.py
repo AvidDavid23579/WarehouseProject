@@ -12,14 +12,6 @@ class RobotInfo:
 
 
 @dataclass(slots=True)
-class NavigationState:
-    current_node_id: int | None
-    target_node_id: int | None
-    path: list[int]
-    path_index: int
-
-
-@dataclass(slots=True)
 class RobotState:
     # Physics
     pose: np.ndarray = field(default_factory=lambda: np.empty((0, 3), dtype=np.float32))
@@ -39,7 +31,8 @@ class RobotState:
     current_node_id: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.int32))
     target_node_id: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.int32))
     path_index: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.int32))
-    paths: list[list[int]] = field(default_factory=list)
+    nav_phase: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.int8))
+    path: list[list[int]] = field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -55,12 +48,6 @@ class Robot:
         self.start_pose = start_pose.copy()
 
         self.goal = None
-        self.navigation = NavigationState(
-            current_node_id=None,
-            target_node_id=None,
-            path=[],
-            path_index=0,
-        )
 
     def crash(self):
         pass

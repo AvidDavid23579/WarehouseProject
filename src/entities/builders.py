@@ -2,6 +2,7 @@ import math
 
 import numpy as np
 
+from common.types import NavPhase
 from config import (
     DOCK_APPROACH_DISTANCE,
     DOCK_LENGTH,
@@ -13,8 +14,6 @@ from config import (
     PALLET_LENGTH,
     PALLET_WIDTH,
     ROBOT_DOCK_DIST,
-    ROBOT_LENGTH,
-    ROBOT_WIDTH,
     SHELF_COL,
     SHELF_LENGTH,
     SHELF_ROW,
@@ -62,15 +61,17 @@ def build_robots(start_pose: np.ndarray) -> RobotState:
     return RobotState(
         pose=start_pose.copy(),
         twist=np.zeros((NUM_DOCKS, 2), dtype=np.float32),
-        crashed=np.zeros(NUM_DOCKS, dtype=bool),
-        vertices=obb_vertices(
-            start_pose,
-            ROBOT_LENGTH,
-            ROBOT_WIDTH,
-        ),
+        crashed=np.zeros(NUM_DOCKS, dtype=np.bool_),
+        vertices=np.empty((NUM_DOCKS, 4, 2), dtype=np.float32),
+        arrived=np.ones(NUM_DOCKS, dtype=np.bool_),
+        last_goal_dist=np.empty(NUM_DOCKS, dtype=np.float32),
+        stuck_time=np.zeros(NUM_DOCKS, dtype=np.float32),
+        repulsion_force=np.zeros((NUM_DOCKS, 2), dtype=np.float32),
+        current_node_id=np.full(NUM_DOCKS, -1, dtype=np.int32),
         target_node_id=np.full(NUM_DOCKS, -1, dtype=np.int32),
         path_index=np.zeros(NUM_DOCKS, dtype=np.int32),
-        paths=[[] for _ in range(NUM_DOCKS)],
+        nav_phase=np.full(NUM_DOCKS, NavPhase.DRIVE, dtype=np.int8),
+        path=[[] for _ in range(NUM_DOCKS)],
     )
 
 

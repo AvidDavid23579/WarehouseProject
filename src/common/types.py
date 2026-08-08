@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import IntEnum
 from typing import Optional
 
 
@@ -10,3 +11,10 @@ class Pose:
 
     def copy(self) -> "Pose":
         return Pose(self.x, self.y, self.theta)
+
+
+class NavPhase(IntEnum):
+    INITIAL_TURN = 0
+    DRIVE = 1
+    TURN = 2
+    DONE = 3

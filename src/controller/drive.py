@@ -1,19 +1,18 @@
 import numpy as np
 
+from common.types import NavPhase
 from config import ANGLE_TOLERANCE, DIST_TOLERANCE, MAX_OMEGA, MAX_VELOCITY
 from geometry.geo_compute import wrap_angle
+from navigation.graph import NavigationGraph
 
 
-def drive_to_pose(world) -> None:
+def drive_to_pose(world, heading_override=None, kP_velocity=4.0, kP_angular=3.0, kP_final=10.0) -> None:
     world.robot.arrived.fill(False)
     pose = world.robot.pose
     twist = world.robot.twist
     crashed = world.robot.crashed
     target_node = world.robot.target_node_id
     node_pose = world.graph.node_pose
-    kP_velocity = 4.0
-    kP_angular = 3.0
-    kP_final = 10.0
 
     # Default: stop every robot.
     twist.fill(0.0)
@@ -37,6 +36,9 @@ def drive_to_pose(world) -> None:
     gx = g[:, 0]
     gy = g[:, 1]
     goal_theta = g[:, 2]
+
+    if heading_override is not None:
+        goal_theta = heading_override[active]
 
     dx = gx - px
     dy = gy - py
@@ -92,24 +94,166 @@ def drive_to_pose(world) -> None:
             world.robot.arrived[advance_idx] = True
 
 
-def patrol(world):
-    arrived = world.robot_arrived
-    target = world.robot_target_node
+def drive_to_pose_grid(
+    world,
+    graph: NavigationGraph,
+    kP_vel=5.0,
+    kP_omega=10.0,
+) -> None:
+    robot = world.robot
 
-    target[arrived] += 1
-    target %= len(world.graph.node_pose)
+    robot.twist.fill(0.0)
+    robot.arrived.fill(False)
+    robot.target_node_id[:] = -1
 
+    pose = robot.pose
+    crashed = robot.crashed
 
-def random_navigation(world):
-    arrived = world.robot.arrived
+    for r in range(len(pose)):
+        if crashed[r]:
+            continue
 
-    n = np.count_nonzero(arrived)
+        path = robot.path[r]
+        i = robot.path_index[r]
+        phase = robot.nav_phase[r]
 
-    if n == 0:
-        return
+        # -----------------------------------------------------
+        # PATH COMPLETE
+        # -----------------------------------------------------
 
-    world.robot.target_node_id[arrived] = np.random.randint(
-        0,
-        len(world.graph.node_pose),
-        size=n,
-    )
+        if i >= len(path):
+            robot.nav_phase[r] = NavPhase.DONE
+            continue
+
+        target_node = path[i]
+        robot.target_node_id[r] = target_node
+        target_pose = graph.node_pose[target_node]
+
+        # =====================================================
+        # INITIAL TURN
+        #
+        # Robot starts at path[0].
+        # Turn toward path[0] -> path[1] before moving.
+        # =====================================================
+
+        if phase == NavPhase.INITIAL_TURN:
+            if len(path) < 2:
+                # Nothing to drive toward.
+                robot.nav_phase[r] = NavPhase.DONE
+                robot.arrived[r] = True
+                continue
+
+            next_node = path[1]
+            next_pose = graph.node_pose[next_node]
+
+            edge_heading = np.arctan2(
+                next_pose[1] - target_pose[1],
+                next_pose[0] - target_pose[0],
+            )
+
+            heading_error = wrap_angle(edge_heading - pose[r, 2])
+
+            if abs(heading_error) >= ANGLE_TOLERANCE:
+                robot.twist[r, 1] = np.clip(
+                    kP_omega * heading_error,
+                    -MAX_OMEGA,
+                    MAX_OMEGA,
+                )
+                continue
+
+            # Initial heading reached.
+            robot.nav_phase[r] = NavPhase.DRIVE
+
+            # Do not drive this frame.
+            continue
+
+        # =====================================================
+        # DRIVE
+        # =====================================================
+
+        if phase == NavPhase.DRIVE:
+            dx = target_pose[0] - pose[r, 0]
+            dy = target_pose[1] - pose[r, 1]
+
+            dist = np.hypot(dx, dy)
+
+            if dist >= DIST_TOLERANCE:
+                target_heading = np.arctan2(dy, dx)
+
+                heading_error = wrap_angle(target_heading - pose[r, 2])
+
+                robot.twist[r, 0] = np.clip(
+                    kP_vel * dist,
+                    0.0,
+                    MAX_VELOCITY,
+                )
+
+                robot.twist[r, 1] = np.clip(
+                    kP_omega * heading_error,
+                    -MAX_OMEGA,
+                    MAX_OMEGA,
+                )
+
+                continue
+
+            # Reached node.
+            robot.twist[r, 0] = 0.0
+
+            # Final node.
+            if i == len(path) - 1:
+                goal_heading = target_pose[2]
+
+                heading_error = wrap_angle(goal_heading - pose[r, 2])
+
+                if abs(heading_error) >= ANGLE_TOLERANCE:
+                    robot.nav_phase[r] = NavPhase.TURN
+
+                    robot.twist[r, 1] = np.clip(
+                        kP_omega * heading_error,
+                        -MAX_OMEGA,
+                        MAX_OMEGA,
+                    )
+
+                    continue
+
+                robot.arrived[r] = True
+                robot.nav_phase[r] = NavPhase.DONE
+                continue
+
+            # Normal node reached.
+            robot.nav_phase[r] = NavPhase.TURN
+
+        # =====================================================
+        # TURN
+        #
+        # Robot is sitting at path[i] and needs to turn toward
+        # path[i] -> path[i + 1].
+        # =====================================================
+
+        if robot.nav_phase[r] == NavPhase.TURN:
+            next_node = path[i + 1]
+            next_pose = graph.node_pose[next_node]
+
+            edge_heading = np.arctan2(
+                next_pose[1] - target_pose[1],
+                next_pose[0] - target_pose[0],
+            )
+
+            heading_error = wrap_angle(edge_heading - pose[r, 2])
+
+            if abs(heading_error) >= ANGLE_TOLERANCE:
+                robot.twist[r, 1] = np.clip(
+                    kP_omega * heading_error,
+                    -MAX_OMEGA,
+                    MAX_OMEGA,
+                )
+                continue
+
+            # Heading aligned.
+            robot.path_index[r] += 1
+
+            if robot.path_index[r] >= len(path):
+                robot.nav_phase[r] = NavPhase.DONE
+                robot.arrived[r] = True
+            else:
+                robot.nav_phase[r] = NavPhase.DRIVE
