@@ -221,8 +221,13 @@ def obb_aabb_distance(
     one = np.float32(1.0)
     half = np.float32(0.5)
 
-    cx = np.float32(center_x)
-    cy = np.float32(center_y)
+    cx = np.asarray(center_x, dtype=np.float32)
+    cy = np.asarray(center_y, dtype=np.float32)
+
+    M = cx.shape[0]
+
+    cx_b = cx[None, :]
+    cy_b = cy[None, :]
 
     hlb = half * np.float32(length)  # AABB half-length
     hwb = half * np.float32(width)  # AABB half width
@@ -230,40 +235,30 @@ def obb_aabb_distance(
     hwr = half * np.float32(obb_width)  # robot half width
 
     # Output distance is also the running best squared distance.
-    distance = np.empty(N, dtype=np.float32)
+    distance = np.empty((N, M), dtype=np.float32)
 
-    normal = np.empty((N, 2), dtype=np.float32, order="F")
-    best_nx = normal[:, 0]
-    best_ny = normal[:, 1]
+    normal = np.empty((N, M, 2), dtype=np.float32)
+    best_nx = normal[:, :, 0]
+    best_ny = normal[:, :, 1]
 
-    local = np.zeros(N, dtype=np.bool_)
+    local = np.zeros((N, M), dtype=np.bool_)
+    mask = np.empty((N, M), dtype=np.bool_)
 
-    # Reused mask for running-min updates and final normalization.
-    mask = np.empty(N, dtype=np.bool_)
-
-    # One scratch buffer reduces allocator overhead and keeps temporaries local.
-    #
-    # Layout:
-    #   0 px, 1 py, 2 c, 3 s,
-    #   4 d2, 5 nx, 6 ny,
-    #   7 t0, 8 t1, 9 t2, 10 t3, 11 t4, 12 t5
-    work = np.empty((13, N), dtype=np.float32)
+    work = np.empty((11, N, M), dtype=np.float32)
 
     px = work[0]
     py = work[1]
-    c = work[2]
-    s = work[3]
 
-    d2 = work[4]
-    nx = work[5]
-    ny = work[6]
+    d2 = work[2]
+    nx = work[3]
+    ny = work[4]
 
-    t0 = work[7]
-    t1 = work[8]
-    t2 = work[9]
-    t3 = work[10]
-    t4 = work[11]
-    t5 = work[12]
+    t0 = work[5]
+    t1 = work[6]
+    t2 = work[7]
+    t3 = work[8]
+    t4 = work[9]
+    t5 = work[10]
 
     pose_x = pose[:, 0]
     pose_y = pose[:, 1]
@@ -271,12 +266,15 @@ def obb_aabb_distance(
 
     # Robot centers relative to AABB centre. This reduces cancellation
     # compared with using absolute world coordinates directly.
-    np.subtract(pose_x, cx, out=px)
-    np.subtract(pose_y, cy, out=py)
+    np.subtract(pose_x[:, None], cx_b, out=px)
+    np.subtract(pose_y[:, None], cy_b, out=py)
 
     # Trig computed once.
-    np.cos(pose_t, out=c)
-    np.sin(pose_t, out=s)
+    c = np.empty((N, 1), dtype=np.float32)
+    s = np.empty((N, 1), dtype=np.float32)
+
+    np.cos(pose_t[:, None], out=c)
+    np.sin(pose_t[:, None], out=s)
 
     # ------------------------------------------------------------------
     # Candidate set 1: robot vertices -> AABB.
