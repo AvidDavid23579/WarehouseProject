@@ -131,17 +131,13 @@ class Renderer:
                 aa=False,
             )
 
-        for x, y, theta in frame.robots:
-            vertices = obb_vertices(
-                Pose(x, y, theta),
-                ROBOT_LENGTH,
-                ROBOT_WIDTH,
-            )
-
+        for vertices in frame.robots.vertices:
             self._draw_polygon(
-                self.screen,
+                surface,
                 vertices,
                 fill=(0, 170, 255),
+                outline=(0, 100, 200),
+                aa=False,
             )
 
     def _draw_static(self, surface):
@@ -168,6 +164,7 @@ class Renderer:
     def _draw_nodes(self, surface, graph: NavigationGraph):
         # Draw edges
         for edge in graph.edges:
+            assert self.camera is not None
             x1, y1 = self.camera.world_to_screen(
                 graph.node_pose[edge.start, 0],
                 graph.node_pose[edge.start, 1],
@@ -188,6 +185,7 @@ class Renderer:
 
         # Draw nodes
         for node_id, (xw, yw, _) in enumerate(graph.node_pose):
+            assert self.camera is not None
             x, y = self.camera.world_to_screen(xw, yw)
 
             pygame.draw.circle(

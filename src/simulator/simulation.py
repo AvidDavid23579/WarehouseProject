@@ -21,7 +21,7 @@ class Simulator:
         self.frames.append(self.world.frame())
 
         for i in range(NUM_DOCKS):
-            self.world.robot.path[i] = self.graph.dijkstra(i, 22 + 2 * i)
+            self.world.robot.path[i] = self.graph.dijkstra(i, 7 + 2 * i)
 
             self.world.robot.path_index[i] = 0
             self.world.robot.current_node_id[i] = i
@@ -29,7 +29,6 @@ class Simulator:
         for step in range(steps):
             self.navigator.update(self.world.robot)
             drive_to_pose_grid(world=self.world, graph=self.graph)
-            apply_repulsion(world=self.world)
             self.world.step()
             self.frames.append(self.world.frame())
 

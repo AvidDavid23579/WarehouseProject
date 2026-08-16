@@ -45,29 +45,14 @@ class World:
         # Pallets
         self.pallet_pose = np.empty((0, 3), dtype=np.float32)
 
-    # ----------- Entity addition functions ------------------------------------
-
-    def add_pallet(self, pallet):
-        self.pallets.append(pallet)
-
-        pose = pallet.pose
-
-        self.pallet_pose = np.vstack(
-            (
-                self.pallet_pose,
-                np.array(
-                    [[pose.x, pose.y, pose.theta]],
-                    dtype=np.float32,
-                ),
-            )
-        )
-
     # ----------- Simulation update functions ---------------------------------------
 
     def frame(self) -> WorldFrame:
         return WorldFrame(
             time=self.time,
-            robots=self.robot.pose.copy(),
+            robots=RobotState(
+                pose=self.robot.pose.copy(),
+                vertices=self.robot.vertices.copy()),
             pallet=PalletState(
                 pose=self.pallet.pose.copy(),
                 vertices=self.pallet.vertices.copy(),
