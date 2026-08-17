@@ -492,22 +492,23 @@ def obb_aabb_distance(
     return distance, normal
 
 
-def project_point_to_segment(
-    px: float,
-    py: float,
-    ax: float,
-    ay: float,
-    bx: float,
-    by: float,
-) -> tuple[float, float]:
+def segment_intersects_segment(
+    p1: np.ndarray,
+    p2: np.ndarray,
+    q1: np.ndarray,
+    q2: np.ndarray,
+) -> bool:
+    r = p2 - p1
+    s = q2 - q1
 
-    abx = bx - ax
-    aby = by - ay
+    cross = r[0] * s[1] - r[1] * s[0]
 
-    t = ((px - ax) * abx + (py - ay) * aby) / (abx * abx + aby * aby)
-    t = max(0.0, min(1.0, t))
+    if abs(cross) < 1e-8:
+        return False
 
-    return (
-        ax + t * abx,
-        ay + t * aby,
-    )
+    q_p = q1 - p1
+
+    t = (q_p[0] * s[1] - q_p[1] * s[0]) / cross
+    u = (q_p[0] * r[1] - q_p[1] * r[0]) / cross
+
+    return 0.0 <= t <= 1.0 and 0.0 <= u <= 1.0

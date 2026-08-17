@@ -1,5 +1,6 @@
 import numpy as np
 
+from geometry.geo_compute import segment_intersects_segment
 from navigation.graph import NavigationGraph
 
 
@@ -36,3 +37,18 @@ def compress_collinear_path(
     result.append(path[-1])
 
     return result
+
+def segment_intersects_shelf(
+    p1: np.ndarray,
+    p2: np.ndarray,
+    vertices: np.ndarray,
+) -> bool:
+
+    for i in range(4):
+        q1 = vertices[i]
+        q2 = vertices[(i + 1) % 4]
+
+        if segment_intersects_segment(p1, p2, q1, q2):
+            return True
+
+    return False

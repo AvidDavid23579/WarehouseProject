@@ -230,6 +230,11 @@ def drive_to_pose_grid(
         # path[i] -> path[i + 1].
         # =====================================================
 
+        if i >= len(path) - 1:
+            # Goal reached
+            robot.nav_phase[r] = NavPhase.DONE
+            return
+
         if robot.nav_phase[r] == NavPhase.TURN:
             next_node = path[i + 1]
             next_pose = graph.node_pose[next_node]

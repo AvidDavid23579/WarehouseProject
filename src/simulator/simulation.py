@@ -26,11 +26,8 @@ class Simulator:
         for i in range(NUM_DOCKS):
             self.world.robot.path_index[i] = 0
             self.world.robot.current_node_id[i] = i
-            path = self.graph.dijkstra(i, 43)
+            path = self.graph.dijkstra(i, self.graph.pallet_nodes[1])
 
-            if path is None:
-                raise RuntimeError(f"No path found from {i} to {7 + 2 * i}")
-            
             self.world.robot.path[i] = path
 
         for step in range(steps):
@@ -43,14 +40,10 @@ class Simulator:
                 p = self.world.robot.pose[r]
 
                 if not np.all(np.isfinite(p)):
-                    raise RuntimeError(
-                    f"Robot {r} pose became invalid at step {step}: {p}"
-                    )
+                    raise RuntimeError(f"Robot {r} pose became invalid at step {step}: {p}")
 
                 if np.max(np.abs(p)) > 1e5:
-                    raise RuntimeError(
-                    f"Robot {r} pose exploded at step {step}: {p}"
-                    )
+                    raise RuntimeError(f"Robot {r} pose exploded at step {step}: {p}")
 
     @property
     def world_map(self) -> WorldMap:

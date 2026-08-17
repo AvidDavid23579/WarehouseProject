@@ -1,6 +1,7 @@
 import math
 
 from common.types import Pose
+from common.utils import segment_intersects_shelf
 from config import (
     DOCK_APPROACH_DISTANCE,
     DOCK_ONE_POSE,
@@ -18,7 +19,6 @@ from config import (
     X_MAX,
     Y_MAX,
 )
-from geometry.geo_compute import project_point_to_segment
 from navigation.graph import NavigationGraph
 from simulator.world import World
 
@@ -216,6 +216,16 @@ class GraphBuilder:
         self.build_shelf_lane_graph()
         self.build_pallet_graph()
 
+    def visible(self, node_a: int, node_b: int) -> bool:
+        p1 = self.graph.node_pose[node_a, :2]
+        p2 = self.graph.node_pose[node_b, :2]
+
+        for vertices in self.world.shelf.vertices:
+            if segment_intersects_shelf(p1, p2, vertices):
+                return False
+
+        return True
+
     def connect_graphs(self):
         EPS = 1e-5
 
@@ -266,6 +276,9 @@ class GraphBuilder:
 
             for node, distance in nearest.values():
                 if node is None:
+                    continue
+
+                if not self.visible(i, node):
                     continue
 
                 self.graph.add_edge(i, node, distance)
