@@ -5,6 +5,7 @@ from config import (
     DOCK_APPROACH_DISTANCE,
     DOCK_ONE_POSE,
     DOCK_SPACING,
+    GOAL_ZONE_LENGTH,
     NUM_DOCKS,
     ROBOT_DOCK_DIST,
     ROBOT_LENGTH,
@@ -12,6 +13,7 @@ from config import (
     SHELF_WIDTH,
     X_MAX,
     Y_MAX,
+    GOAL_ZONE_WIDTH,
 )
 from navigation.graph import NavigationGraph
 from simulator.world import World
@@ -115,12 +117,27 @@ class GraphBuilder:
 
         graph_nodes = [self.graph.add_node(Pose(x, y, None)) for x, y in poses]
 
+    def build_goal_graph(self):
+        margin = ROBOT_LENGTH * 0.5
+
+        poses = []
+
+        for i in range(NUM_DOCKS):
+            start = (X_MAX - GOAL_ZONE_LENGTH) / 2 + (GOAL_ZONE_LENGTH / (NUM_DOCKS + 1))
+            poses.append((start + (GOAL_ZONE_LENGTH / (NUM_DOCKS + 1)) * i, Y_MAX - GOAL_ZONE_WIDTH - margin))
+            poses.append((start + (GOAL_ZONE_LENGTH / (NUM_DOCKS + 1)) * i, Y_MAX - DOCK_ONE_POSE.y - DOCK_APPROACH_DISTANCE - ROBOT_DOCK_DIST - 0.75))
+
+        graph_nodes = [self.graph.add_node(Pose(x, y, None)) for x, y in poses]
+
+
     def build_subgraphs(self):
         self.build_dock_graph()
         self.build_shelf_graph()
+        self.build_goal_graph()
         self.build_corner_graph()
         self.build_dock_lane_graph()
         self.build_shelf_lane_graph()
+        
 
     def connect_graphs(self):
         EPS = 1e-5

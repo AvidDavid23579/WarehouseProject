@@ -168,7 +168,7 @@ class Renderer:
                 aa=False,
             )
 
-        # self._draw_nodes(surface, self.world_map.graph)
+        self._draw_nodes(surface, self.world_map.graph)
 
     def _draw_nodes(self, surface, graph: NavigationGraph):
         # Draw edges

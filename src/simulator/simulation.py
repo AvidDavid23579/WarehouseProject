@@ -1,3 +1,5 @@
+from os import path
+
 from config import NUM_DOCKS
 from controller.drive import drive_to_pose_grid
 from controller.potential import apply_repulsion
@@ -17,14 +19,18 @@ class Simulator:
 
         self.frames.clear()
 
-        # Record the initial state
-        self.frames.append(self.world.frame())
-
         for i in range(NUM_DOCKS):
-            self.world.robot.path[i] = self.graph.dijkstra(i, 7 + 2 * i)
-
             self.world.robot.path_index[i] = 0
             self.world.robot.current_node_id[i] = i
+            path = self.graph.dijkstra(i, 7 + 2 * i)
+
+            if path is None:
+                raise RuntimeError(f"No path found from {i} to {7 + 2 * i}")
+            
+            self.world.robot.path[i] = path   
+
+        # Record the initial state
+        self.frames.append(self.world.frame())
 
         for step in range(steps):
             self.navigator.update(self.world.robot)
