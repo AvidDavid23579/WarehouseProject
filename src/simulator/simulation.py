@@ -1,10 +1,11 @@
+import numpy as np
+
 from common.types import NavPhase
 from config import NUM_DOCKS
 from controller.drive import drive_to_pose_grid
 from controller.potential import apply_repulsion
 from navigation.navigator import Navigator
 from simulator.world import World, WorldFrame, WorldMap
-import numpy as np
 
 
 class Simulator:
@@ -25,7 +26,7 @@ class Simulator:
         for i in range(NUM_DOCKS):
             self.world.robot.path_index[i] = 0
             self.world.robot.current_node_id[i] = i
-            path = self.graph.dijkstra(i, 7 + 2 * i)
+            path = self.graph.dijkstra(i, 43)
 
             if path is None:
                 raise RuntimeError(f"No path found from {i} to {7 + 2 * i}")

@@ -1,9 +1,7 @@
 import pygame
 import pygame.gfxdraw
 
-from common.types import Pose
-from config import PALLET_LENGTH, PALLET_WIDTH, ROBOT_LENGTH, ROBOT_WIDTH, WAREHOUSE_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, X_MAX, Y_MAX
-from geometry.geo_compute import obb_vertices
+from config import WAREHOUSE_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, X_MAX, Y_MAX
 from navigation.graph import NavigationGraph
 from render.camera import Camera
 from simulator.world import WorldFrame, WorldMap
@@ -161,12 +159,12 @@ class Renderer:
 
         vertices = self.world_map.goal.vertices
         self._draw_polygon(
-                surface,
-                vertices,
-                fill=(0, 255, 0),
-                outline=(0, 100, 0),
-                aa=False,
-            )
+            surface,
+            vertices,
+            fill=(0, 255, 0),
+            outline=(0, 100, 0),
+            aa=False,
+        )
 
         self._draw_nodes(surface, self.world_map.graph)
 

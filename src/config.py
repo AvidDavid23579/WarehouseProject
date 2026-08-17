@@ -5,7 +5,7 @@ from common.types import Pose
 # Warehouse parameters
 SHELF_COL = 2
 SHELF_ROW = 1
-NUM_DOCKS = 2
+NUM_DOCKS = 1
 NUM_PALLETS_PER_SHELF = 5
 
 # --- Simulation parameters ---------------------------------------------------

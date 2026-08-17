@@ -6,15 +6,19 @@ from config import (
     DOCK_ONE_POSE,
     DOCK_SPACING,
     GOAL_ZONE_LENGTH,
+    GOAL_ZONE_WIDTH,
     NUM_DOCKS,
+    NUM_PALLETS_PER_SHELF,
+    PALLET_LENGTH,
+    PALLET_WIDTH,
     ROBOT_DOCK_DIST,
     ROBOT_LENGTH,
     SHELF_LENGTH,
     SHELF_WIDTH,
     X_MAX,
     Y_MAX,
-    GOAL_ZONE_WIDTH,
 )
+from geometry.geo_compute import project_point_to_segment
 from navigation.graph import NavigationGraph
 from simulator.world import World
 
@@ -125,10 +129,83 @@ class GraphBuilder:
         for i in range(NUM_DOCKS):
             start = (X_MAX - GOAL_ZONE_LENGTH) / 2 + (GOAL_ZONE_LENGTH / (NUM_DOCKS + 1))
             poses.append((start + (GOAL_ZONE_LENGTH / (NUM_DOCKS + 1)) * i, Y_MAX - GOAL_ZONE_WIDTH - margin))
-            poses.append((start + (GOAL_ZONE_LENGTH / (NUM_DOCKS + 1)) * i, Y_MAX - DOCK_ONE_POSE.y - DOCK_APPROACH_DISTANCE - ROBOT_DOCK_DIST - 0.75))
+            poses.append(
+                (
+                    start + (GOAL_ZONE_LENGTH / (NUM_DOCKS + 1)) * i,
+                    Y_MAX - DOCK_ONE_POSE.y - DOCK_APPROACH_DISTANCE - ROBOT_DOCK_DIST - 0.75,
+                )
+            )
 
         graph_nodes = [self.graph.add_node(Pose(x, y, None)) for x, y in poses]
 
+    def build_pallet_graph(self):
+        self.graph.pallet_nodes = []
+
+        margin = ROBOT_LENGTH * 0.5 + 0.1
+
+        half_length = SHELF_LENGTH / 2
+        half_width = SHELF_WIDTH / 2
+
+        pallet_y = half_width - PALLET_WIDTH / 2
+
+        for shelf_idx, (x_shelf, y_shelf, theta) in enumerate(self.world.shelf.pose):
+            c = math.cos(theta)
+            s = math.sin(theta)
+
+            shelf_nodes = self.graph.shelf_nodes[shelf_idx * 4 : shelf_idx * 4 + 4]
+
+            # 0 = top-left
+            # 1 = top-right
+            # 2 = bottom-right
+            # 3 = bottom-left
+            top_left = self.graph.node_pose[shelf_nodes[0]]
+            top_right = self.graph.node_pose[shelf_nodes[1]]
+            bottom_right = self.graph.node_pose[shelf_nodes[2]]
+            bottom_left = self.graph.node_pose[shelf_nodes[3]]
+
+            for i in range(NUM_PALLETS_PER_SHELF):
+                x_local = -half_length + PALLET_LENGTH / 2 + i * PALLET_LENGTH
+
+                for y_local in (pallet_y, -pallet_y):
+                    # Pallet centre
+                    px = x_shelf + x_local * c - y_local * s
+                    py = y_shelf + x_local * s + y_local * c
+
+                    side = 1.0 if y_local > 0 else -1.0
+
+                    # Robot access point
+                    access_dist = PALLET_WIDTH / 2 + margin
+
+                    access_x = px - side * access_dist * s
+                    access_y = py + side * access_dist * c
+
+                    pallet_node = self.graph.add_node(Pose(access_x, access_y, theta))
+
+                    self.graph.pallet_nodes.append(pallet_node)
+
+                    # Project onto the corresponding shelf graph edge.
+                    if side > 0:
+                        a = top_left
+                        b = top_right
+                    else:
+                        a = bottom_left
+                        b = bottom_right
+
+                    # Project pallet access point onto edge AB.
+                    ax, ay, _ = a
+                    bx, by, _ = b
+
+                    abx = bx - ax
+                    aby = by - ay
+
+                    t = ((access_x - ax) * abx + (access_y - ay) * aby) / (abx * abx + aby * aby)
+
+                    t = max(0.0, min(1.0, t))
+
+                    line_x = ax + t * abx
+                    line_y = ay + t * aby
+
+                    line_node = self.graph.add_node(Pose(line_x, line_y, theta))
 
     def build_subgraphs(self):
         self.build_dock_graph()
@@ -137,7 +214,7 @@ class GraphBuilder:
         self.build_corner_graph()
         self.build_dock_lane_graph()
         self.build_shelf_lane_graph()
-        
+        self.build_pallet_graph()
 
     def connect_graphs(self):
         EPS = 1e-5
@@ -162,7 +239,7 @@ class GraphBuilder:
                 if i < NUM_DOCKS and j < NUM_DOCKS:
                     continue
 
-                x2, y2, _ = nodes[j] 
+                x2, y2, _ = nodes[j]
 
                 dx = x2 - x
                 dy = y2 - y

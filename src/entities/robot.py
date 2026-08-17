@@ -23,16 +23,16 @@ class RobotState:
 
     # Controller
     arrived: np.ndarray = field(default_factory=lambda: np.ones(NUM_DOCKS, dtype=np.bool_))
-    last_goal_dist: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.float32))
-    stuck_time: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.float32))
+    last_goal_dist: np.ndarray = field(default_factory=lambda: np.zeros(NUM_DOCKS, dtype=np.float32))
+    stuck_time: np.ndarray = field(default_factory=lambda: np.zeros(NUM_DOCKS, dtype=np.float32))
     repulsion_force: np.ndarray = field(default_factory=lambda: np.zeros((NUM_DOCKS, 2), dtype=np.float32))
 
     # Navigation
-    current_node_id: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.int32))
-    target_node_id: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.int32))
-    path_index: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.int32))
-    nav_phase: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.int8))
-    path_length: np.ndarray = field(default_factory=lambda: np.empty(NUM_DOCKS, dtype=np.int32))
+    current_node_id: np.ndarray = field(default_factory=lambda: np.zeros(NUM_DOCKS, dtype=np.int32))
+    target_node_id: np.ndarray = field(default_factory=lambda: np.zeros(NUM_DOCKS, dtype=np.int32))
+    path_index: np.ndarray = field(default_factory=lambda: np.zeros(NUM_DOCKS, dtype=np.int32))
+    nav_phase: np.ndarray = field(default_factory=lambda: np.zeros(NUM_DOCKS, dtype=np.int8))
+    path_length: np.ndarray = field(default_factory=lambda: np.zeros(NUM_DOCKS, dtype=np.int32))
     path: list[list[int]] = field(default_factory=list)
 
 

@@ -43,7 +43,7 @@ def obb_vertices(
     x: float,
     y: float,
 ) -> NDArray[np.float32]:
-    
+
     hl = x * 0.5
     hw = y * 0.5
 
@@ -490,3 +490,24 @@ def obb_aabb_distance(
     np.multiply(best_ny, t0, out=best_ny)
 
     return distance, normal
+
+
+def project_point_to_segment(
+    px: float,
+    py: float,
+    ax: float,
+    ay: float,
+    bx: float,
+    by: float,
+) -> tuple[float, float]:
+
+    abx = bx - ax
+    aby = by - ay
+
+    t = ((px - ax) * abx + (py - ay) * aby) / (abx * abx + aby * aby)
+    t = max(0.0, min(1.0, t))
+
+    return (
+        ax + t * abx,
+        ay + t * aby,
+    )
