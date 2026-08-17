@@ -14,12 +14,12 @@ class RobotInfo:
 @dataclass(slots=True)
 class RobotState:
     # Physics
-    pose: np.ndarray = field(default_factory=lambda: np.empty((0, 3), dtype=np.float32))
-    twist: np.ndarray = field(default_factory=lambda: np.empty((0, 2), dtype=np.float32))
+    pose: np.ndarray = field(default_factory=lambda: np.zeros((0, 3), dtype=np.float32))
+    twist: np.ndarray = field(default_factory=lambda: np.zeros((0, 2), dtype=np.float32))
 
     # Collision
-    crashed: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.bool_))
-    vertices: np.ndarray = field(default_factory=lambda: np.empty((0, 4, 2), dtype=np.float32))
+    crashed: np.ndarray = field(default_factory=lambda: np.zeros(0, dtype=np.bool_))
+    vertices: np.ndarray = field(default_factory=lambda: np.zeros((0, 4, 2), dtype=np.float32))
 
     # Controller
     arrived: np.ndarray = field(default_factory=lambda: np.ones(NUM_DOCKS, dtype=np.bool_))
