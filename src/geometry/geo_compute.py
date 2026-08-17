@@ -43,6 +43,7 @@ def obb_vertices(
     x: float,
     y: float,
 ) -> NDArray[np.float32]:
+    
     hl = x * 0.5
     hw = y * 0.5
 

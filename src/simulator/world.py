@@ -7,6 +7,7 @@ from entities.dock import DockState
 from entities.pallet import PalletState
 from entities.robot import RobotState
 from entities.shelf import ShelfState
+from entities.goal import GoalZone
 from geometry.geo_compute import update_obb_vertices
 from navigation.graph import NavigationGraph
 
@@ -24,6 +25,7 @@ class WorldFrame:
 class WorldMap:
     shelf: ShelfState
     dock: DockState
+    goal: GoalZone
     graph: NavigationGraph
 
 
@@ -38,6 +40,7 @@ class World:
         # Static objects
         self.dock = DockState()
         self.shelf = ShelfState()
+        self.goal = GoalZone()
 
         # Warehouse graph
         self.graph = NavigationGraph()
@@ -52,7 +55,8 @@ class World:
             time=self.time,
             robots=RobotState(
                 pose=self.robot.pose.copy(),
-                vertices=self.robot.vertices.copy()),
+                vertices=self.robot.vertices.copy()
+                ),
             pallet=PalletState(
                 pose=self.pallet.pose.copy(),
                 vertices=self.pallet.vertices.copy(),
@@ -64,6 +68,7 @@ class World:
         return WorldMap(
             shelf=self.shelf,
             dock=self.dock,
+            goal=self.goal,
             graph=self.graph,
         )
 

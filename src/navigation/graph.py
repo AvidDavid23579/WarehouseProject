@@ -21,7 +21,7 @@ class NavigationGraph:
 
         self.dock_nodes = np.empty(0, dtype=np.int32)
         self.corner_nodes = np.empty(0, dtype=np.int32)
-        self.shelf_nodes = np.empty(0, dtype=np.int32)
+        self.shelf_nodes: list[int] = []
 
     def add_node(self, pose: Pose) -> int:
         node_id = len(self.node_pose)
@@ -106,7 +106,7 @@ class NavigationGraph:
         adjacency = self.adjacency_list()
 
         visited = set()
-        parent = {start: None}
+        parent: dict[int, int | None] = {start: None}
 
         stack = [start]
 
@@ -123,6 +123,7 @@ class NavigationGraph:
 
             for neighbor, _ in adjacency[current]:
                 if neighbor not in visited:
+                    assert current is not None
                     parent[neighbor] = current
                     stack.append(neighbor)
 
@@ -144,7 +145,7 @@ class NavigationGraph:
         adjacency = self.adjacency_list()
 
         visited = {start}
-        parent = {start: None}
+        parent: dict[int, int | None] = {start: None}
 
         queue = deque([start])
 
@@ -180,7 +181,7 @@ class NavigationGraph:
         adjacency = self.adjacency_list()
 
         distances = {start: 0.0}
-        parent = {start: None}
+        parent: dict[int, int | None] = {start: None}
 
         heap = [(0.0, start)]
 

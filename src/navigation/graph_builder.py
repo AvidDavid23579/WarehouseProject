@@ -145,7 +145,7 @@ class GraphBuilder:
                 if i < NUM_DOCKS and j < NUM_DOCKS:
                     continue
 
-                x2, y2, _ = nodes[j]
+                x2, y2, _ = nodes[j] 
 
                 dx = x2 - x
                 dy = y2 - y

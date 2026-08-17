@@ -159,7 +159,16 @@ class Renderer:
                 aa=False,
             )
 
-        self._draw_nodes(surface, self.world_map.graph)
+        vertices = self.world_map.goal.vertices
+        self._draw_polygon(
+                surface,
+                vertices,
+                fill=(0, 255, 0),
+                outline=(0, 100, 0),
+                aa=False,
+            )
+
+        # self._draw_nodes(surface, self.world_map.graph)
 
     def _draw_nodes(self, surface, graph: NavigationGraph):
         # Draw edges

@@ -23,6 +23,9 @@ X_MAX = 20
 Y_MIN = 0
 Y_MAX = 10
 
+GOAL_ZONE_LENGTH = X_MAX / 2
+GOAL_ZONE_WIDTH = 1.0
+
 WORLD_BOUNDS = (X_MIN, X_MAX, Y_MIN, Y_MAX)
 
 # --- Robot footprint ---------------------------------------------------------
