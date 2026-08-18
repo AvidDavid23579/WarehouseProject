@@ -35,7 +35,7 @@ class GraphBuilder:
         return self.graph
 
     def build_shelf_graph(self):
-        margin = ROBOT_LENGTH * 1.2
+        margin = ROBOT_LENGTH * 1.6
 
         half_length = SHELF_LENGTH / 2
         half_width = SHELF_WIDTH / 2
@@ -248,6 +248,9 @@ class GraphBuilder:
                     continue
 
                 if i < NUM_DOCKS and j < NUM_DOCKS:
+                    continue
+
+                if i in self.graph.pallet_nodes and j in self.graph.pallet_nodes:
                     continue
 
                 x2, y2, _ = nodes[j]

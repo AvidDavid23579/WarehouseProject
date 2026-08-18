@@ -276,33 +276,11 @@ def apply_repulsion(world: World) -> None:
     robot = world.robot
     robot.repulsion_force.fill(0.0)
 
-    boundary_fx, boundary_fy = boundary_repulsion(
-        world,
-        margin=0.01,
-        strength=0.01,
-        tangent_gain=0.005,
-        max_force=1.0,
-    )
-
-    robot.repulsion_force[:, 0] += boundary_fx
-    robot.repulsion_force[:, 1] += boundary_fy
-
-    shelf_fx, shelf_fy = obstacle_repulsion(
-        world,
-        margin=0.4,
-        strength=1.0,
-        tangent_gain=0.5,
-        max_force=5.0,
-    )
-
-    robot.repulsion_force[:, 0] += shelf_fx
-    robot.repulsion_force[:, 1] += shelf_fy
-
     robot_fx, robot_fy = robot_repulsion(
         world,
-        margin=0.2,
-        strength=1.0,
-        tangent_gain=0.5,
+        margin=0.1,
+        strength=0.01,
+        tangent_gain=0.005,
         max_force=5.0,
     )
 

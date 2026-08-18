@@ -17,6 +17,26 @@ def deliver_pallet(world: World, graph: NavigationGraph):
         available = np.flatnonzero(pallets.available)
 
         if available.size == 0:
+            dock_node = graph.dock_nodes[r]
+
+            if robot.current_node_id[r] == dock_node:
+                robot.arrived[r] = True
+                continue
+
+            robot.goals[r, 0] = dock_node
+            robot.goals[r, 1] = -1
+            robot.goal_index[r] = 0
+
+            robot.path[r] = graph.dijkstra(
+                robot.current_node_id[r],
+                dock_node,
+            )
+
+            robot.path_index[r] = 0
+            robot.path_length[r] = len(robot.path[r])
+            robot.nav_phase[r] = NavPhase.INITIAL_TURN
+            robot.arrived[r] = False
+
             continue
 
         pallet_id = available[0]
@@ -54,7 +74,7 @@ def update_goal(world: World, graph: NavigationGraph) -> None:
         goal_index = robot.goal_index[r] + 1
 
         # Entire sequence finished.
-        if goal_index >= robot.goals.shape[1]:
+        if goal_index >= robot.goals.shape[1] or robot.goals[r, goal_index] == -1:
             robot.path[r] = []
             robot.path_index[r] = 0
             robot.path_length[r] = 0
@@ -63,8 +83,6 @@ def update_goal(world: World, graph: NavigationGraph) -> None:
         robot.goal_index[r] = goal_index
 
         goal_node = robot.goals[r, goal_index]
-
-        print(f"UPDATE GOAL r={r} current_node={robot.current_node_id[r]} pose={robot.pose[r]} goal={goal_node}")
 
         robot.path[r] = graph.dijkstra(
             robot.current_node_id[r],

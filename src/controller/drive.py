@@ -206,19 +206,24 @@ def drive_to_pose_grid(
 
                 goal_heading = target_pose[2]
 
-                heading_error = wrap_angle(goal_heading - pose[r, 2])
+                # Goal has a required orientation.
+                if not np.isnan(goal_heading):
+                    heading_error = wrap_angle(goal_heading - pose[r, 2])
 
-                if abs(heading_error) >= ANGLE_TOLERANCE:
-                    robot.nav_phase[r] = NavPhase.TURN
+                    if abs(heading_error) >= ANGLE_TOLERANCE:
+                        robot.nav_phase[r] = NavPhase.TURN
 
-                    robot.twist[r, 1] = np.clip(
-                        kP_omega * heading_error,
-                        -MAX_OMEGA,
-                        MAX_OMEGA,
-                    )
+                        robot.twist[r, 1] = np.clip(
+                            kP_omega * heading_error,
+                            -MAX_OMEGA,
+                            MAX_OMEGA,
+                        )
 
-                    continue
+                        continue
 
+                # Position reached and either:
+                # - no orientation was specified, or
+                # - orientation is within tolerance.
                 robot.arrived[r] = True
                 robot.nav_phase[r] = NavPhase.DONE
                 continue
@@ -235,8 +240,21 @@ def drive_to_pose_grid(
         # =====================================================
 
         if i >= len(path) - 1:
-            # Goal reached
             robot.current_node_id[r] = path[i]
+
+            goal_heading = target_pose[2]
+
+            if not np.isnan(goal_heading):
+                heading_error = wrap_angle(goal_heading - pose[r, 2])
+
+                if abs(heading_error) >= ANGLE_TOLERANCE:
+                    robot.twist[r, 1] = np.clip(
+                        kP_omega * heading_error,
+                        -MAX_OMEGA,
+                        MAX_OMEGA,
+                    )
+                    continue
+
             robot.arrived[r] = True
             robot.nav_phase[r] = NavPhase.DONE
             continue
