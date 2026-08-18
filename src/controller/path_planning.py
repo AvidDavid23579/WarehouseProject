@@ -64,6 +64,8 @@ def update_goal(world: World, graph: NavigationGraph) -> None:
 
         goal_node = robot.goals[r, goal_index]
 
+        print(f"UPDATE GOAL r={r} current_node={robot.current_node_id[r]} pose={robot.pose[r]} goal={goal_node}")
+
         robot.path[r] = graph.dijkstra(
             robot.current_node_id[r],
             goal_node,

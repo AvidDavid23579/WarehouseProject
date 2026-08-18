@@ -11,7 +11,7 @@ NUM_PALLETS = 2 * NUM_PALLETS_PER_SHELF * SHELF_ROW * SHELF_COL
 
 # --- Simulation parameters ---------------------------------------------------
 PHYSICS_DT = 1 / 60
-SIMULATION_DURATION = 100  # Seconds
+SIMULATION_DURATION = 30  # Seconds
 WINDOW_WIDTH = 1540
 WINDOW_HEIGHT = 800
 WAREHOUSE_WIDTH = 1300  # Pixels
@@ -25,7 +25,7 @@ Y_MIN = 0
 Y_MAX = 10
 
 GOAL_ZONE_LENGTH = X_MAX / 3
-GOAL_ZONE_WIDTH = 1.0
+GOAL_ZONE_WIDTH = 0.4
 
 WORLD_BOUNDS = (X_MIN, X_MAX, Y_MIN, Y_MAX)
 

@@ -162,6 +162,7 @@ def drive_to_pose_grid(
                 continue
 
             # Initial heading reached.
+            robot.path_index[r] = 1
             robot.nav_phase[r] = NavPhase.DRIVE
 
             # Do not drive this frame.
@@ -201,6 +202,8 @@ def drive_to_pose_grid(
 
             # Final node.
             if i == len(path) - 1:
+                robot.current_node_id[r] = path[i]
+
                 goal_heading = target_pose[2]
 
                 heading_error = wrap_angle(goal_heading - pose[r, 2])
