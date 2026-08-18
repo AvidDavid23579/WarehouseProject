@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+from torch._C import dtype
 
 from common.types import NavPhase
 from config import (
@@ -68,7 +69,7 @@ def build_robots(start_pose: np.ndarray) -> RobotState:
         last_goal_dist=np.zeros(NUM_DOCKS, dtype=np.float32),
         stuck_time=np.zeros(NUM_DOCKS, dtype=np.float32),
         repulsion_force=np.zeros((NUM_DOCKS, 2), dtype=np.float32),
-        current_node_id=np.full(NUM_DOCKS, -1, dtype=np.int32),
+        current_node_id=np.arange(NUM_DOCKS, dtype=np.int32),
         target_node_id=np.full(NUM_DOCKS, -1, dtype=np.int32),
         path_index=np.zeros(NUM_DOCKS, dtype=np.int32),
         nav_phase=np.full(NUM_DOCKS, NavPhase.DRIVE, dtype=np.int8),

@@ -1,3 +1,4 @@
+from config import NUM_DOCKS
 from controller.drive import drive_to_pose_grid
 from controller.path_planning import deliver_pallet, update_goal
 from navigation.navigator import Navigator
@@ -20,7 +21,6 @@ class Simulator:
 
         for step in range(steps):
             deliver_pallet(world=self.world, graph=self.graph)
-            print("available pallets:", self.world.pallet.available)
             update_goal(world=self.world, graph=self.graph)
             drive_to_pose_grid(world=self.world, graph=self.graph)
             self.world.step()
