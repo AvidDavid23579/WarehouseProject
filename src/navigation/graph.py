@@ -23,6 +23,7 @@ class NavigationGraph:
         self.corner_nodes = np.empty(0, dtype=np.int32)
         self.shelf_nodes: list[int] = []
         self.pallet_nodes: list[int] = []
+        self.goal_nodes: list[int] = []
 
     def add_node(self, pose: Pose) -> int:
         node_id = len(self.node_pose)

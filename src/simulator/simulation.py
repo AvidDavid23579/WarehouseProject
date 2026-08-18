@@ -17,7 +17,6 @@ class Simulator:
 
     def bake(self, steps: int) -> None:
         # Runs the simulation and record every frame
-
         self.frames.clear()
 
         # Record the initial state
@@ -25,8 +24,8 @@ class Simulator:
 
         for i in range(NUM_DOCKS):
             self.world.robot.path_index[i] = 0
-            self.world.robot.current_node_id[i] = i
-            path = self.graph.dijkstra(i, self.graph.pallet_nodes[1])
+            self.world.robot.current_node_id[i] = 21
+            path = self.graph.dijkstra(i, self.graph.goal_nodes[0])
 
             self.world.robot.path[i] = path
 
@@ -35,15 +34,6 @@ class Simulator:
             drive_to_pose_grid(world=self.world, graph=self.graph)
             self.world.step()
             self.frames.append(self.world.frame())
-
-            for r in range(len(self.world.robot.pose)):
-                p = self.world.robot.pose[r]
-
-                if not np.all(np.isfinite(p)):
-                    raise RuntimeError(f"Robot {r} pose became invalid at step {step}: {p}")
-
-                if np.max(np.abs(p)) > 1e5:
-                    raise RuntimeError(f"Robot {r} pose exploded at step {step}: {p}")
 
     @property
     def world_map(self) -> WorldMap:

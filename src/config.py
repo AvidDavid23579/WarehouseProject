@@ -3,10 +3,10 @@ import math
 from common.types import Pose
 
 # Warehouse parameters
-SHELF_COL = 2
+SHELF_COL = 1
 SHELF_ROW = 1
 NUM_DOCKS = 1
-NUM_PALLETS_PER_SHELF = 5
+NUM_PALLETS_PER_SHELF = 2
 
 # --- Simulation parameters ---------------------------------------------------
 PHYSICS_DT = 1 / 60

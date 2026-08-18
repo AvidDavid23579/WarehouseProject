@@ -124,24 +124,25 @@ class GraphBuilder:
     def build_goal_graph(self):
         margin = ROBOT_LENGTH * 0.5
 
+        goal_poses = []
         poses = []
 
         for i in range(NUM_DOCKS):
             start = (X_MAX - GOAL_ZONE_LENGTH) / 2 + (GOAL_ZONE_LENGTH / (NUM_DOCKS + 1))
-            poses.append((start + (GOAL_ZONE_LENGTH / (NUM_DOCKS + 1)) * i, Y_MAX - GOAL_ZONE_WIDTH - margin))
+            goal_poses.append(Pose(start + (GOAL_ZONE_LENGTH / (NUM_DOCKS + 1)) * i, Y_MAX - GOAL_ZONE_WIDTH - margin, None))
             poses.append(
                 (
                     start + (GOAL_ZONE_LENGTH / (NUM_DOCKS + 1)) * i,
                     Y_MAX - DOCK_ONE_POSE.y - DOCK_APPROACH_DISTANCE - ROBOT_DOCK_DIST - 0.75,
                 )
             )
-
+        self.graph.goal_nodes = [self.graph.add_node(pose) for pose in goal_poses]
         graph_nodes = [self.graph.add_node(Pose(x, y, None)) for x, y in poses]
 
     def build_pallet_graph(self):
         self.graph.pallet_nodes = []
 
-        margin = ROBOT_LENGTH * 0.5 + 0.1
+        margin = ROBOT_LENGTH * 0.5
 
         half_length = SHELF_LENGTH / 2
         half_width = SHELF_WIDTH / 2
@@ -179,7 +180,7 @@ class GraphBuilder:
                     access_x = px - side * access_dist * s
                     access_y = py + side * access_dist * c
 
-                    pallet_node = self.graph.add_node(Pose(access_x, access_y, theta))
+                    pallet_node = self.graph.add_node(Pose(access_x, access_y, None))
 
                     self.graph.pallet_nodes.append(pallet_node)
 
