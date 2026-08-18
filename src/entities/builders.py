@@ -10,6 +10,7 @@ from config import (
     DOCK_SPACING,
     DOCK_WIDTH,
     NUM_DOCKS,
+    NUM_PALLETS,
     NUM_PALLETS_PER_SHELF,
     PALLET_LENGTH,
     PALLET_WIDTH,
@@ -136,4 +137,10 @@ def build_pallets(shelves: ShelfState) -> PalletState:
         PALLET_WIDTH,
     )
 
-    return PalletState(pose=pose, vertices=vertices, index=index)
+    return PalletState(
+        pose=pose,
+        vertices=vertices,
+        index=index,
+        available=np.ones(NUM_PALLETS, dtype=np.bool_),
+        delivered=np.zeros(NUM_PALLETS, dtype=np.bool_),
+    )

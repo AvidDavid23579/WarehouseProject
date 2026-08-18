@@ -35,7 +35,7 @@ class RobotState:
     path_length: np.ndarray = field(default_factory=lambda: np.zeros(NUM_DOCKS, dtype=np.int32))
     path: list[list[int]] = field(default_factory=list)
 
-    goals: np.ndarray = field(default_factory=lambda: np.zeros((NUM_DOCKS, 0), dtype=np.int32))
+    goals: np.ndarray = field(default_factory=lambda: np.zeros((NUM_DOCKS, 2), dtype=np.int32))
     goal_index: np.ndarray = field(default_factory=lambda: np.zeros(NUM_DOCKS, dtype=np.int32))
 
 

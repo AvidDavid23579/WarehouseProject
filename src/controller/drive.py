@@ -221,6 +221,7 @@ def drive_to_pose_grid(
                 continue
 
             # Normal node reached.
+            robot.current_node_id[r] = path[i]
             robot.nav_phase[r] = NavPhase.TURN
 
         # =====================================================
@@ -232,8 +233,10 @@ def drive_to_pose_grid(
 
         if i >= len(path) - 1:
             # Goal reached
+            robot.current_node_id[r] = path[i]
+            robot.arrived[r] = True
             robot.nav_phase[r] = NavPhase.DONE
-            return
+            continue
 
         if robot.nav_phase[r] == NavPhase.TURN:
             next_node = path[i + 1]

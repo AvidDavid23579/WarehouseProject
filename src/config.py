@@ -7,6 +7,7 @@ SHELF_COL = 1
 SHELF_ROW = 1
 NUM_DOCKS = 1
 NUM_PALLETS_PER_SHELF = 2
+NUM_PALLETS = 2 * NUM_PALLETS_PER_SHELF * SHELF_ROW * SHELF_COL
 
 # --- Simulation parameters ---------------------------------------------------
 PHYSICS_DT = 1 / 60
