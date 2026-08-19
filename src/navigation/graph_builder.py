@@ -253,6 +253,9 @@ class GraphBuilder:
                 if i in self.graph.pallet_nodes and j in self.graph.pallet_nodes:
                     continue
 
+                if i in self.graph.goal_nodes and j in self.graph.goal_nodes:
+                    continue
+
                 x2, y2, _ = nodes[j]
 
                 dx = x2 - x

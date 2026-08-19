@@ -1,7 +1,10 @@
+
 from controller.drive import drive_to_pose_grid
-from controller.potential import apply_repulsion
+
 from controller.path_planning import update_carried_pallets, return_to_dock, assign_pallets, handle_pickups, handle_deliveries
+from controller.potential import apply_repulsion
 from simulator.world import World, WorldFrame, WorldMap
+import numpy as np
 
 
 class Simulator:
@@ -9,6 +12,7 @@ class Simulator:
         self.world = world
         self.graph = world.graph
         self.frames: list[WorldFrame] = []
+
 
     def bake(self, steps: int) -> None:
         # Runs the simulation and record every frame

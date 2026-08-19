@@ -389,8 +389,8 @@ def right_of_way_avoidance(
     #     j -> higher ID -> stops
     # ------------------------------------------------------------------
 
-    robot.twist[j, 0] = 0.0
-    robot.twist[j, 1] = 0.0
+    robot.twist[j, 0] = 0
+    robot.twist[j, 1] = 0
 
     # ------------------------------------------------------------------
     # Potential field on lower-ID robot.
@@ -518,11 +518,15 @@ def apply_repulsion(
         margin=boundary_margin,
     )
 
+    robot_fx, robot_fy = robot_repulsion(
+        world
+    )
+
     robot.repulsion_force[:, 0] += (
-        obstacle_fx + boundary_fx
+        obstacle_fx + boundary_fx + robot_fx
     )
     robot.repulsion_force[:, 1] += (
-        obstacle_fy + boundary_fy
+        obstacle_fy + boundary_fy + robot_fy
     )
 
     theta = robot.pose[:, 2]
@@ -547,8 +551,4 @@ def apply_repulsion(
         MAX_OMEGA,
     )
 
-    right_of_way_avoidance(
-        world,
-        broad_margin=robot_margin,
-        pf_margin=robot_margin,
-    )
+    right_of_way_avoidance(world, broad_margin=robot_margin, pf_margin=robot_margin)
