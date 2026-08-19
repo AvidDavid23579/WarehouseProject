@@ -1,10 +1,5 @@
-from nest_asyncio2 import apply
-
-from config import NUM_DOCKS
 from controller.drive import drive_to_pose_grid
 from controller.path_planning import deliver_pallet, update_goal
-from controller.potential import apply_repulsion
-from navigation.navigator import Navigator
 from simulator.world import World, WorldFrame, WorldMap
 
 
@@ -12,7 +7,6 @@ class Simulator:
     def __init__(self, world: World):
         self.world = world
         self.graph = world.graph
-        self.navigator = Navigator(self.graph)
         self.frames: list[WorldFrame] = []
 
     def bake(self, steps: int) -> None:

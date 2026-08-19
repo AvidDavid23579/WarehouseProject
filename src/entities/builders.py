@@ -1,8 +1,6 @@
 import math
 
 import numpy as np
-from torch._C import dtype
-
 from common.types import NavPhase
 from config import (
     DOCK_APPROACH_DISTANCE,
