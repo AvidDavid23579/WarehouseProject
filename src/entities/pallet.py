@@ -1,12 +1,19 @@
 from dataclasses import dataclass, field
+from enum import IntEnum
 
 import numpy as np
 
 
-@dataclass(slots=True)
+@dataclass
 class PalletState:
-    pose: np.ndarray = field(default_factory=lambda: np.empty((0, 3), np.float32))
-    vertices: np.ndarray = field(default_factory=lambda: np.empty((0, 4, 2), np.float32))
-    index: np.ndarray = field(default_factory=lambda: np.empty(0, np.int32))
-    available: np.ndarray = field(default_factory=lambda: np.ones(0, np.bool_))
-    delivered: np.ndarray = field(default_factory=lambda: np.zeros(0, np.bool_))
+    status: np.ndarray
+    index: np.ndarray
+    pose: np.ndarray
+    vertices: np.ndarray
+    robot_id: np.ndarray
+
+class PalletStatus(IntEnum):
+    UNDELIVERED = 0
+    RESERVED = 1
+    DELIVERING = 2
+    DELIVERED = 3

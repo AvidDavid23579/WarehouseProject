@@ -22,7 +22,7 @@ from config import (
     Y_MAX,
 )
 from entities.dock import DockState
-from entities.pallet import PalletState
+from entities.pallet import PalletState, PalletStatus
 from entities.robot import RobotState
 from entities.shelf import ShelfState
 from geometry.geo_compute import obb_vertices
@@ -140,6 +140,6 @@ def build_pallets(shelves: ShelfState) -> PalletState:
         pose=pose,
         vertices=vertices,
         index=index,
-        available=np.ones(NUM_PALLETS, dtype=np.bool_),
-        delivered=np.zeros(NUM_PALLETS, dtype=np.bool_),
+        status=np.full(NUM_PALLETS, PalletStatus.UNDELIVERED, dtype=np.int8),
+        robot_id = np.full(num_pallets, -1, dtype=np.int32),
     )

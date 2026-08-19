@@ -5,6 +5,7 @@ from config import WAREHOUSE_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, X_MAX, Y_MAX
 from navigation.graph import NavigationGraph
 from render.camera import Camera
 from simulator.world import WorldFrame, WorldMap
+from entities.pallet import PalletStatus
 
 
 class Renderer:
@@ -120,21 +121,27 @@ class Renderer:
             )
 
     def _draw_dynamic(self, surface, frame: WorldFrame):
-        for vertices in frame.pallet.vertices:
-            self._draw_polygon(
-                surface,
-                vertices,
-                fill=(170, 120, 60),
-                outline=(90, 60, 30),
-                aa=False,
-            )
-
         for vertices in frame.robots.vertices:
             self._draw_polygon(
                 surface,
                 vertices,
                 fill=(0, 170, 255),
                 outline=(0, 100, 200),
+                aa=False,
+            )
+
+        for status, vertices in zip(
+                frame.pallet.status,
+                frame.pallet.vertices,
+        ):
+            if status == PalletStatus.DELIVERED:
+                continue
+
+            self._draw_polygon(
+                surface,
+                vertices,
+                fill=(170, 120, 60),
+                outline=(90, 60, 30),
                 aa=False,
             )
 

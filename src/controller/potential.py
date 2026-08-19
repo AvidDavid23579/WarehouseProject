@@ -271,49 +271,284 @@ def robot_repulsion(
 
     return fx, fy
 
+def right_of_way_avoidance(
+    world: World,
+    id: bool = True,
+    broad_margin: float = 0.5,
+    pf_margin: float = 0.3,
+    pf_strength: float = 0.01,
+    pf_tangent_gain: float = 0.05,
+    pf_max_force: float = 5.0,
+    stop_distance: float = 1.5,
+) -> None:
+    """
+    Right-of-way + potential-field multi-robot avoidance.
 
-def apply_repulsion(world: World) -> None:
+    For each potentially colliding robot pair:
+        - Higher-ID robot stops.
+        - Lower-ID robot receives potential-field repulsion.
+
+    The right-of-way rule is only activated when robots are within
+    the broad-phase interaction distance.
+
+    Assumes robot.twist[:, 0] is linear velocity and
+    robot.twist[:, 1] is angular velocity.
+    """
+
     robot = world.robot
-    robot.repulsion_force.fill(0.0)
+    pose = robot.pose
+    n = pose.shape[0]
 
-    robot_fx, robot_fy = robot_repulsion(
-        world,
-        margin=0.1,
-        strength=0.01,
-        tangent_gain=0.005,
-        max_force=5.0,
+    if n < 2:
+        return
+
+    x = pose[:, 0]
+    y = pose[:, 1]
+
+    # ------------------------------------------------------------------
+    # Broad phase
+    # ------------------------------------------------------------------
+
+    dx = x[:, None] - x[None, :]
+    dy = y[:, None] - y[None, :]
+
+    dist_sq = dx * dx + dy * dy
+    np.fill_diagonal(dist_sq, np.inf)
+
+    # Robot bounding-circle radius.
+    radius = np.float32(
+        0.5 * np.hypot(ROBOT_LENGTH, ROBOT_WIDTH)
     )
 
-    robot.repulsion_force[:, 0] += robot_fx
-    robot.repulsion_force[:, 1] += robot_fy
+    interaction_distance = (
+        2.0 * radius
+        + broad_margin
+        + stop_distance
+    )
 
-    theta = world.robot.pose[:, 2]
+    active = dist_sq < interaction_distance**2
 
+    i, j = np.nonzero(active)
+
+    if i.size == 0:
+        return
+
+    # ------------------------------------------------------------------
+    # Only consider each pair once.
+    #
+    # i < j means:
+    #     i = lower ID
+    #     j = higher ID
+    # ------------------------------------------------------------------
+
+    if id:
+        pair_mask = i < j
+    else:
+        pair_mask = j < i
+
+    i = i[pair_mask]
+    j = j[pair_mask]
+
+    if i.size == 0:
+        return
+
+    # ------------------------------------------------------------------
+    # Relative motion
+    #
+    # Only invoke right-of-way if the robots are actually approaching
+    # each other. Robots moving apart should not trigger avoidance.
+    # ------------------------------------------------------------------
+
+    theta = pose[:, 2]
+
+    vx = robot.twist[:, 0] * np.cos(theta)
+    vy = robot.twist[:, 0] * np.sin(theta)
+
+    rel_x = dx[i, j]
+    rel_y = dy[i, j]
+
+    rel_vx = vx[i] - vx[j]
+    rel_vy = vy[i] - vy[j]
+
+    approaching = (
+        rel_x * rel_vx +
+        rel_y * rel_vy
+    ) < 0.0
+
+    i = i[approaching]
+    j = j[approaching]
+
+    if i.size == 0:
+        return
+
+    # ------------------------------------------------------------------
+    # Higher-ID robot yields.
+    #
+    # Since i < j:
+    #     i -> lower ID -> continues
+    #     j -> higher ID -> stops
+    # ------------------------------------------------------------------
+
+    robot.twist[j, 0] = 0.0
+    robot.twist[j, 1] = 0.0
+
+    # ------------------------------------------------------------------
+    # Potential field on lower-ID robot.
+    # ------------------------------------------------------------------
+
+    dx = x[i] - x[j]
+    dy = y[i] - y[j]
+
+    distance = np.sqrt(
+        dx * dx + dy * dy
+    ).astype(np.float32)
+
+    safe_distance = np.maximum(
+        distance,
+        np.float32(1e-3),
+    )
+
+    clearance = distance - 2.0 * radius
+
+    magnitude = inverse_square_repulsion(
+        clearance,
+        pf_margin,
+        pf_strength,
+        pf_max_force,
+    )
+
+    valid = magnitude > 0.0
+
+    if not np.any(valid):
+        return
+
+    i = i[valid]
+
+    dx = dx[valid]
+    dy = dy[valid]
+    safe_distance = safe_distance[valid]
+    magnitude = magnitude[valid]
+
+    # Normal pointing away from the higher-ID robot.
+    nx = dx / safe_distance
+    ny = dy / safe_distance
+
+    # ------------------------------------------------------------------
+    # Tangential component.
+    #
+    # Choose the side based on the lower-ID robot's heading so it
+    # naturally bends around the yielding robot instead of simply
+    # pushing directly away.
+    # ------------------------------------------------------------------
+
+    theta = pose[i, 2]
+
+    heading_x = np.cos(theta)
+    heading_y = np.sin(theta)
+
+    tangent_x = -heading_y
+    tangent_y = heading_x
+
+    side = (
+        heading_x * (-dy)
+        - heading_y * (-dx)
+    )
+
+    sign = np.where(
+        side >= 0.0,
+        1.0,
+        -1.0,
+    ).astype(np.float32)
+
+    tangent_x *= sign
+    tangent_y *= sign
+
+    force_x = magnitude * (
+        nx + pf_tangent_gain * tangent_x
+    )
+
+    force_y = magnitude * (
+        ny + pf_tangent_gain * tangent_y
+    )
+
+    # ------------------------------------------------------------------
+    # Convert world-space force into robot velocity.
+    # ------------------------------------------------------------------
+
+    robot.twist[i, 0] += (
+        force_x * heading_x
+        + force_y * heading_y
+    )
+
+    robot.twist[i, 1] += (
+        heading_x * force_y
+        - heading_y * force_x
+    )
+
+    # Respect controller limits.
+    robot.twist[:, 0] = np.clip(
+        robot.twist[:, 0],
+        -MAX_VELOCITY,
+        MAX_VELOCITY,
+    )
+
+    robot.twist[:, 1] = np.clip(
+        robot.twist[:, 1],
+        -MAX_OMEGA,
+        MAX_OMEGA,
+    )
+
+
+def apply_repulsion(
+    world: World,
+    obstacle_margin: float = 0.3,
+    boundary_margin: float = 0.3,
+    robot_margin: float = 0.1,
+) -> None:
+    robot = world.robot
+
+    robot.repulsion_force.fill(0.0)
+
+    # Static obstacles.
+    obstacle_fx, obstacle_fy = 0,0
+
+    # Warehouse boundaries.
+    boundary_fx, boundary_fy = boundary_repulsion(
+        world,
+        margin=boundary_margin,
+    )
+
+    robot.repulsion_force[:, 0] += (
+        obstacle_fx + boundary_fx
+    )
+    robot.repulsion_force[:, 1] += (
+        obstacle_fy + boundary_fy
+    )
+
+    theta = robot.pose[:, 2]
     c = np.cos(theta)
     s = np.sin(theta)
 
     fx = robot.repulsion_force[:, 0]
     fy = robot.repulsion_force[:, 1]
 
-    # dot(force, heading)
     robot.twist[:, 0] += fx * c + fy * s
-    world.robot.twist[:, 0] = np.clip(robot.twist[:, 0], -MAX_VELOCITY, MAX_VELOCITY)
-
-    # cross(heading, force)
     robot.twist[:, 1] += c * fy - s * fx
-    world.robot.twist[:, 1] = np.clip(robot.twist[:, 1], -MAX_OMEGA, MAX_OMEGA)
 
-    dist = dist_to_target(world)
+    robot.twist[:, 0] = np.clip(
+        robot.twist[:, 0],
+        -MAX_VELOCITY,
+        MAX_VELOCITY,
+    )
 
-    active = (np.abs(robot.repulsion_force[:, 0]) + np.abs(robot.repulsion_force[:, 1])) > 0.0
+    robot.twist[:, 1] = np.clip(
+        robot.twist[:, 1],
+        -MAX_OMEGA,
+        MAX_OMEGA,
+    )
 
-    stuck = active & (np.abs(dist - world.robot.last_goal_dist) < 1e-3)
-    world.robot.stuck_time[active & ~stuck] = 0.0
-
-    world.robot.stuck_time[stuck] += 0.01
-    world.robot.stuck_time[~stuck] = 0.0
-
-    world.robot.last_goal_dist[:] = dist
-
-    spinning = world.robot.stuck_time > 1.0
-    world.robot.twist[spinning, 1] += 2.0
+    right_of_way_avoidance(
+        world,
+        broad_margin=robot_margin,
+        pf_margin=robot_margin,
+    )

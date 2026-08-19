@@ -1,5 +1,6 @@
 from controller.drive import drive_to_pose_grid
-from controller.path_planning import deliver_pallet, update_goal
+from controller.potential import apply_repulsion
+from controller.path_planning import update_carried_pallets, return_to_dock, assign_pallets, handle_pickups, handle_deliveries
 from simulator.world import World, WorldFrame, WorldMap
 
 
@@ -17,10 +18,15 @@ class Simulator:
         self.frames.append(self.world.frame())
 
         for step in range(steps):
-            deliver_pallet(world=self.world, graph=self.graph)
-            update_goal(world=self.world, graph=self.graph)
+            assign_pallets(self.world, self.graph)
+            handle_pickups(self.world, self.graph)
             drive_to_pose_grid(world=self.world, graph=self.graph)
+            apply_repulsion(self.world)
             self.world.step()
+            update_carried_pallets(world=self.world)
+            handle_deliveries(self.world, self.graph)
+            return_to_dock(self.world, self.graph)
+
             self.frames.append(self.world.frame())
 
     @property

@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from common.types import Pose
-from config import NUM_DOCKS
+from config import NUM_DOCKS, NUM_PALLETS
 
 
 @dataclass(slots=True)
@@ -37,6 +37,15 @@ class RobotState:
 
     goals: np.ndarray = field(default_factory=lambda: np.zeros((NUM_DOCKS, 2), dtype=np.int32))
     goal_index: np.ndarray = field(default_factory=lambda: np.zeros(NUM_DOCKS, dtype=np.int32))
+
+    # Pallet
+    pallet_id: np.ndarray = field(default_factory=lambda: np.full(NUM_DOCKS, -1, dtype=np.int32))
+    pair_wait_time: np.ndarray = field(
+        default_factory=lambda: np.zeros(
+            (NUM_DOCKS, NUM_DOCKS),
+            dtype=np.float32,
+        )
+    )
 
 
 @dataclass(slots=True)

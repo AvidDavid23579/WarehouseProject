@@ -34,19 +34,16 @@ class World:
         self.time = 0.0
 
         # Dynamic objects
-        self.robot = RobotState()
-        self.pallet = PalletState()
+        self.robot = None
+        self.pallet = None
 
         # Static objects
-        self.dock = DockState()
-        self.shelf = ShelfState()
+        self.dock = None
+        self.shelf = None
         self.goal = GoalZone()
 
         # Warehouse graph
-        self.graph = NavigationGraph()
-
-        # Pallets
-        self.pallet_pose = np.empty((0, 3), dtype=np.float32)
+        self.graph = None
 
     # ----------- Simulation update functions ---------------------------------------
 
@@ -61,6 +58,8 @@ class World:
                 pose=self.pallet.pose.copy(),
                 vertices=self.pallet.vertices.copy(),
                 index=self.pallet.index.copy(),
+                status=self.pallet.status.copy(),
+                robot_id=self.pallet.robot_id.copy()
             ),
         )
 
