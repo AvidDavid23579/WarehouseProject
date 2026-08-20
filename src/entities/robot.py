@@ -40,14 +40,9 @@ class RobotState:
 
     # Pallet
     pallet_id: np.ndarray = field(default_factory=lambda: np.full(NUM_DOCKS, -1, dtype=np.int32))
-    pair_wait_time: np.ndarray = field(
-        default_factory=lambda: np.zeros(
-            (NUM_DOCKS, NUM_DOCKS),
-            dtype=np.float32,
-        )
-    )
 
 
+# Visual data only
 @dataclass(slots=True)
 class RobotFrame:
     x: float

@@ -1,10 +1,9 @@
-
 from controller.drive import drive_to_pose_grid
 
 from controller.path_planning import update_carried_pallets, return_to_dock, assign_pallets, handle_pickups, handle_deliveries
 from controller.potential import apply_repulsion
 from simulator.world import World, WorldFrame, WorldMap
-import numpy as np
+
 
 
 class Simulator:
@@ -22,13 +21,23 @@ class Simulator:
         self.frames.append(self.world.frame())
 
         for step in range(steps):
+
+            # Task assignment and execution
             assign_pallets(self.world, self.graph)
             handle_pickups(self.world, self.graph)
-            drive_to_pose_grid(world=self.world, graph=self.graph)
+
+            # Motion controllers
+            drive_to_pose_grid(self.world, self.graph)
             apply_repulsion(self.world)
+
+            # Physics update
             self.world.step()
-            update_carried_pallets(world=self.world)
+
+            # Register done work
+            update_carried_pallets(self.world)
             handle_deliveries(self.world, self.graph)
+
+            # Final action
             return_to_dock(self.world, self.graph)
 
             self.frames.append(self.world.frame())

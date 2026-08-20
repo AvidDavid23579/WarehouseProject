@@ -275,11 +275,11 @@ def right_of_way_avoidance(
     world: World,
     id: bool = True,
     broad_margin: float = 0.5,
-    pf_margin: float = 0.3,
-    pf_strength: float = 0.01,
+    pf_margin: float = 0.1,
+    pf_strength: float = 0.1,
     pf_tangent_gain: float = 0.05,
     pf_max_force: float = 5.0,
-    stop_distance: float = 1.5,
+    stop_distance: float = 2.5,
 ) -> None:
     """
     Right-of-way + potential-field multi-robot avoidance.
@@ -551,4 +551,4 @@ def apply_repulsion(
         MAX_OMEGA,
     )
 
-    right_of_way_avoidance(world, broad_margin=robot_margin, pf_margin=robot_margin)
+    # right_of_way_avoidance(world, broad_margin=robot_margin, pf_margin=robot_margin)

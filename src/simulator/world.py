@@ -45,24 +45,20 @@ class World:
         # Warehouse graph
         self.graph = None
 
-    # ----------- Simulation update functions ---------------------------------------
 
+    # Visual data for frame rendering
     def frame(self) -> WorldFrame:
         return WorldFrame(
             time=self.time,
-            robots=RobotState(
-                pose=self.robot.pose.copy(),
-                vertices=self.robot.vertices.copy()
-                ),
+            robots=RobotState(pose=self.robot.pose.copy(), vertices=self.robot.vertices.copy()),
             pallet=PalletState(
                 pose=self.pallet.pose.copy(),
                 vertices=self.pallet.vertices.copy(),
                 index=self.pallet.index.copy(),
                 status=self.pallet.status.copy(),
-                robot_id=self.pallet.robot_id.copy()
-            ),
-        )
+                robot_id=self.pallet.robot_id.copy()))
 
+    # Returns the objects in the world
     def world_map(self):
         return WorldMap(
             shelf=self.shelf,
@@ -71,6 +67,7 @@ class World:
             graph=self.graph,
         )
 
+    # Forward integrates the world by one timestep
     def step(self):
 
         self.time += PHYSICS_DT
