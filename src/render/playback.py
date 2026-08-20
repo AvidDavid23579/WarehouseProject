@@ -4,6 +4,14 @@ import pygame
 
 from render.renderer import Renderer
 from simulator.world import WorldFrame, WorldMap
+from typing import TypedDict, Callable
+
+class Slider(TypedDict):
+    x: int
+    y: int
+    width: int
+    hit: Callable[[tuple[int, int]], bool]
+    update: Callable[[tuple[int, int], int], int]
 
 
 class Playback:
@@ -36,14 +44,12 @@ class Playback:
 
             self._handle_events(now)
 
-            playback_time = now - self.start
-
             if not self.paused and not self.dragging:
                 self._update(now)
 
             frame = self.frames[self.current]
 
-            self.renderer._draw(frame)
+            self.renderer.draw(frame)
             self._draw_overlay(frame)
 
             pygame.display.flip()
@@ -135,8 +141,7 @@ class Playback:
             5,
         )
 
-    def _slider(self):
-
+    def _slider(self) -> Slider:
         width, height = self.renderer.screen.get_size()
 
         margin = 50
@@ -144,10 +149,10 @@ class Playback:
         slider_y = height - 50
         slider_width = width - margin * 2
 
-        def hit(pos):
+        def hit(pos: tuple[int, int]) -> bool:
             return abs(pos[1] - slider_y) < 20
 
-        def update(pos, count):
+        def update(pos: tuple[int, int], count: int) -> int:
             x = max(margin, min(pos[0], margin + slider_width))
             t = (x - margin) / slider_width
             return int(t * (count - 1))

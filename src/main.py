@@ -16,7 +16,7 @@ def main():
     profiler.enable()
     start = time.perf_counter()
 
-    # Initialize world object
+    # Initialise world object
     world = World()
 
     # Add objects to the world

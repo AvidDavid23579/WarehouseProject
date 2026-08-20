@@ -3,9 +3,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from common.types import Pose
-from config import NUM_DOCKS, NUM_PALLETS
-
-
+from config import NUM_DOCKS
 @dataclass(slots=True)
 class RobotInfo:
     id: int

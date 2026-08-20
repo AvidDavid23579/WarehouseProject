@@ -26,7 +26,7 @@ class Renderer:
         self.background = None
         self.last_scene_rect = None
 
-    def _draw(self, frame: WorldFrame) -> None:
+    def draw(self, frame: WorldFrame) -> None:
         self._draw_scene(frame)
 
     def _draw_scene(self, frame: WorldFrame) -> None:

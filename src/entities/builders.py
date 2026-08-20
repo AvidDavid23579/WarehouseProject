@@ -28,7 +28,7 @@ from entities.shelf import ShelfState
 from geometry.geo_compute import obb_vertices
 
 
-# Build docks. Each dock initializes a robot at its docking pose
+# Build docks. Each dock initialises a robot at its docking pose
 def build_docks(
     num_docks: int = NUM_DOCKS,
     spacing: float = DOCK_SPACING,

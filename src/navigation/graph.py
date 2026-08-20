@@ -64,7 +64,7 @@ class NavigationGraph:
         return degree
 
     def nodes_cardinal(self, node: int):
-        EPS = 1e-5
+        eps = 1e-5
 
         x, y, _ = self.node_pose[node]
 
@@ -83,17 +83,17 @@ class NavigationGraph:
             dy = oy - y
 
             # Same horizontal line
-            if abs(dy) < EPS:
-                if dx < -EPS:
+            if abs(dy) < eps:
+                if dx < -eps:
                     left.append(other)
-                elif dx > EPS:
+                elif dx > eps:
                     right.append(other)
 
             # Same vertical line
-            elif abs(dx) < EPS:
-                if dy < -EPS:
+            elif abs(dx) < eps:
+                if dy < -eps:
                     down.append(other)
-                elif dy > EPS:
+                elif dy > eps:
                     up.append(other)
 
         # Nearest → farthest

@@ -21,7 +21,14 @@ from config import (
 )
 from navigation.graph import NavigationGraph
 from simulator.world import World
+from typing import TypedDict
 
+
+class Nearest(TypedDict):
+    left: tuple[int | None, float]
+    right: tuple[int | None, float]
+    above: tuple[int | None, float]
+    below: tuple[int | None, float]
 
 class GraphBuilder:
     def __init__(self, world: World):
@@ -92,7 +99,7 @@ class GraphBuilder:
                 poses.append(
                     Pose(DOCK_ONE_POSE.x + i * DOCK_SPACING, DOCK_ONE_POSE.y + DOCK_APPROACH_DISTANCE + ROBOT_DOCK_DIST + 0.75, None)
                 )
-        graph_nodes = [self.graph.add_node(pose) for pose in poses]
+        [self.graph.add_node(pose) for pose in poses]
 
     def build_shelf_lane_graph(self):
         poses = set()
@@ -119,7 +126,7 @@ class GraphBuilder:
                 x, _, _ = self.graph.node_pose[neighbor]
                 poses.add((x, DOCK_ONE_POSE.y + DOCK_APPROACH_DISTANCE + ROBOT_DOCK_DIST + 0.75))
 
-        graph_nodes = [self.graph.add_node(Pose(x, y, None)) for x, y in poses]
+        [self.graph.add_node(Pose(x, y, None)) for x, y in poses]
 
     def build_goal_graph(self):
         margin = ROBOT_LENGTH * 0.5
@@ -137,7 +144,7 @@ class GraphBuilder:
                 )
             )
         self.graph.goal_nodes = [self.graph.add_node(pose) for pose in goal_poses]
-        graph_nodes = [self.graph.add_node(Pose(x, y, None)) for x, y in poses]
+        [self.graph.add_node(Pose(x, y, None)) for x, y in poses]
 
     def build_pallet_graph(self):
         self.graph.pallet_nodes = []
@@ -206,7 +213,7 @@ class GraphBuilder:
                     line_x = ax + t * abx
                     line_y = ay + t * aby
 
-                    line_node = self.graph.add_node(Pose(line_x, line_y, theta))
+                    self.graph.add_node(Pose(line_x, line_y, theta))
 
     def build_subgraphs(self):
         self.build_dock_graph()
@@ -227,8 +234,12 @@ class GraphBuilder:
 
         return True
 
+
+
+
+
     def connect_graphs(self):
-        EPS = 1e-5
+        eps = 1e-5
 
         nodes = self.graph.node_pose
         n = len(nodes)
@@ -236,11 +247,11 @@ class GraphBuilder:
         for i in range(n):
             x, y, _ = nodes[i]
 
-            nearest = {
-                "left": (None, math.inf),
-                "right": (None, math.inf),
-                "up": (None, math.inf),
-                "down": (None, math.inf),
+            nearest: Nearest = {
+                "left": (None, float("inf")),
+                "right": (None, float("inf")),
+                "above": (None, float("inf")),
+                "below": (None, float("inf")),
             }
 
             for j in range(n):
@@ -262,24 +273,24 @@ class GraphBuilder:
                 dy = y2 - y
 
                 # Same horizontal line
-                if abs(dy) < EPS:
+                if abs(dy) < eps:
                     distance = abs(dx)
 
-                    if dx < -EPS and distance < nearest["left"][1]:
+                    if dx < -eps and distance < nearest["left"][1]:
                         nearest["left"] = (j, distance)
 
-                    elif dx > EPS and distance < nearest["right"][1]:
+                    elif dx > eps and distance < nearest["right"][1]:
                         nearest["right"] = (j, distance)
 
                 # Same vertical line
-                elif abs(dx) < EPS:
+                elif abs(dx) < eps:
                     distance = abs(dy)
 
-                    if dy < -EPS and distance < nearest["down"][1]:
-                        nearest["down"] = (j, distance)
+                    if dy < -eps and distance < nearest["below"][1]:
+                        nearest["below"] = (j, distance)
 
-                    elif dy > EPS and distance < nearest["up"][1]:
-                        nearest["up"] = (j, distance)
+                    elif dy > eps and distance < nearest["above"][1]:
+                        nearest["above"] = (j, distance)
 
             for node, distance in nearest.values():
                 if node is None:

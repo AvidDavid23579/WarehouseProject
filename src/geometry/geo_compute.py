@@ -336,7 +336,7 @@ def obb_aabb_distance(
         np.multiply(ny, ny, out=t4)
         np.add(d2, t4, out=d2)
 
-        # Running minimum. The first candidate initializes the best values.
+        # Running minimum. The first candidate initialises the best values.
         if first:
             np.copyto(distance, d2)
             np.copyto(best_nx, nx)
@@ -389,7 +389,7 @@ def obb_aabb_distance(
     #   YP = t4
     #   YM = t5
     #
-    # Robot-local center:
+    # Robot-local centre:
     #   rlx = px
     #   rly = py
     #
@@ -479,7 +479,7 @@ def obb_aabb_distance(
     np.sqrt(distance, out=distance)
     np.greater(distance, zero, out=mask)  # mask == valid non-zero distance
 
-    # t0 is now used as inverse distance. Initialize to zero so that
+    # t0 is now used as inverse distance. Initialise to zero so that
     # zero-distance entries safely produce zero normals before fallback.
     t0.fill(zero)
 
