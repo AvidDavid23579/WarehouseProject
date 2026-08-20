@@ -166,8 +166,8 @@ def obstacle_repulsion(
 
 def robot_repulsion(
     world: World,
-    margin: float = 0.01,
-    strength: float = 0.001,
+    margin: float = 0.1,
+    strength: float = 0.0001,
     max_force: float = 1.0,
     tangent_gain: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -276,10 +276,10 @@ def right_of_way_avoidance(
     id: bool = True,
     broad_margin: float = 0.5,
     pf_margin: float = 0.1,
-    pf_strength: float = 0.1,
-    pf_tangent_gain: float = 0.05,
-    pf_max_force: float = 5.0,
-    stop_distance: float = 2.5,
+    pf_strength: float = 0.0001,
+    pf_tangent_gain: float = 0.0,
+    pf_max_force: float = 1.0,
+    stop_distance: float = 1.5,
 ) -> None:
     """
     Right-of-way + potential-field multi-robot avoidance.

@@ -4,14 +4,14 @@ from common.types import Pose
 
 # Warehouse parameters
 SHELF_COL = 2
-SHELF_ROW = 1
-NUM_DOCKS = 2
-NUM_PALLETS_PER_SHELF = 4
+SHELF_ROW = 2
+NUM_DOCKS = 1
+NUM_PALLETS_PER_SHELF = 2
 NUM_PALLETS = 2 * NUM_PALLETS_PER_SHELF * SHELF_ROW * SHELF_COL
 
 # --- Simulation parameters ---------------------------------------------------
 PHYSICS_DT = 1 / 60
-SIMULATION_DURATION = 120  # Seconds
+SIMULATION_DURATION = 240  # Seconds
 WINDOW_WIDTH = 1540
 WINDOW_HEIGHT = 800
 WAREHOUSE_WIDTH = 1300  # Pixels
@@ -43,12 +43,12 @@ SHELF_LENGTH = NUM_PALLETS_PER_SHELF * PALLET_LENGTH
 DOCK_WIDTH = 0.3
 DOCK_LENGTH = 0.5
 DOCK_APPROACH_DISTANCE = 0.4
-DOCK_SPACING = 15.0  # Should be 1.0
+DOCK_SPACING = 1.0  # Should be 1.0
 DOCK_ONE_POSE = Pose(1.5, DOCK_WIDTH / 2, 0.0)
 ROBOT_DOCK_DIST = 0.5
 
 # --- Goal / alignment tolerances ---------------------------------------------
-DIST_TOLERANCE = 0.05
+DIST_TOLERANCE = 0.1
 ANGLE_TOLERANCE = math.radians(1.0)
 
 # --- Velocity limits ---------------------------------------------------------

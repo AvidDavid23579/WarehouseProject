@@ -1,6 +1,6 @@
 from controller.drive import drive_to_pose_grid
 
-from controller.path_planning import update_carried_pallets, return_to_dock, assign_pallets, handle_pickups, handle_deliveries
+from controller.path_planning import update_carried_pallets, return_to_dock, assign_pallets, handle_pickups, handle_deliveries, resolve_path_conflicts
 from controller.potential import apply_repulsion
 from simulator.world import World, WorldFrame, WorldMap
 
@@ -29,6 +29,8 @@ class Simulator:
             # Motion controllers
             drive_to_pose_grid(self.world, self.graph)
             apply_repulsion(self.world)
+            resolve_path_conflicts(self.world, self.graph)
+            return_to_dock(self.world, self.graph)
 
             # Physics update
             self.world.step()
@@ -36,9 +38,6 @@ class Simulator:
             # Register done work
             update_carried_pallets(self.world)
             handle_deliveries(self.world, self.graph)
-
-            # Final action
-            return_to_dock(self.world, self.graph)
 
             self.frames.append(self.world.frame())
 

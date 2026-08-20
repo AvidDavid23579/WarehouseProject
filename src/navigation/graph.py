@@ -179,8 +179,17 @@ class NavigationGraph:
 
         return path
 
-    def dijkstra(self, start: int, goal: int) -> list[int] | None:
+    def dijkstra(
+            self,
+            start: int,
+            goal: int,
+            blocked_nodes: set[int] | None = None,
+    ) -> list[int] | None:
+
         adjacency = self.adjacency_list()
+
+        if blocked_nodes is None:
+            blocked_nodes = set()
 
         distances = {start: 0.0}
         parent: dict[int, int | None] = {start: None}
@@ -198,12 +207,22 @@ class NavigationGraph:
                 break
 
             for neighbor, weight in adjacency[current]:
+
+                if neighbor in blocked_nodes:
+                    continue
+
                 new_distance = distance + weight
 
-                if new_distance < distances.get(neighbor, float("inf")):
+                if new_distance < distances.get(
+                        neighbor,
+                        float("inf"),
+                ):
                     distances[neighbor] = new_distance
                     parent[neighbor] = current
-                    heapq.heappush(heap, (new_distance, neighbor))
+                    heapq.heappush(
+                        heap,
+                        (new_distance, neighbor),
+                    )
 
         if goal not in parent:
             return None

@@ -42,6 +42,38 @@ def update_goal(world: World, graph: NavigationGraph) -> None:
         robot.nav_phase[r] = NavPhase.INITIAL_TURN
         robot.arrived[r] = False
 
+def compress_collinear_path(
+    graph: NavigationGraph,
+    path: list[int],
+) -> list[int]:
+    """Remove intermediate nodes that lie on the same straight segment."""
+
+    if len(path) <= 2:
+        return path
+
+    result = [path[0]]
+
+    for i in range(1, len(path) - 1):
+        a = graph.node_pose[path[i - 1]]
+        b = graph.node_pose[path[i]]
+        c = graph.node_pose[path[i + 1]]
+
+        v1 = b[:2] - a[:2]
+        v2 = c[:2] - b[:2]
+
+        cross = v1[0] * v2[1] - v1[1] * v2[0]
+        dot = np.dot(v1, v2)
+
+        # Keep the node if:
+        #   1. The direction changes, or
+        #   2. The path reverses direction.
+        if abs(cross) > 1e-6 or dot <= 0:
+            result.append(path[i])
+
+    result.append(path[-1])
+
+    return result
+
 def set_robot_path(
     world: World,
     graph: NavigationGraph,
@@ -50,11 +82,11 @@ def set_robot_path(
 ):
     robot = world.robot
 
-    robot.path[r] = graph.dijkstra(
-        robot.current_node_id[r],
-        target_node,
-    )
+    path = graph.dijkstra(robot.current_node_id[r], target_node)
 
+    # path = compress_collinear_path(graph, path)
+
+    robot.path[r] = path
     robot.path_index[r] = 0
     robot.path_length[r] = len(robot.path[r])
     robot.nav_phase[r] = NavPhase.INITIAL_TURN
@@ -226,3 +258,102 @@ def return_to_dock(world: World, graph: NavigationGraph):
             r,
             dock_node,
         )
+
+def resolve_path_conflicts(
+    world: World,
+    graph: NavigationGraph,
+) -> None:
+
+    robot = world.robot
+
+    for r in range(len(robot.pose)):
+
+        if not robot.path[r]:
+            continue
+
+        # Actual physical position.
+        start = int(robot.current_node_id[r])
+
+        # Actual task destination.
+        goal = int(robot.path[r][-1])
+
+        # FULL planned paths.
+        my_path = robot.path[r]
+
+        for other in range(r):
+
+            if not robot.path[other]:
+                continue
+
+            # FULL planned path of the lower-priority robot.
+            other_path = robot.path[other]
+
+            my_nodes = set(my_path)
+            other_nodes = set(other_path)
+
+            overlap = my_nodes & other_nodes
+
+            if not overlap:
+                continue
+
+            print(
+                f"\nCONFLICT R{r} vs R{other}"
+                f"\n  R{r} path: {my_path}"
+                f"\n  R{other} path: {other_path}"
+                f"\n  overlap: {sorted(overlap)}"
+                f"\n  R{r} current: {start}"
+                f"\n  R{r} goal: {goal}"
+            )
+
+            # Higher-ID robot avoids every node in the
+            # lower-ID robot's FULL planned path.
+            blocked_nodes = other_nodes.copy()
+
+            # We are physically already here, so Dijkstra
+            # must be allowed to start from our current node.
+            blocked_nodes.discard(start)
+
+            new_path = graph.dijkstra(
+                start,
+                goal,
+                blocked_nodes=blocked_nodes,
+            )
+
+            print(
+                f"  blocked: {sorted(blocked_nodes)}"
+                f"\n  Dijkstra: {new_path}"
+            )
+
+            if new_path is None:
+                print(
+                    f"  R{r}: NO REROUTE, keeping existing path"
+                )
+                continue
+
+            new_overlap = set(new_path) & blocked_nodes
+
+            if new_overlap:
+                print(
+                    f"  R{r}: INVALID REROUTE, "
+                    f"overlap={sorted(new_overlap)}, "
+                    f"keeping existing path"
+                )
+                continue
+
+            new_path = compress_collinear_path(
+                graph,
+                new_path,
+            )
+
+            robot.path[r] = new_path
+            robot.path_index[r] = 0
+            robot.path_length[r] = len(new_path)
+            robot.nav_phase[r] = NavPhase.INITIAL_TURN
+
+            print(
+                f"  R{r}: REROUTED -> {new_path}"
+            )
+
+            my_path = robot.path[r]
+
+            break
